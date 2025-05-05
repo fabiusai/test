@@ -27,6 +27,12 @@
 <div id="status"></div>
 
 <script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.7.0/docx.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+
+  
 function exportDocx() {
   const status = document.getElementById("status");
   if (!window.docx || !window.saveAs) {
