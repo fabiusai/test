@@ -5,11 +5,7 @@
   <meta charset="UTF-8">
   <title>Test DOCX funzionante</title>
   <!-- Librerie necessarie -->
-  <script src="https://unpkg.com/docx@7.7.0/build/index.umd.js"></script>
-  <script>
-    // Espone la libreria docx su window
-    window.docx = docx;
-  </script>
+  <script src="https://unpkg.com/docx@7.7.0/build/index.umd.js" onload="window.docx = docx;"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <style>
