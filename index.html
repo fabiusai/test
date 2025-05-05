@@ -3,7 +3,8 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Test DOCX con Verifica</title>
+  <title>Test DOCX funzionante</title>
+  <!-- Librerie necessarie -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.7.0/docx.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <style>
@@ -18,8 +19,10 @@
 <h1>Test esportazione DOCX</h1>
 
 <div id="preview" class="preview">
-  <p><b>Titolo</b></p>
-  <p>Questo è un esempio di testo con <b>grassetto</b> e più paragrafi.</p>
+  <p><b>Sezione 1</b></p>
+  <p>Questo è un testo <b>in grassetto</b> e con un a capo.</p>
+  <p><b>Sezione 2</b></p>
+  <p>Secondo paragrafo con <b>altro grassetto</b>.</p>
 </div>
 
 <button class="btn" onclick="exportDocx()">Esporta DOCX</button>
@@ -27,16 +30,10 @@
 <div id="status"></div>
 
 <script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.7.0/docx.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
-
-  
 function exportDocx() {
   const status = document.getElementById("status");
   if (!window.docx || !window.saveAs) {
-    status.textContent = "❌ Le librerie non sono caricate. Controlla la connessione o avvia un server locale.";
+    status.textContent = "❌ Le librerie non sono caricate. Controlla la connessione o l'inclusione degli script.";
     return;
   }
 
@@ -64,7 +61,7 @@ function exportDocx() {
     const doc = new window.docx.Document({ sections: [{ children: docParagraphs }] });
 
     window.docx.Packer.toBlob(doc).then(blob => {
-      window.saveAs(blob, "report_test.docx");
+      window.saveAs(blob, "report.docx");
       status.textContent = "✅ Documento esportato correttamente.";
       status.style.color = "green";
     });
