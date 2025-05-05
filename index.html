@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Esporta DOCX</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.7.0/docx.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .btn { padding: 10px 20px; font-size: 16px; margin-top: 20px; cursor: pointer; }
+    .preview { white-space: pre-wrap; border: 1px solid #ccc; padding: 10px; margin-top: 20px; background: #f9f9f9; }
+  </style>
+</head>
+<body>
+
+<h1>Anteprima del testo</h1>
+
+<div id="preview" class="preview">
+  <p><b>Sezione 1</b></p>
+  <p>Questo è un testo <b>in grassetto</b> e con un a capo.</p>
+  <p><b>Sezione 2</b></p>
+  <p>Secondo paragrafo con <b>altro grassetto</b>.</p>
+</div>
+
+<button class="btn" onclick="exportDocx()">Esporta DOCX</button>
+
+<script>
+function exportDocx() {
+  const html = document.getElementById('preview').innerHTML;
+  const paragraphs = html.split(/<\/p>/i).filter(p => p.trim());
+
+  const docParagraphs = paragraphs.map(p => {
+    p = p.replace(/<p[^>]*>/gi, '');
+
+    const runs = [];
+    let lastIndex = 0;
+    const boldRegex = /<b>(.*?)<\/b>/gi;
+    let match;
+
+    while ((match = boldRegex.exec(p)) !== null) {
+      const plainText = p.substring(lastIndex, match.index).replace(/<[^>]+>/g, '');
+      if (plainText.trim()) {
+        runs.push(new window.docx.TextRun(plainText));
+      }
+      runs.push(new window.docx.TextRun({ text: match[1], bold: true }));
+      lastIndex = boldRegex.lastIndex;
+    }
+
+    const tail = p.substring(lastIndex).replace(/<[^>]+>/g, '');
+    if (tail.trim()) {
+      runs.push(new window.docx.TextRun(tail));
+    }
+
+    return new window.docx.Paragraph({ children: runs });
+  });
+
+  const doc = new window.docx.Document({
+    sections: [{ children: docParagraphs }]
+  });
+
+  window.docx.Packer.toBlob(doc).then(blob => {
+    saveAs(blob, 'report.docx');
+  });
+}
+</script>
+
+</body>
+</html>
