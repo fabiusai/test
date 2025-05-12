@@ -434,10 +434,16 @@
     if (!activeNews) return alert("Nessuna news selezionata.");
     const sections = activeNews.querySelectorAll('.social-section');
     let done = 0;
+
     sections.forEach((section, index) => {
       const container = section.querySelector('.mockup-container');
       const platform = section.id.split('-')[1] || `platform${index + 1}`;
+
+      const originalDisplay = section.style.display;
+      section.style.display = 'block';
+
       html2canvas(container).then(canvas => {
+        section.style.display = originalDisplay || '';
         canvas.toBlob(blob => {
           zip.file(`mockup_${platform}.jpg`, blob);
           done++;
