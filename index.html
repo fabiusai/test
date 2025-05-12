@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -9,7 +10,7 @@
   <style>
     body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
     h1 { color: #0033A0; text-align: center; font-size: 2em; margin-bottom: 30px; }
-    .global-controls { text-align: center; margin-bottom: 20px; }
+    .global-controls, .controls { text-align: center; margin: 20px 0; }
     .news-tabs, .social-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
     .news-tabs button, .social-tabs button {
       padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer;
@@ -19,14 +20,15 @@
     .social-tabs button { background-color: #0033A0; color: white; }
     .tab-content, .social-section { display: none; }
     .tab-content.active, .social-section.active { display: block; }
-    .mockup-container { background: #fff; width: 520px; margin: auto; border-radius: 8px;
-      overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .mockup-container {
+      background: #fff; width: 520px; margin: auto; border-radius: 8px;
+      overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
     .mockup-header img, .mockup-footer img, .mockup-image { width: 100%; display: block; }
     .mockup-text { padding: 10px 15px; font-size: 15px; white-space: pre-wrap; color: #050505; }
     .mockup-text span.link { color: #1877f2; }
-    .controls { text-align: center; margin-top: 20px; }
-    .controls textarea { width: 520px; height: 80px; padding: 10px; font-size: 14px; }
-    .controls button { margin-top: 10px; padding: 8px 16px; font-size: 14px; }
+    textarea { width: 520px; height: 80px; padding: 10px; font-size: 14px; }
+    button { margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -35,43 +37,44 @@
   <div class="news-tabs">
     <button class="news-tab active" data-target="news1">News 1</button>
     <button class="news-tab" data-target="news2">News 2</button>
-    <button class="news-tab" data-target="news3">News 3</button>
-    <button class="news-tab" data-target="news4">News 4</button>
-    <button class="news-tab" data-target="news5">News 5</button>
   </div>
 
   <div id="news1" class="tab-content active">
     <div class="social-section active" data-platform="facebook">
       <div class="mockup-container">
         <div class="mockup-header"><img src="AltoFB.png" /></div>
-        <div class="mockup-text"><span>Testo Facebook</span></div>
+        <div class="mockup-text" contenteditable="true">Testo Facebook</div>
         <div class="mockup-footer"><img src="BassoFB.png" /></div>
       </div>
     </div>
     <div class="social-section" data-platform="linkedin">
       <div class="mockup-container">
         <div class="mockup-header"><img src="AltoLI.png" /></div>
-        <div class="mockup-text"><span>Testo LinkedIn</span></div>
+        <div class="mockup-text" contenteditable="true">Testo LinkedIn</div>
         <div class="mockup-footer"><img src="BassoLI.png" /></div>
       </div>
     </div>
     <div class="social-section" data-platform="x">
       <div class="mockup-container">
         <div class="mockup-header"><img src="AltoX.png" /></div>
-        <div class="mockup-text"><span>Testo X</span></div>
+        <div class="mockup-text" contenteditable="true">Testo X</div>
         <div class="mockup-footer"><img src="BassoX.png" /></div>
       </div>
     </div>
     <div class="social-section" data-platform="instagram">
       <div class="mockup-container">
         <div class="mockup-header"><img src="AltoIG.png" /></div>
-        <div class="mockup-text"><span>Testo Instagram</span></div>
+        <div class="mockup-text" contenteditable="true">Testo Instagram</div>
         <div class="mockup-footer"><img src="BassoIG.png" /></div>
       </div>
     </div>
   </div>
 
-  <!-- Aggiungi le altre sezioni news2...news5 in modo simile -->
+  <div class="controls">
+    <textarea id="text-input" placeholder="Scrivi qui il testo da usare nei mockup..."></textarea><br>
+    <button onclick="updateText()">Aggiorna testi</button>
+    <button onclick="clearText()">Cancella tutto</button>
+  </div>
 
   <div class="global-controls">
     <button onclick="downloadAllAsZip()">Scarica tutti i mockup (ZIP)</button>
@@ -87,22 +90,27 @@
       });
     });
 
+    function updateText() {
+      const text = document.getElementById("text-input").value;
+      const activeNews = document.querySelector(".tab-content.active");
+      activeNews.querySelectorAll(".mockup-text").forEach(el => el.textContent = text);
+    }
+
+    function clearText() {
+      document.getElementById("text-input").value = "";
+      const activeNews = document.querySelector(".tab-content.active");
+      activeNews.querySelectorAll(".mockup-text").forEach(el => el.textContent = "");
+    }
+
     function downloadAllAsZip() {
       const zip = new JSZip();
       const activeNews = document.querySelector('.tab-content.active');
-
-      if (!activeNews) {
-        alert("Nessuna news selezionata.");
-        return;
-      }
-
+      if (!activeNews) return alert("Nessuna news selezionata.");
       const sections = activeNews.querySelectorAll('.social-section');
       let done = 0;
-
       sections.forEach((section, index) => {
         const container = section.querySelector('.mockup-container');
         const platform = section.getAttribute('data-platform') || `platform${index + 1}`;
-
         html2canvas(container).then(canvas => {
           canvas.toBlob(blob => {
             zip.file(`mockup_${platform}.jpg`, blob);
@@ -121,6 +129,4 @@
     }
   </script>
 </body>
-</html>
-
 </html>
