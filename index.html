@@ -4,37 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Social Mockup</title>
-  <link rel="icon" type="image/png" href="favicon.png" />
-
+  <link rel="icon" href="favicon.png" />
   <!-- Librerie -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
   <style>
     * { box-sizing: border-box; }
-    body { margin:0; padding:20px; font-family:Arial,sans-serif; background:#f5f5f5; }
-    h1 { text-align:center; color:#0033A0; margin-bottom:20px; }
-    .global-controls { text-align:center; margin-bottom:10px; }
-    .global-controls button { margin:0 5px; padding:8px 16px; cursor:pointer; }
-    .news-tabs { display:flex; justify-content:center; gap:10px; margin-bottom:20px; }
-    .news-tabs button { padding:8px 16px; border:none; border-radius:4px; background:#FFD700; color:#0033A0; cursor:pointer; }
-    .news-tabs button.active { background:#fff; border:2px solid #0033A0; }
-    .tab-content { display:none; }
-    .tab-content.active { display:block; }
-    .social-tabs { display:flex; justify-content:center; gap:10px; margin:10px 0; }
-    .social-tabs button { padding:6px 12px; border:none; border-radius:4px; background:#0033A0; color:#fff; cursor:pointer; }
-    .social-tabs button.active { opacity:0.8; }
-    .social-section { display:none; }
-    .social-section.active { display:block; }
-    .mockup-container { background:#fff; width:520px; margin:0 auto; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
-    .mockup-header img, .mockup-footer img, .mockup-image { width:100%; display:block; }
-    .mockup-text { padding:10px 15px; font-size:15px; white-space:pre-wrap; color:#050505; }
-    .mockup-text span.link { color:#1877f2; }
-    .controls { text-align:center; margin:15px 0; }
-    .controls textarea { width:520px; height:80px; padding:10px; margin-bottom:10px; font-size:14px; }
-    .controls input[type=file] { margin-bottom:10px; }
-    .controls button { margin:0 5px; padding:8px 16px; border:none; border-radius:4px; background:#0033A0; color:#fff; cursor:pointer; }
+    body { margin: 0; padding: 20px; font-family: Arial, sans-serif; background: #f5f5f5; }
+    h1 { text-align: center; color: #0033A0; margin-bottom: 20px; }
+    .global-controls { text-align: center; margin-bottom: 20px; }
+    .global-controls button { margin: 0 10px; padding: 10px 20px; border: none; border-radius: 4px; background: #0033A0; color: #fff; cursor: pointer; }
+    .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+    .tabs button { padding: 8px 16px; border: none; border-radius: 4px; background: #FFD700; color: #0033A0; cursor: pointer; }
+    .tabs button.active { background: #fff; border: 2px solid #0033A0; }
+    .tab-content, .social-section { display: none; }
+    .tab-content.active, .social-section.active { display: block; }
+    .mockup-container { background: #fff; width: 520px; margin: 20px auto; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .mockup-header img, .mockup-footer img, .mockup-image { width: 100%; display: block; }
+    .mockup-text { padding: 10px 15px; font-size: 15px; white-space: pre-wrap; color: #050505; }
+    .mockup-text .link { color: #1877f2; }
+    .controls { text-align: center; margin: 15px 0; }
+    .controls textarea { width: 520px; height: 80px; padding: 10px; font-size: 14px; margin-bottom: 10px; }
+    .controls input[type="file"] { margin-bottom: 10px; }
+    .controls button { margin: 0 10px; padding: 8px 16px; border: none; border-radius: 4px; background: #0033A0; color: #fff; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -44,219 +37,224 @@
     <button onclick="downloadAll()">Scarica tutti (ZIP)</button>
   </div>
 
-  <div class="news-tabs">
-    <button class="active" onclick="changeNews(1,event)">News 1</button>
-    <button onclick="changeNews(2,event)">News 2</button>
-    <button onclick="changeNews(3,event)">News 3</button>
-    <button onclick="changeNews(4,event)">News 4</button>
-    <button onclick="changeNews(5,event)">News 5</button>
+  <!-- News Tabs -->
+  <div class="tabs" id="news-tabs">
+    <button class="active" onclick="showNews(1, event)">News 1</button>
+    <button onclick="showNews(2, event)">News 2</button>
+    <button onclick="showNews(3, event)">News 3</button>
+    <button onclick="showNews(4, event)">News 4</button>
+    <button onclick="showNews(5, event)">News 5</button>
   </div>
 
-  <!-- Contenuti per ciascuna news -->
-  <!-- News 1 -->
-  <div id="content-news1" class="tab-content active">
-    <div class="social-tabs">
-      <button class="active" data-platform="facebook" onclick="changeSocial('facebook',event)">Facebook</button>
-      <button data-platform="linkedin" onclick="changeSocial('linkedin',event)">LinkedIn</button>
-      <button data-platform="x" onclick="changeSocial('x',event)">X</button>
-      <button data-platform="instagram" onclick="changeSocial('instagram',event)">Instagram</button>
+  <!-- News 1 Content -->
+  <div id="news1" class="tab-content active">
+    <div class="tabs social-tabs">
+      <button class="active" onclick="showSocial(1, 'facebook', event)">Facebook</button>
+      <button onclick="showSocial(1, 'linkedin', event)">LinkedIn</button>
+      <button onclick="showSocial(1, 'x', event)">X</button>
+      <button onclick="showSocial(1, 'instagram', event)">Instagram</button>
     </div>
-    <div id="section-news1-facebook" class="social-section active">
+    <div id="news1-facebook" class="social-section active">
       <div class="mockup-container">
         <div class="mockup-header"><img src="AltoFB.png" alt="Header Facebook"></div>
-        <div class="mockup-text" id="text-news1-facebook"></div>
-        <img class="mockup-image" id="img-news1-facebook" style="display:none" alt="Image Facebook">
+        <div class="mockup-text" id="text1-facebook"></div>
+        <img class="mockup-image" id="img1-facebook" style="display:none" alt="Image Facebook">
         <div class="mockup-footer"><img src="BassoFB.png" alt="Footer Facebook"></div>
       </div>
     </div>
-    <div id="section-news1-linkedin" class="social-section">
+    <div id="news1-linkedin" class="social-section">
       <div class="mockup-container">
         <div class="mockup-header"><img src="AltoLI.png" alt="Header LinkedIn"></div>
-        <div class="mockup-text" id="text-news1-linkedin"></div>
-        <img class="mockup-image" id="img-news1-linkedin" style="display:none" alt="Image LinkedIn">
+        <div class="mockup-text" id="text1-linkedin"></div>
+        <img class="mockup-image" id="img1-linkedin" style="display:none" alt="Image LinkedIn">
         <div class="mockup-footer"><img src="BassoLI.png" alt="Footer LinkedIn"></div>
       </div>
     </div>
-    <div id="section-news1-x" class="social-section">
+    <div id="news1-x" class="social-section">
       <div class="mockup-container">
         <div class="mockup-header"><img src="AltoX.png" alt="Header X"></div>
-        <div class="mockup-text" id="text-news1-x"></div>
-        <img class="mockup-image" id="img-news1-x" style="display:none" alt="Image X">
+        <div class="mockup-text" id="text1-x"></div>
+        <img class="mockup-image" id="img1-x" style="display:none" alt="Image X">
         <div class="mockup-footer"><img src="BassoX.png" alt="Footer X"></div>
       </div>
     </div>
-    <div id="section-news1-instagram" class="social-section">
+    <div id="news1-instagram" class="social-section">
       <div class="mockup-container">
         <div class="mockup-header"><img src="AltoIG.png" alt="Header Instagram"></div>
-        <img class="mockup-image" id="img-news1-instagram" style="display:none" alt="Image Instagram">
-        <div class="mockup-text" id="text-news1-instagram"></div>
+        <img class="mockup-image" id="img1-instagram" style="display:none" alt="Image Instagram">
+        <div class="mockup-text" id="text1-instagram"></div>
         <div class="mockup-footer"><img src="BassoIG.png" alt="Footer Instagram"></div>
       </div>
     </div>
     <div class="controls">
-      <textarea id="input-news1" placeholder="Scrivi il testo del post..."></textarea><br>
-      <input type="file" id="file-news1"><br>
+      <textarea id="input1" placeholder="Scrivi il testo del post..."></textarea><br>
+      <input type="file" id="file1"><br>
       <button onclick="saveNews(1)">Salva</button>
       <button onclick="resetNews(1)">Cancella</button>
     </div>
   </div>
 
-  <!-- Ripeti per News 2 -->
-  <div id="content-news2" class="tab-content">
-    <div class="social-tabs">
-      <button class="active" data-platform="facebook" onclick="changeSocial('facebook',event)">Facebook</button>
-      <button data-platform="linkedin" onclick="changeSocial('linkedin',event)">LinkedIn</button>
-      <button data-platform="x" onclick="changeSocial('x',event)">X</button>
-      <button data-platform="instagram" onclick="changeSocial('instagram',event)">Instagram</button>
+  <!-- News 2 Content -->
+  <div id="news2" class="tab-content">
+    <div class="tabs social-tabs">
+      <button class="active" onclick="showSocial(2, 'facebook', event)">Facebook</button>
+      <button onclick="showSocial(2, 'linkedin', event)">LinkedIn</button>
+      <button onclick="showSocial(2, 'x', event)">X</button>
+      <button onclick="showSocial(2, 'instagram', event)">Instagram</button>
     </div>
-    <div id="section-news2-facebook" class="social-section active">
+    <div id="news2-facebook" class="social-section active">
       <div class="mockup-container">
-        <div class="mockup-header"><img src="AltoFB.png" alt></div>
-        <div class="mockup-text" id="text-news2-facebook"></div>
-        <img class="mockup-image" id="img-news2-facebook" style="display:none" alt>
-        <div class="mockup-footer"><img src="BassoFB.png" alt></div>
+        <div class="mockup-header"><img src="AltoFB.png"></div>
+        <div class="mockup-text" id="text2-facebook"></div>
+        <img class="mockup-image" id="img2-facebook" style="display:none">
+        <div class="mockup-footer"><img src="BassoFB.png"></div>
       </div>
     </div>
-    <div id="section-news2-linkedin" class="social-section">
+    <div id="news2-linkedin" class="social-section">
       <div class="mockup-container">
         <div class="mockup-header"><img src="AltoLI.png"></div>
-        <div class="mockup-text" id="text-news2-linkedin"></div>
-        <img class="mockup-image" id="img-news2-linkedin" style="display:none"></n        <div class="mockup-footer"><img src="BassoLI.png"></div>
+        <div class="mockup-text" id="text2-linkedin"></div>
+        <img class="mockup-image" id="img2-linkedin" style="display:none">
+        <div class="mockup-footer"><img src="BassoLI.png"></div>
       </div>
     </div>
-    <!-- Sezioni X e Instagram analoghe -->
+    <div id="news2-x" class="social-section">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoX.png"></div>
+        <div class="mockup-text" id="text2-x"></div>
+        <img class="mockup-image" id="img2-x" style="display:none">
+        <div class="mockup-footer"><img src="BassoX.png"></div>
+      </div>
+    </div>
+    <div id="news2-instagram" class="social-section">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoIG.png"></div>
+        <img class="mockup-image" id="img2-instagram" style="display:none">
+        <div class="mockup-text" id="text2-instagram"></div>
+        <div class="mockup-footer"><img src="BassoIG.png"></div>
+      </div>
+    </div>
     <div class="controls">
-      <textarea id="input-news2" placeholder="Scrivi il testo del post..."></textarea><br>
-      <input type="file" id="file-news2"><br>
+      <textarea id="input2" placeholder="Scrivi il testo del post..."></textarea><br>
+      <input type="file" id="file2"><br>
       <button onclick="saveNews(2)">Salva</button>
       <button onclick="resetNews(2)">Cancella</button>
     </div>
   </div>
 
-  <!-- News 3 -->
-  <!-- ... implementazione simile ... -->
+  <!-- News 3 Content -->
+  <div id="news3" class="tab-content">
+    <div class="tabs social-tabs">
+      <button class="active" onclick="showSocial(3, 'facebook', event)">Facebook</button>
+      <button onclick="showSocial(3, 'linkedin', event)">LinkedIn</button>
+      <button onclick="showSocial(3, 'x', event)">X</button>
+      <button onclick="showSocial(3, 'instagram', event)">Instagram</button>
+    </div>
+    <div id="news3-facebook" class="social-section active">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoFB.png"></div>
+        <div class="mockup-text" id="text3-facebook"></div>
+        <img class="mockup-image" id="img3-facebook" style="display:none">
+        <div class="mockup-footer"><img src="BassoFB.png"></div>
+      </div>
+    </div>
+    <div id="news3-linkedin" class="social-section">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoLI.png"></div>
+        <div class="mockup-text" id="text3-linkedin"></div>
+        <img class="mockup-image" id="img3-linkedin" style="display:none">
+        <div class="mockup-footer"><img src="BassoLI.png"></div>
+      </div>
+    </div>
+    <div id="news3-x" class="social-section">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoX.png"></div>
+        <div class="mockup-text" id="text3-x"></div>
+        <img class="mockup-image" id="img3-x" style="display:none">
+        <div class="mockup-footer"><img src="BassoX.png"></div>
+      </div>
+    </div>
+    <div id="news3-instagram" class="social-section">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoIG.png"></div>
+        <img class="mockup-image" id="img3-instagram" style="display:none">
+        <div class="mockup-text" id="text3-instagram"></div>
+        <div class="mockup-footer"><img src="BassoIG.png"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <textarea id="input3" placeholder="Scrivi il testo del post..."></textarea><br>
+      <input type="file" id="file3"><br>
+      <button onclick="saveNews(3)">Salva</button>
+      <button onclick="resetNews(3)">Cancella</button>
+    </div>
+  </div>
 
-  <!-- News 4 -->
-  <!-- ... -->
+  <!-- News 4 Content -->
+  <div id="news4" class="tab-content">
+    <div class="tabs social-tabs">
+      <button class="active" onclick="showSocial(4, 'facebook', event)">Facebook</button>
+      <button onclick="showSocial(4, 'linkedin', event)">LinkedIn</button>
+      <button onclick="showSocial(4, 'x', event)">X</button>
+      <button onclick="showSocial(4, 'instagram', event)">Instagram</button>
+    </div>
+    <div id="news4-facebook" class="social-section active">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoFB.png"></div>
+        <div class="mockup-text" id="text4-facebook"></div>
+        <img class="mockup-image" id="img4-facebook" style="display:none">
+        <div class="mockup-footer"><img src="BassoFB.png"></div>
+      </div>
+    </div>
+    <div id="news4-linkedin" class="social-section">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoLI.png"></div>
+        <div class="mockup-text" id="text4-linkedin"></div>
+        <img class="mockup-image" id="img4-linkedin" style="display:none">
+        <div class="mockup-footer"><img src="BassoLI.png"></div>
+      </div>
+    </div>
+    <div id="news4-x" class="social-section">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoX.png"></div>
+        <div class="mockup-text" id="text4-x"></div>
+        <img class="mockup-image" id="img4-x" style="display:none">
+        <div class="mockup-footer"><img src="BassoX.png"></div>
+      </div>
+    </div>
+    <div id="news4-instagram" class="social-section">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoIG.png"></div>
+        <img class="mockup-image" id="img4-instagram" style="display:none">
+        <div class="mockup-text" id="text4-instagram"></div>
+        <div class="mockup-footer"><img src="BassoIG.png"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <textarea id="input4" placeholder="Scrivi il testo del post..."></textarea><br>
+      <input type="file" id="file4"><br>
+      <button onclick="saveNews(4)">Salva</button>
+      <button onclick="resetNews(4)">Cancella</button>
+    </div>
+  </div>
 
-  <!-- News 5 -->
-  <!-- ... -->
-
-<script>
-  const platforms = ['facebook','linkedin','x','instagram'];
-  let currentNews = 1;
-  let currentPlatform = 'facebook';
-
-  function changeNews(id, e) {
-    currentNews = id;
-    document.querySelectorAll('.news-tabs button').forEach(b => b.classList.remove('active'));
-    e.currentTarget.classList.add('active');
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById(`content-news${id}`).classList.add('active');
-    // reset social to Facebook
-    const socialBtns = document.querySelectorAll(`#content-news${id} .social-tabs button`);
-    socialBtns.forEach(b => b.classList.remove('active'));
-    socialBtns[0].classList.add('active');
-    changeSocial('facebook', { currentTarget: socialBtns[0] });
-  }
-
-  function changeSocial(platform, e) {
-    currentPlatform = platform;
-    const container = document.getElementById(`content-news${currentNews}`);
-    container.querySelectorAll('.social-tabs button').forEach(b => b.classList.remove('active'));
-    e.currentTarget.classList.add('active');
-    container.querySelectorAll('.social-section').forEach(s => s.classList.remove('active'));
-    container.querySelector(`#section-news${currentNews}-${platform}`).classList.add('active');
-  }
-
-  function formatText(text) {
-    return text.replace(/(#[\w\d]+|@[\w\d]+|https?:\/\/\S+)/g, m => `<span class="link">${m}</span>`);
-  }
-
-  function saveNews(index) {
-    const text = document.getElementById(`input-news${index}`).value;
-    const formatted = formatText(text);
-    if (currentPlatform === 'facebook') {
-      platforms.forEach(p => {
-        document.getElementById(`text-news${index}-${p}`).innerHTML = formatted;
-        localStorage.setItem(`text-news${index}-${p}`, text);
-      });
-    } else {
-      document.getElementById(`text-news${index}-${currentPlatform}`).innerHTML = formatted;
-      localStorage.setItem(`text-news${index}-${currentPlatform}`, text);
-    }
-    const fileInput = document.getElementById(`file-news${index}`);
-    if (fileInput.files[0]) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        platforms.forEach(p => {
-          if (currentPlatform === 'facebook' || p === currentPlatform) {
-            const imgEl = document.getElementById(`img-news${index}-${p}`);
-            imgEl.src = reader.result;
-            imgEl.style.display = 'block';
-            localStorage.setItem(`img-news${index}-${p}`, reader.result);
-          }
-        });
-      };
-      reader.readAsDataURL(fileInput.files[0]);
-    }
-  }
-
-  function resetNews(index) {
-    platforms.forEach(p => {
-      localStorage.removeItem(`text-news${index}-${p}`);
-      localStorage.removeItem(`img-news${index}-${p}`);
-      document.getElementById(`text-news${index}-${p}`).innerHTML = '';
-      const imgEl = document.getElementById`=img-news${index}-${p}`;
-      imgEl.src = '';
-      imgEl.style.display = 'none';
-    });
-    document.getElementById(`input-news${index}`).value = '';
-    document.getElementById(`file-news${index}`).value = null;
-  }
-
-  function resetAll() {
-    for (let i = 1; i <= 5; i++) resetNews(i);
-  }
-
-  function downloadAll() {
-    const zip = new JSZip();
-    const container = document.getElementById(`content-news${currentNews}`);
-    const sections = container.querySelectorAll('.social-section');
-    const promises = [];
-    sections.forEach((sec, idx) => {
-      const wasHidden = !sec.classList.contains('active');
-      if (wasHidden) sec.classList.add('active');
-      promises.push(
-        html2canvas(sec.querySelector('.mockup-container'), { backgroundColor: '#ffffff' })
-          .then(canvas => new Promise(res => canvas.toBlob(blob => {
-            zip.file(`news${currentNews}-${platforms[idx]}.jpg`, blob);
-            res();
-          }, 'image/jpeg', 1)))
-          .finally(() => { if (wasHidden) sec.classList.remove('active'); })
-      );
-    });
-    Promise.all(promises).then(() => {
-      zip.generateAsync({ type: 'blob' }).then(content => saveAs(content, `news${currentNews}.zip`));
-    });
-  }
-
-  window.onload = () => {
-    for (let i = 1; i <= 5; i++) {
-      platforms.forEach(p => {
-        const txt = localStorage.getItem(`text-news${i}-${p}`);
-        const img = localStorage.getItem(`img-news${i}-${p}`);
-        if (txt) document.getElementById(`text-news${i}-${p}`).innerHTML = formatText(txt);
-        if (img) {
-          const el = document.getElementById(`img-news${i}-${p}`);
-          el.src = img;
-          el.style.display = 'block';
-        }
-      });
-    }
-  };
-</script>
-</body>
-</html>
-
-
+  <!-- News 5 Content -->
+  <div id="news5" class="tab-content">
+    <div class="tabs social-tabs">
+      <button class="active" onclick="showSocial(5, 'facebook', event)">Facebook</button>
+      <button onclick="showSocial(5, 'linkedin', event)">LinkedIn</button>
+      <button onclick="showSocial(5, 'x', event)">X</button>
+      <button onclick="showSocial(5, 'instagram', event)">Instagram</button>
+    </div>
+    <div id="news5-facebook" class="social-section active">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoFB.png"></div>
+        <div class="mockup-text" id="text5-facebook"></div>
+        <img class="mockup-image" id="img5-facebook" style="display:none">
+        <div class="mockup-footer"><img src="BassoFB.png"></div>
+      </div>
+    </div>
+    <div id="news5-linkedin" class="social-section">
+      <div class="mockup-container">
+        <div class="mockup-header"><img src="AltoLI.png"></div>
+        <div class="
