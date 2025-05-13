@@ -257,7 +257,7 @@
       <div class="mockup-footer"><img src="BassoX.png" /></div>
     </div>
   </div>
-  <div id="news2-instagram" class="social-section">
+  <div id="news3-instagram" class="social-section">
     <div class="mockup-container">
       <div class="mockup-header"><img src="AltoIG.png" /></div>
       <img class="mockup-image" id="img-news3-instagram" />
@@ -268,11 +268,60 @@
   <div class="controls">
     <textarea id="textInput-news3" placeholder="Scrivi il testo del post..."></textarea><br>
     <input type="file" id="imageInput-news3"><br>
-    <button onclick="saveNews(2)">Salva</button>
-    <button onclick="resetNews(2)">Cancella</button>
+    <button onclick="saveNews(3)">Salva</button>
+    <button onclick="resetNews(3)">Cancella</button>
   </div>
 </div>
 
+<!-- NEWS 4 -->
+<div class="tab-content" id="news4">
+  <div class="social-tabs">
+    <button onclick="showSocial(4, 'facebook', event)">Facebook</button>
+    <button onclick="showSocial(4, 'linkedin', event)">LinkedIn</button>
+    <button onclick="showSocial(4, 'x', event)">X</button>
+    <button onclick="showSocial(4, 'instagram', event)">Instagram</button>
+  </div>
+  <div id="news4-facebook" class="social-section active">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoFB.png" /></div>
+      <div class="mockup-text" id="text-news4-facebook"></div>
+      <img class="mockup-image" id="img-news4-facebook" />
+      <div class="mockup-footer"><img src="BassoFB.png" /></div>
+    </div>
+  </div>
+  <div id="news4-linkedin" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoLI.png" /></div>
+      <div class="mockup-text" id="text-news4-linkedin"></div>
+      <img class="mockup-image" id="img-news4-linkedin" />
+      <div class="mockup-footer"><img src="BassoLI.png" /></div>
+    </div>
+  </div>
+  <div id="news4-x" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoX.png" /></div>
+      <div class="mockup-text" id="text-news4-x"></div>
+      <img class="mockup-image" id="img-news4-x" />
+      <div class="mockup-footer"><img src="BassoX.png" /></div>
+    </div>
+  </div>
+  <div id="news4-instagram" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoIG.png" /></div>
+      <img class="mockup-image" id="img-news4-instagram" />
+      <div class="mockup-text" id="text-news4-instagram"></div>
+      <div class="mockup-footer"><img src="BassoIG.png" /></div>
+    </div>
+  </div>
+  <div class="controls">
+    <textarea id="textInput-news4" placeholder="Scrivi il testo del post..."></textarea><br>
+    <input type="file" id="imageInput-news4"><br>
+    <button onclick="saveNews(4)">Salva</button>
+    <button onclick="resetNews(4)">Cancella</button>
+  </div>
+</div>
+
+  
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
 <script>
