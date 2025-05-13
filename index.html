@@ -446,19 +446,15 @@
 
     const mockup = section.querySelector('.mockup-container');
     if (mockup) {
-      html2canvas(mockup).then(canvas => {
-        canvas.toBlob(blob => {
-          const filename = `${newsId}_mockup_${index + 1}.jpg`;
-          zip.file(filename, blob);
-          done++;
-          if (done === total) {
-            zip.generateAsync({ type: 'blob' }).then(content => {
-              saveAs(content, "mockup.zip");
-            });
-          }
-        });
-      });
-    }
+      html2canvas(mockup, { backgroundColor: '#ffffff' }).then(canvas => {
+     canvas.toBlob(blob => {
+       const filename = `${newsId}_mockup_${index + 1}.jpg`;
+       zip.file(filename, blob);
+       // …
+     }
+    }}, 'image/jpeg', 1.0);  // opzionale: forzare JPEG e qualità 100%
+ });
+
 
     if (wasHidden) section.classList.remove('active');
   });
