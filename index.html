@@ -225,8 +225,53 @@
   </div>
 </div>
 
-<!-- NEWS 3-5 (stessa struttura di NEWS 1 e 2) -->
-<!-- ... -->
+<!-- NEWS 3 -->
+<div class="tab-content" id="news3">
+  <div class="social-tabs">
+    <button onclick="showSocial(3, 'facebook', event)">Facebook</button>
+    <button onclick="showSocial(3, 'linkedin', event)">LinkedIn</button>
+    <button onclick="showSocial(3, 'x', event)">X</button>
+    <button onclick="showSocial(3, 'instagram', event)">Instagram</button>
+  </div>
+  <div id="news3-facebook" class="social-section active">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoFB.png" /></div>
+      <div class="mockup-text" id="text-news3-facebook"></div>
+      <img class="mockup-image" id="img-news3-facebook" />
+      <div class="mockup-footer"><img src="BassoFB.png" /></div>
+    </div>
+  </div>
+  <div id="news3-linkedin" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoLI.png" /></div>
+      <div class="mockup-text" id="text-news3-linkedin"></div>
+      <img class="mockup-image" id="img-news3-linkedin" />
+      <div class="mockup-footer"><img src="BassoLI.png" /></div>
+    </div>
+  </div>
+  <div id="news3-x" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoX.png" /></div>
+      <div class="mockup-text" id="text-news3-x"></div>
+      <img class="mockup-image" id="img-news3-x" />
+      <div class="mockup-footer"><img src="BassoX.png" /></div>
+    </div>
+  </div>
+  <div id="news2-instagram" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoIG.png" /></div>
+      <img class="mockup-image" id="img-news3-instagram" />
+      <div class="mockup-text" id="text-news3-instagram"></div>
+      <div class="mockup-footer"><img src="BassoIG.png" /></div>
+    </div>
+  </div>
+  <div class="controls">
+    <textarea id="textInput-news3" placeholder="Scrivi il testo del post..."></textarea><br>
+    <input type="file" id="imageInput-news3"><br>
+    <button onclick="saveNews(2)">Salva</button>
+    <button onclick="resetNews(2)">Cancella</button>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
