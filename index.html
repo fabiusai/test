@@ -428,28 +428,39 @@
   }
 
   function downloadAllAsZip() {
-    const zip = new JSZip();
-    let done = 0;
-    for (let i = 1; i <= 5; i++) {
-      const active = document.querySelector('#news' + i + ' .social-section.active .mockup-container');
-      if (active) {
-        html2canvas(active).then(canvas => {
-          canvas.toBlob(blob => {
-            zip.file('mockup_news' + i + '.jpg', blob);
-            done++;
-            if (done === 5) {
-              zip.generateAsync({type: 'blob'}).then(function(content) {
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(content);
-                link.download = 'mockup_news.zip';
-                link.click();
-              });
-            }
-          }, 'image/jpeg', 1.0);
+  const zip = new JSZip();
+  const activeNews = document.querySelector('.tab-content.active');
+  const newsId = activeNews.id; // es. "news1"
+
+  const socialSections = activeNews.querySelectorAll('.social-section');
+
+  let done = 0;
+  const total = socialSections.length;
+
+  socialSections.forEach((section, index) => {
+    // Mostra temporaneamente la sezione se non è visibile
+    const wasHidden = !section.classList.contains('active');
+    if (wasHidden) section.classList.add('active');
+
+    const mockup = section.querySelector('.mockup-container');
+    if (mockup) {
+      html2canvas(mockup).then(canvas => {
+        canvas.toBlob(blob => {
+          const filename = `${newsId}_mockup_${index + 1}.jpg`;
+          zip.file(filename, blob);
+          done++;
+          if (done === total) {
+            zip.generateAsync({ type: 'blob' }).then(content => {
+              saveAs(content, "mockup.zip");
+            });
+          }
         });
-      }
+      });
     }
-  }
+
+    if (wasHidden) section.classList.remove('active');
+  });
+}
 
   window.onload = () => {
     for (let i = 1; i <= 5; i++) {
