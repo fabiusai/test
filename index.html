@@ -457,7 +457,8 @@
       if (mockup) {
         html2canvas(mockup).then(canvas => {
           canvas.toBlob(blob => {
-            const filename = `${newsId}_mockup_${index + 1}.jpg`;
+            const platforms = ["Facebook", "Linkedin", "X", "Instagram"];
+            const filename = `${newsId}_${platforms[index]}.jpg`;
             zip.file(filename, blob);
             done++;
             if (done === total) {
