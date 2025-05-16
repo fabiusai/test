@@ -17,15 +17,14 @@ function generaReport() {
     const sheet = workbook.Sheets["Raccolta dati"];
     const json = XLSX.utils.sheet_to_json(sheet);
 
-    // Filtro
     const filtered = json.filter(row => {
       const dataRow = new Date(row["Data"]);
-      const campagna = (row["Campagna"] || "").toLowerCase().trim();
+      const campagna = (row["Campagna"] || "").toString().toLowerCase().trim();
       const dateOk = dataRow >= startDate && dataRow <= endDate;
       if (!dateOk) return false;
 
       if (campaignType === "editoriale") return campagna === "editoriale";
-      if (campaignType === "adv") return campagna === "campagna";
+      if (campaignType === "campagna") return campagna === "campagna";
       return true;
     });
 
