@@ -17,8 +17,17 @@ function generaReport() {
     const sheet = workbook.Sheets["Raccolta dati"];
     const json = XLSX.utils.sheet_to_json(sheet);
 
+    const parseItalianDate = (value) => {
+      if (Object.prototype.toString.call(value) === "[object Date]") return value;
+      if (typeof value === "string" && value.includes("/")) {
+        const [gg, mm, aaaa] = value.split("/");
+        return new Date(`${aaaa}-${mm}-${gg}`);
+      }
+      return new Date(value);
+    };
+
     const filtered = json.filter(row => {
-      const dataRow = new Date(row["Data"]);
+      const dataRow = parseItalianDate(row["Data"]);
       const campagna = (row["Campagna"] || "").toString().toLowerCase().trim();
       const dateOk = dataRow >= startDate && dataRow <= endDate;
       if (!dateOk) return false;
@@ -27,6 +36,9 @@ function generaReport() {
       if (campaignType === "campagna") return campagna === "campagna";
       return true;
     });
+
+    console.log("Righe totali:", json.length);
+    console.log("Righe filtrate:", filtered.length);
 
     if (filtered.length === 0) {
       alert("Nessun dato trovato nel periodo selezionato.");
