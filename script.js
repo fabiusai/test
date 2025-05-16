@@ -1,12 +1,10 @@
 
 function generaReport() {
   const fileInput = document.getElementById("fileInput");
-  const startDate = new Date(document.getElementById("startDate").value);
-  const endDate = new Date(document.getElementById("endDate").value);
   const campaignType = document.getElementById("campaignSelect").value;
 
-  if (!fileInput.files.length || isNaN(startDate) || isNaN(endDate)) {
-    alert("Carica un file Excel e seleziona entrambe le date.");
+  if (!fileInput.files.length) {
+    alert("Carica un file Excel.");
     return;
   }
 
@@ -14,34 +12,18 @@ function generaReport() {
   reader.onload = function (e) {
     const data = new Uint8Array(e.target.result);
     const workbook = XLSX.read(data, { type: "array" });
-    const sheet = workbook.Sheets["Raccolta dati"];
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const json = XLSX.utils.sheet_to_json(sheet);
 
-    const parseItalianDate = (value) => {
-      if (Object.prototype.toString.call(value) === "[object Date]") return value;
-      if (typeof value === "string" && value.includes("/")) {
-        const [gg, mm, aaaa] = value.split("/");
-        return new Date(`${aaaa}-${mm}-${gg}`);
-      }
-      return new Date(value);
-    };
-
     const filtered = json.filter(row => {
-      const dataRow = parseItalianDate(row["Data"]);
       const campagna = (row["Campagna"] || "").toString().toLowerCase().trim();
-      const dateOk = dataRow >= startDate && dataRow <= endDate;
-      if (!dateOk) return false;
-
       if (campaignType === "editoriale") return campagna === "editoriale";
       if (campaignType === "campagna") return campagna === "campagna";
       return true;
     });
 
-    console.log("Righe totali:", json.length);
-    console.log("Righe filtrate:", filtered.length);
-
     if (filtered.length === 0) {
-      alert("Nessun dato trovato nel periodo selezionato.");
+      alert("Nessun dato disponibile con i criteri selezionati.");
       return;
     }
 
@@ -77,7 +59,7 @@ function generaReport() {
     const wb = XLSX.utils.book_new();
     const ws_data = [];
 
-    ws_data.push(["Periodo di riferimento: dal " + startDate.toLocaleDateString() + " al " + endDate.toLocaleDateString()]);
+    ws_data.push(["Report attività editoriale mensile"]);
     ws_data.push(["Canali considerati: Facebook, Instagram, LinkedIn, Twitter, YouTube"]);
     ws_data.push([]);
     ws_data.push(["Argomento", "Flag Istituzionale", "Facebook", "Instagram", "LinkedIn", "Twitter", "YouTube", "Totale"]);
