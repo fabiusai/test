@@ -56,20 +56,15 @@ function generaReport() {
     const gruppiArray = Object.values(gruppi);
     gruppiArray.sort((a, b) => a.Label.localeCompare(b.Label) || a.Argomento.localeCompare(b.Argomento));
 
-    const wb = XLSX.utils.book_new();
-    const ws_data = [];
-
-    ws_data.push(["Report attività editoriale mensile"]);
-    ws_data.push(["Canali considerati: Facebook, Instagram, LinkedIn, Twitter, YouTube"]);
-    ws_data.push([]);
-    ws_data.push(["Argomento", "Flag Istituzionale", "Facebook", "Instagram", "LinkedIn", "Twitter", "YouTube", "Totale"]);
+    const rows = [];
+    rows.push(["Argomento", "Flag Istituzionale", "Facebook", "Instagram", "LinkedIn", "Twitter", "YouTube", "Totale"]);
 
     let lastLabel = null;
     for (const g of gruppiArray) {
       if (lastLabel !== g.Label) {
-        if (lastLabel !== null) ws_data.push([]);
+        if (lastLabel !== null) rows.push([]);
         const somma = campo => gruppiArray.filter(x => x.Label === g.Label).reduce((acc, cur) => acc + cur[campo], 0);
-        ws_data.push([
+        rows.push([
           g.Label,
           "",
           somma("facebook") || "",
@@ -82,7 +77,7 @@ function generaReport() {
         lastLabel = g.Label;
       }
 
-      ws_data.push([
+      rows.push([
         g.Argomento,
         g.Istituzionale ? "✓" : "",
         g.facebook || "",
@@ -94,13 +89,14 @@ function generaReport() {
       ]);
     }
 
-    const ws = XLSX.utils.aoa_to_sheet(ws_data);
-    ws["!cols"] = [
-      { wch: 76 }, { wch: 14 }, { wch: 7 }, { wch: 7 },
-      { wch: 7 }, { wch: 7 }, { wch: 7 }, { wch: 14 }
-    ];
-    XLSX.utils.book_append_sheet(wb, ws, "Post Editoriali");
-    XLSX.writeFile(wb, "report_editoriale.xlsx");
+    const csvContent = "data:text/csv;charset=utf-8," + rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "report_editoriale.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   reader.readAsArrayBuffer(fileInput.files[0]);
