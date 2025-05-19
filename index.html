@@ -5,7 +5,7 @@
   <title>Report attività editoriale mensile</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -31,26 +31,21 @@
       </select>
     </div>
     <div class="button-row">
-<button onclick="generaReport()">Genera Report</button>
-    <button onclick="esportaCSV()">Esporta CSV</button>
-    <button onclick="esportaCSVFormattato()">Esporta CSV Formattato</button>
-</div>
+      <button onclick="generaReport()">Genera Report</button>
+      <button onclick="esportaCSV()">Esporta CSV</button>
+      <button onclick="esportaCSVFormattato()">Esporta CSV Formattato</button>
+    </div>
     <pre id="output"></pre>
   </div>
 
-    <!-- EMBED APPLICAZIONE ESTERNA -->
-  <div class="external-app-embed">
-    <iframe
-      src="https://excelformat.onrender.com/"
-      width="100%"
-      height="600"
-      frameborder="0"
-      loading="lazy"
-    ></iframe>
-
-    
+  <!-- Footer: Riquadro per l’app esterna -->
+  <div class="external-app-container">
+    <div class="external-app-frame">
+      <iframe
+        src="https://excelformat.onrender.com/"
+        loading="lazy"
+      ></iframe>
+    </div>
   </div>
-</body>
-  
 </body>
 </html>
