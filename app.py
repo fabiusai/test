@@ -20,7 +20,7 @@ def genera_excel():
     df = pd.read_excel(file, sheet_name='Raccolta dati')
 
     # Conversione e filtro date
-    df['Data'] = pd.to_datetime(df['Data'], unit='d', origin='1899-12-30')
+    df['Data'] = pd.to_datetime(df['Data'], dayfirst=True, errors='coerce')
     data_inizio_dt = pd.to_datetime(data_inizio, dayfirst=True)
     data_fine_dt = pd.to_datetime(data_fine, dayfirst=True)
     df = df[(df['Data'] >= data_inizio_dt) & (df['Data'] <= data_fine_dt)]
