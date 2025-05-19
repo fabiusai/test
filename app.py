@@ -26,6 +26,9 @@ def genera_excel():
 
     # Filtro per data
     df = df[(df['Data'] >= data_inizio_dt) & (df['Data'] <= data_fine_dt)]
+    print("Righe dopo filtro:", len(df))
+print("Campagne uniche:", df['Campagna'].unique())
+print("Canali unici:", df['Canale'].unique())
 
     # Filtro per tipo campagna
     if campagna == 'editoriale':
