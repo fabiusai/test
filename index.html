@@ -49,12 +49,98 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
-    // Emplifi
+    // Emplifi file loading and processing
     let workbookEmplifi = null;
     document.getElementById('file-input-emplifi').addEventListener('change', e => {
       const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = evt => { workbookEmplifi = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' }); };
+      reader.readAsArrayBuffer(file);
+    });
+    document.getElementById('process-emplifi').addEventListener('click', () => {
+      if (!workbookEmplifi) { alert('Seleziona prima un file Excel Emplifi'); return; }
+      const ws = workbookEmplifi.Sheets[workbookEmplifi.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(ws, { raw: false, defval: '' });
+      const out = data.map(r => {
+        // Link
+        const link = r['View on platform'] || r['Content type'] || '';
+        // Dettagli Emplifi
+        const detail = r['Post detail URL'] || '';
+        // Data parsing manual
+        const dateCell = r['Date'] || '';
+        const datePart = dateCell.split(' ')[0]; // 'dd/mm/yyyy'
+        const parts = datePart.split('/').map(s => parseInt(s, 10));
+        const dd = parts[0] || 0;
+        const mm = (parts[1] || 1) - 1;
+        const yy = parts[2] || 0;
+        const meseDate = new Date(yy, mm, 1);
+        const dataDate = new Date(yy, mm, dd);
+        // Canale
+        let platform = (r['Platform'] || '').toString();
+        platform = platform.toLowerCase() === 'youtube' ? 'Youtube' : platform;
+        const author = (r['Author name'] || '').toString();
+        const canale = (author && author.trim() !== 'Poste Italiane') ? `${platform} ${author}` : platform;
+        // Campagna
+        const paid = Number(r['Paid impression']) || 0;
+        const campagna = paid > 0 ? 'Campagna' : 'Editoriale';
+        // Label e Argomento
+        const labelsArr = (r['Labels'] || '').toString().split(';').map(x => x.trim());
+        const labelMap = {
+          '#PES':'Prodotti e servizi','#TER':'Territorio','#ISR':'Investor e stakeholder relations',
+          '#FIL':'Filatelia','#EB':'Employer branding','#P160':'Poste 160','#NED':'News editoriali',
+          '#CET':'CSR e trasparenza','#DEI':'Digital e Innovazione','#ST':'Storici','#RIC':'Ricorrenze'
+        };
+        let labelOut = '';
+        let argOut = '';
+        labelsArr.forEach(l => {
+          if (l.includes('#') && labelMap[l]) labelOut = labelMap[l];
+          else if (!l.includes('#') && l) argOut = l;
+        });
+        // Valori numerici
+        const inter = r['Total interactions'] || r['Taps forward'] || '';
+        const vis = r['Total impressions'] || r['Video view count'] || '';
+        const reachNum = Number(r['Total reach']) || 0;
+        const reachOut = reachNum > 0 ? reachNum : '';
+        const clicksNum = Number(r['Post clicks']) || 0;
+        const clicksOut = clicksNum > 0 ? clicksNum : '';
+        const reactsNum = Number(r['Total reactions']) || 0;
+        const reactsOut = reactsNum > 0 ? reactsNum : '';
+        const sharesNum = Number(r['Total shares']) || 0;
+        const sharesOut = sharesNum > 0 ? sharesNum : '';
+        const commentsNum = Number(r['Total comments']) || 0;
+        const commentsOut = commentsNum > 0 ? commentsNum : '';
+        // Copy
+        const copy = r['Content'] || '';
+        // Istituzionale
+        const contentLower = (r['Content'] || '').toString().toLowerCase();
+        const istit = /lasco|del fante|rovere/.test(contentLower) ? 1 : '';
+        return {
+          'Link': link,
+          'Dettagli Emplifi': detail,
+          'Mese': meseDate,
+          'Data': dataDate,
+          'Canale': canale,
+          'Interazioni': inter,
+          'Visualizzazioni': vis,
+          'Persone raggiunte': reachOut,
+          'Click': clicksOut,
+          'Like e reazioni': reactsOut,
+          'Condivisioni': sharesOut,
+          'Commenti': commentsOut,
+          'Campagna': campagna,
+          'Label': labelOut,
+          'Argomento': argOut,
+          'Copy': copy,
+          'Istituzionale': istit
+        };
+      });
+      // Genera e salva file Excel
+      const wsOut = XLSX.utils.json_to_sheet(out, { dateNF: 'dd/mm/yy', defval: '' });
+      const wbOut = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wbOut, wsOut, 'Report');
+      XLSX.writeFile(wbOut, 'report_elaborato.xls', { bookType: 'xls', bookSST: true });
+    });
+
       reader.readAsArrayBuffer(file);
     });
     document.getElementById('process-emplifi').addEventListener('click', () => {
@@ -135,3 +221,4 @@
   </script>
 </body>
 </html>
+
