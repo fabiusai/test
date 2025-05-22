@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Report mensile post più visualizzati</title>
+  <title>Report mensile post più visualizzati v4</title>
   <link rel="icon" href="favicon.ico" type="image/png" />
   <style>
     :root { --primary: #00529F; --secondary: #FFD700; --bg: #f9f9f9; --text: #333; --card-bg: #fff; }
@@ -26,7 +26,7 @@
   </style>
 </head>
 <body>
-  <header><h1>Report mensile post più visualizzati v3</h1></header>
+  <header><h1>Report mensile post più visualizzati</h1></header>
   <div class="container">
     <!-- Emplifi Section -->
     <div class="card">
@@ -44,9 +44,9 @@
         <button id="process-btn">Elabora dati</button>
       </div>
     </div>
-    <!-- Report Output -->
     <div id="report"></div>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     // Emplifi processing
@@ -60,75 +60,53 @@
     document.getElementById('process-emplifi').addEventListener('click', () => {
       if (!workbookEmplifi) return alert('Seleziona prima un file Excel Emplifi');
       const ws = workbookEmplifi.Sheets[workbookEmplifi.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json(ws, { raw: false, defval: '', cellDates: true });
+      const data = XLSX.utils.sheet_to_json(ws, { raw: false, defval: '' });
       const out = data.map(r => {
-        // Link
         const link = r['View on platform'] || r['Content type'] || '';
-        // Dettagli Emplifi
         const detail = r['Post detail URL'] || '';
-        // Date fields
-        const dateCell = (r['Date']||'').split(' ')[0].split('/').map(n=>parseInt(n,10));
-        const dd=dateCell[0]||1, mm=(dateCell[1]||1)-1, yy=dateCell[2]||1970;
-        const meseDate=new Date(yy,mm,1);
-        const dataDate=new Date(yy,mm,dd);
-        // Canale and author
-        let plat=(r['Platform']||''); plat = plat.toLowerCase()==='youtube'?'Youtube':plat;
-        const auth=(r['Author name']||'');
-        const canale = auth.trim() && auth!=='Poste Italiane'?`${plat} ${auth}`:plat;
-        // Campagna
+        // Usa la stessa stringa originale in entrambe le colonne
+        const dateOrig = r['Date'] || '';
+        const canalePlat = r['Platform'] || '';
+        const plat = canalePlat.toLowerCase()==='youtube'? 'Youtube': canalePlat;
+        const auth = r['Author name'] || '';
+        const canale = (auth.trim() && auth!=='Poste Italiane')? `${plat} ${auth}`: plat;
         const campagna = (Number(r['Paid impression'])||0)>0? 'Campagna':'Editoriale';
-        // Labels and Argomento
-        const parts=(r['Labels']||'').split(';').map(s=>s.trim());
-        const mapLab={'#PES':'Prodotti e servizi','#TER':'Territorio','#ISR':'Investor e stakeholder relations','#FIL':'Filatelia','#EB':'Employer branding','#P160':'Poste 160','#NED':'News editoriali','#CET':'CSR e trasparenza','#DEI':'Digital e Innovazione','#ST':'Storici','#RIC':'Ricorrenze'};
-        let labelOut='', argOut=''; parts.forEach(l=>{ if(l.includes('#')&& mapLab[l]) labelOut=mapLab[l]; else if(l&&!l.includes('#')) argOut=l; });
-        // Numeric fields or blank
-        const inter=r['Total interactions']||r['Taps forward']||'';
-        const vis=r['Total impressions']||r['Video view count']||'';
-        const reach=Number(r['Total reach'])||0;
-        const clicks=Number(r['Post clicks'])||0;
-        const reacts=Number(r['Total reactions'])||0;
-        const shares=Number(r['Total shares'])||0;
-        const comments=Number(r['Total comments'])||0;
-        // Copy
-        const copy=r['Content']||'';
-        // Istituzionale
-        const cont=(r['Content']||'').toLowerCase();
-        const istit= /lasco|del fante|rovere/.test(cont)?1:'';
+        const parts = (r['Labels']||'').split(';').map(s=>s.trim());
+        const mapLab = {'#PES':'Prodotti e servizi','#TER':'Territorio','#ISR':'Investor e stakeholder relations','#FIL':'Filatelia','#EB':'Employer branding','#P160':'Poste 160','#NED':'News editoriali','#CET':'CSR e trasparenza','#DEI':'Digital e Innovazione','#ST':'Storici','#RIC':'Ricorrenze'};
+        let labelOut='', argOut='';
+        parts.forEach(l => { if (l.includes('#') && mapLab[l]) labelOut=mapLab[l]; else if (l && !l.includes('#')) argOut=l; });
+        const inter = r['Total interactions'] || r['Taps forward'] || '';
+        const vis = r['Total impressions'] || r['Video view count'] || '';
+        const reachOut = (Number(r['Total reach'])||0)>0? r['Total reach']: '';
+        const clickOut = (Number(r['Post clicks'])||0)>0? r['Post clicks']: '';
+        const reactsOut = (Number(r['Total reactions'])||0)>0? r['Total reactions']: '';
+        const sharesOut = (Number(r['Total shares'])||0)>0? r['Total shares']: '';
+        const commentsOut = (Number(r['Total comments'])||0)>0? r['Total comments']: '';
+        const copy = r['Content'] || '';
+        const contLower = (r['Content']||'').toLowerCase();
+        const istit = /lasco|del fante|rovere/.test(contLower)?1: '';
+
         return {
-          'Link':link,
-          'Dettagli Emplifi':detail,
-          'Mese':meseDate,
-          'Data':dataDate,
-          'Canale':canale,
-          'Interazioni':inter,
-          'Visualizzazioni':vis,
-          'Persone raggiunte': reach>0?reach:'',
-          'Click': clicks>0?clicks:'',
-          'Like e reazioni': reacts>0?reacts:'',
-          'Condivisioni': shares>0?shares:'',
-          'Commenti': comments>0?comments:'',
-          'Campagna':campagna,
-          'Label':labelOut,
-          'Argomento':argOut,
-          'Copy':copy,
-          'Istituzionale':istit
+          'Link': link,
+          'Dettagli Emplifi': detail,
+          'Mese': dateOrig,
+          'Data': dateOrig,
+          'Canale': canale,
+          'Interazioni': inter,
+          'Visualizzazioni': vis,
+          'Persone raggiunte': reachOut,
+          'Click': clickOut,
+          'Like e reazioni': reactsOut,
+          'Condivisioni': sharesOut,
+          'Commenti': commentsOut,
+          'Campagna': campagna,
+          'Label': labelOut,
+          'Argomento': argOut,
+          'Copy': copy,
+          'Istituzionale': istit
         };
       });
-            const wsOut = XLSX.utils.json_to_sheet(out, { dateNF: 'dd/mm/yyyy', defval: '', cellDates: true });
-      // Imposta formati data per mese (col C) e data (col D)
-      const range = XLSX.utils.decode_range(wsOut['!ref']);
-      for (let R = range.s.r + 1; R <= range.e.r; ++R) {
-        const mc = XLSX.utils.encode_cell({ c: 2, r: R }); // colonna C (indice 2)
-        const dc = XLSX.utils.encode_cell({ c: 3, r: R }); // colonna D (indice 3)
-        if (wsOut[mc] && wsOut[mc].v instanceof Date) {
-          wsOut[mc].t = 'd';
-          wsOut[mc].z = 'mmmm-yy';
-        }
-        if (wsOut[dc] && wsOut[dc].v instanceof Date) {
-          wsOut[dc].t = 'd';
-          wsOut[dc].z = 'dd/mm/yyyy';
-        }
-      }
+      const wsOut = XLSX.utils.json_to_sheet(out, { dateNF:'dd/mm/yyyy', defval:'' });
       const wbOut = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wbOut, wsOut, 'Report');
       XLSX.writeFile(wbOut, 'report_elaborato.xls', { bookType:'xls', bookSST:true });
@@ -137,28 +115,24 @@
     // Standard report processing
     let workbookData = null;
     document.getElementById('file-input').addEventListener('change', e => {
-      const file = e.target.files[0]; if(!file) return;
+      const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = evt => { workbookData = XLSX.read(new Uint8Array(evt.target.result), { type:'array'}); };
       reader.readAsArrayBuffer(file);
     });
     document.getElementById('process-btn').addEventListener('click', () => {
-      if(!workbookData) return alert('Seleziona prima un file Excel');
+      if (!workbookData) return alert('Seleziona prima un file Excel');
       const data = XLSX.utils.sheet_to_json(workbookData.Sheets[workbookData.SheetNames[0]], { raw:false });
       renderReport(data);
     });
 
-    function renderReport(data) {
-      const filtered=data.filter(r=>String(r.Campagna).trim().toLowerCase()==='editoriale');
-      const report=document.getElementById('report'); report.innerHTML='';
-      // Calcolo post pubblicati, Post Istituzionali, Argomenti, Sezioni canali
-      // ... implementazione esistente ...
-    }
-    function createSection(title, posts, metric) { /* ... */ }
+    function renderReport(data) { /* ... existing UI logic ... */ }
+    function createSection(title,posts,metric) { /* ... */ }
     function createCopyBtn(val) { /* ... */ }
   </script>
 </body>
 </html>
+
 
 
 
