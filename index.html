@@ -15,14 +15,10 @@
     .card h2 { margin-top:0; color:var(--primary); }
     .controls { display:flex; align-items:center; gap:1rem; margin-top:1rem; }
     button { cursor:pointer; }
-    button#process-emplifi, button#process-btn { background:var(--secondary); color:#fff; border:none; padding:0.6rem 1.2rem; font-weight:bold; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
-    button.copy-btn { margin-left:0.5rem; background:transparent; color:var(--primary); border:none; font-size:1rem; }
-    button.copy-btn:focus { outline:none; }
+    button#process-emplifi { background:var(--secondary); color:#fff; border:none; padding:0.6rem 1.2rem; font-weight:bold; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
     table { width:100%; border-collapse:collapse; margin-top:1rem; }
     th, td { padding:0.75rem; border-bottom:1px solid #e0e0e0; text-align:left; vertical-align:middle; }
     th { background:var(--primary); color:#fff; font-weight:normal; }
-    a.link-btn { color:var(--primary); text-decoration:underline; font-weight:bold; }
-    .note { font-size:0.9rem; font-style:italic; margin-top:1rem; }
   </style>
 </head>
 <body>
@@ -37,24 +33,15 @@
         <button id="process-emplifi">Elabora dati</button>
       </div>
     </div>
-    <div class="card">
-      <h2>Carica il file excel già elaborato</h2>
-      <div class="controls">
-        <input type="file" id="file-input" accept=".xlsx,.xls" />
-        <button id="process-btn">Elabora dati</button>
-      </div>
-    </div>
-    <div id="report"></div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     let workbookEmplifi = null;
 
-    // Elaborazione file Emplifi
+    // Caricamento file Emplifi
     document.getElementById('file-input-emplifi').addEventListener('change', e => {
       const f = e.target.files[0];
-      if(!f) return alert('Nessun file selezionato');
-      
+      if (!f) return alert('Nessun file selezionato');
       const reader = new FileReader();
       reader.onload = ev => {
         workbookEmplifi = XLSX.read(new Uint8Array(ev.target.result), { 
@@ -66,29 +53,31 @@
       reader.readAsArrayBuffer(f);
     });
 
+    // Elaborazione file Emplifi
     document.getElementById('process-emplifi').addEventListener('click', () => {
-      if(!workbookEmplifi) return alert('Seleziona prima un file Emplifi');
-      
+      if (!workbookEmplifi) return alert('Seleziona prima un file Emplifi');
+
       const ws = workbookEmplifi.Sheets[workbookEmplifi.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json(ws, { raw: true, defval: '' });
-      
-      if(!data.length) return alert('File Emplifi vuoto');
+      let data = XLSX.utils.sheet_to_json(ws, { raw: true, defval: '' });
+
+      if (!data.length) return alert('File Emplifi vuoto');
+
+      // Filtra righe vuote su Video view count e Total impressions
+      data = data.filter(r => !(r['Video view count'] === '' && r['Total impressions'] === ''));
 
       const out = data.map(r => {
         const dateCell = r['Date'];
         let formattedDate = '';
         let formattedMonth = '';
 
-        // Formattazione data
-        if(dateCell instanceof Date) {
+        if (dateCell instanceof Date) {
           formattedDate = [
             String(dateCell.getDate()).padStart(2, '0'),
             String(dateCell.getMonth() + 1).padStart(2, '0'),
             dateCell.getFullYear().toString().slice(-2)
           ].join('/');
           formattedMonth = formattedDate;
-        } 
-        else if(typeof dateCell === 'number') {
+        } else if (typeof dateCell === 'number') {
           const parsedDate = XLSX.SSF.parse_date_code(dateCell);
           const jsDate = new Date(parsedDate.y, parsedDate.m - 1, parsedDate.d);
           formattedDate = [
@@ -97,28 +86,27 @@
             String(jsDate.getFullYear()).slice(-2)
           ].join('/');
           formattedMonth = formattedDate;
-        } 
-        else {
+        } else {
           formattedDate = dateCell || '';
           formattedMonth = formattedDate;
         }
 
         return {
-          Link: r['View on platform']||r['Content type']||'',
-          'Dettagli Emplifi': r['Post detail URL']||'',
+          Link: r['View on platform'] || r['Content type'] || '',
+          'Dettagli Emplifi': r['Post detail URL'] || '',
           Mese: formattedMonth,
           Data: formattedDate,
-          Canale: ((r['Platform']||'').toLowerCase()==='youtube'? 'Youtube': r['Platform']||'') + 
-                 ((r['Author name']||'').trim()&&r['Author name']!=='Poste Italiane'?' '+r['Author name']:''),
-          Interazioni: r['Total interactions']||r['Taps forward']||'',
-          Visualizzazioni: r['Total impressions']||r['Video view count']||'',
-          'Persone raggiunte': (Number(r['Total reach'])||0)>0 ? r['Total reach'] : '',
-          Click: (Number(r['Post clicks'])||0)>0 ? r['Post clicks'] : '',
-          'Like e reazioni': (Number(r['Total reactions'])||0)>0 ? r['Total reactions'] : '',
-          Condivisioni: (Number(r['Total shares'])||0)>0 ? r['Total shares'] : '',
-          Commenti: (Number(r['Total comments'])||0)>0 ? r['Total comments'] : '',
-          Campagna: (Number(r['Paid impression'])||0)>0 ? 'Campagna' : 'Editoriale',
-          Label: (r['Labels']||'').split(';').map(s => s.trim()).filter(l => l.startsWith('#')).map(l => ({
+          Canale: ((r['Platform'] || '').toLowerCase() === 'youtube' ? 'Youtube' : r['Platform'] || '') +
+                  ((r['Author name'] || '').trim() && r['Author name'] !== 'Poste Italiane' ? ' ' + r['Author name'] : ''),
+          Interazioni: r['Total interactions'] || r['Taps forward'] || '',
+          Visualizzazioni: r['Total impressions'] || r['Video view count'] || '',
+          'Persone raggiunte': Number(r['Total reach']) > 0 ? r['Total reach'] : '',
+          Click: Number(r['Post clicks']) > 0 ? r['Post clicks'] : '',
+          'Like e reazioni': Number(r['Total reactions']) > 0 ? r['Total reactions'] : '',
+          Condivisioni: Number(r['Total shares']) > 0 ? r['Total shares'] : '',
+          Commenti: Number(r['Total comments']) > 0 ? r['Total comments'] : '',
+          Campagna: Number(r['Paid impression']) > 0 ? 'Campagna' : 'Editoriale',
+          Label: (r['Labels'] || '').split(';').map(s => s.trim()).filter(l => l.startsWith('#')).map(l => ({
             '#PES':'Prodotti e servizi',
             '#TER':'Territorio',
             '#ISR':'Investor e stakeholder relations',
@@ -131,9 +119,9 @@
             '#ST':'Storici',
             '#RIC':'Ricorrenze'
           }[l] || l))[0] || '',
-          Argomento: (r['Labels']||'').split(';').map(s => s.trim()).filter(l => !l.startsWith('#'))[0] || '',
-          Copy: r['Content']||'',
-          Istituzionale: /lasco|del fante|rovere/i.test((r['Content']||'').toLowerCase()) ? 1 : ''
+          Argomento: (r['Labels'] || '').split(';').map(s => s.trim()).filter(l => !l.startsWith('#'))[0] || '',
+          Copy: r['Content'] || '',
+          Istituzionale: /lasco|del fante|rovere/i.test((r['Content'] || '').toLowerCase()) ? 1 : ''
         };
       });
 
@@ -147,12 +135,12 @@
       const dataColIndex = Object.keys(out[0]).indexOf('Data');
       const meseColIndex = Object.keys(out[0]).indexOf('Mese');
 
-      if(dataColIndex !== -1) {
+      if (dataColIndex !== -1) {
         newWs['!cols'] = newWs['!cols'] || [];
         newWs['!cols'][dataColIndex] = { width: 10, style: dateStyle };
       }
-
-      if(meseColIndex !== -1) {
+      if (meseColIndex !== -1) {
+        newWs['!cols'] = newWs['!cols'] || [];
         newWs['!cols'][meseColIndex] = { width: 10, style: dateStyle };
       }
 
@@ -164,28 +152,6 @@
         dateNF: 'dd/mm/yy'
       });
     });
-
-    // Elaborazione secondario (invariato)
-    let workbookData = null;
-    document.getElementById('file-input').addEventListener('change', e => {
-      const f = e.target.files[0];
-      if(!f) return;
-      const reader = new FileReader();
-      reader.onload = ev => {
-        workbookData = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
-      };
-      reader.readAsArrayBuffer(f);
-    });
-
-    document.getElementById('process-btn').addEventListener('click', () => {
-      if(!workbookData) return alert('Seleziona prima un file Excel');
-      const data = XLSX.utils.sheet_to_json(workbookData.Sheets[workbookData.SheetNames[0]], { raw: false });
-      renderReport(data);
-    });
-
-    function renderReport(data) { /* Logica esistente */ }
-    function createSection(title, posts, metric) { /* ... */ }
-    function createCopyBtn(val) { /* ... */ }
   </script>
 </body>
 </html>
