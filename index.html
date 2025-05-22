@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Report mensile post più visualizzati v2.0</title>
+  <title>Report mensile post più visualizzati</title>
   <link rel="icon" href="favicon.ico" type="image/png" />
   <style>
     :root { --primary: #00529F; --secondary: #FFD700; --bg: #f9f9f9; --text: #333; --card-bg: #fff; }
@@ -26,7 +26,7 @@
   </style>
 </head>
 <body>
-  <header><h1>Report mensile post più visualizzati</h1></header>
+  <header><h1>Report mensile post più visualizzati v2</h1></header>
   <div class="container">
     <!-- Emplifi Section -->
     <div class="card">
@@ -60,7 +60,7 @@
     document.getElementById('process-emplifi').addEventListener('click', () => {
       if (!workbookEmplifi) return alert('Seleziona prima un file Excel Emplifi');
       const ws = workbookEmplifi.Sheets[workbookEmplifi.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json(ws, { raw: false, defval: '' });
+      const data = XLSX.utils.sheet_to_json(ws, { raw: false, defval: '', cellDates: true });
       const out = data.map(r => {
         // Link
         const link = r['View on platform'] || r['Content type'] || '';
@@ -145,6 +145,7 @@
   </script>
 </body>
 </html>
+
 
 
 
