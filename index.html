@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Report mensile post più visualizzati v4</title>
+  <title>Report mensile post più visualizzati</title>
   <link rel="icon" href="favicon.ico" type="image/png" />
   <style>
     :root { --primary: #00529F; --secondary: #FFD700; --bg: #f9f9f9; --text: #333; --card-bg: #fff; }
@@ -106,10 +106,22 @@
           'Istituzionale': istit
         };
       });
-      const wsOut = XLSX.utils.json_to_sheet(out, { dateNF:'dd/mm/yyyy', defval:'' });
+            // Genera foglio Excel trattando Mese e Data come stringhe
+      const wsOut = XLSX.utils.json_to_sheet(out, { defval: '' });
+      // Forza le colonne "Mese" (indice 2) e "Data" (indice 3) come testo
+      const range = XLSX.utils.decode_range(wsOut['!ref']);
+      for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+        [2, 3].forEach(c => {
+          const addr = XLSX.utils.encode_cell({ c, r: R });
+          if (wsOut[addr]) {
+            wsOut[addr].t = 's';
+          }
+        });
+      }
       const wbOut = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wbOut, wsOut, 'Report');
-      XLSX.writeFile(wbOut, 'report_elaborato.xls', { bookType:'xls', bookSST:true });
+      XLSX.writeFile(wbOut, 'report_elaborato.xls', { bookType: 'xls', bookSST: true });
+    });
     });
 
     // Standard report processing
@@ -132,6 +144,7 @@
   </script>
 </body>
 </html>
+
 
 
 
