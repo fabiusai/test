@@ -8,18 +8,21 @@
   <link rel="icon" href="favicon.ico" type="image/png" />
   <style>
     :root { --primary: #00529F; --secondary: #FFD700; --bg: #f9f9f9; --text: #333; --card-bg: #fff; }
-    body { margin: 0; font-family: "Helvetica Neue", Arial, sans-serif; background: var(--bg); color: var(--text); }
-    header { background: var(--primary); color: #fff; padding: 1rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-    .card { background: var(--card-bg); padding: 1.5rem; margin-bottom: 2rem; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-    .card h2 { margin-top: 0; color: var(--primary); }
-    .controls { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; }
-    button { cursor: pointer; }
-    button.copy-btn { margin-left: 0.5rem; background: transparent; color: var(--primary); border: none; font-size: 1rem; }
-    button.copy-btn:focus { outline: none; }
-    button.save-table, button#process-emplifi, button#process-btn { background: var(--secondary); color: #fff; border: none; padding: 0.6rem 1.2rem; font-weight: bold; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    a.link-btn { color: var(--primary); text-decoration: underline; font-weight: bold; }
-    .note { font-size: 0.9rem; font-style: italic; margin-top: 1rem; }
+    body { margin:0; font-family:"Helvetica Neue",Arial,sans-serif; background:var(--bg); color:var(--text); }
+    header { background:var(--primary); color:#fff; padding:1rem; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+    .container { max-width:1200px; margin:2rem auto; padding:0 1rem; }
+    .card { background:var(--card-bg); padding:1.5rem; margin-bottom:2rem; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.05); }
+    .card h2 { margin-top:0; color:var(--primary); }
+    .controls { display:flex; align-items:center; gap:1rem; margin-top:1rem; }
+    button { cursor:pointer; }
+    button#process-emplifi, button#process-btn { background:var(--secondary); color:#fff; border:none; padding:0.6rem 1.2rem; font-weight:bold; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+    button.copy-btn { margin-left:0.5rem; background:transparent; color:var(--primary); border:none; font-size:1rem; }
+    button.copy-btn:focus { outline:none; }
+    table { width:100%; border-collapse:collapse; margin-top:1rem; }
+    th, td { padding:0.75rem; border-bottom:1px solid #e0e0e0; text-align:left; vertical-align:middle; }
+    th { background:var(--primary); color:#fff; font-weight:normal; }
+    a.link-btn { color:var(--primary); text-decoration:underline; font-weight:bold; }
+    .note { font-size:0.9rem; font-style:italic; margin-top:1rem; }
   </style>
 </head>
 <body>
@@ -27,140 +30,83 @@
     <h1>Report mensile post più visualizzati</h1>
   </header>
   <div class="container">
-    <!-- Emplifi Section -->
     <div class="card">
       <h2>Elaborazione Excel esportato da Emplifi</h2>
       <div class="controls">
-        <input type="file" id="file-input-emplifi" accept=".xlsx, .xls" />
+        <input type="file" id="file-input-emplifi" accept=".xlsx,.xls" />
         <button id="process-emplifi">Elabora dati</button>
       </div>
     </div>
-    <!-- Standard Load Section -->
     <div class="card">
       <h2>Carica il file excel già elaborato</h2>
       <div class="controls">
-        <input type="file" id="file-input" accept=".xlsx, .xls" />
+        <input type="file" id="file-input" accept=".xlsx,.xls" />
         <button id="process-btn">Elabora dati</button>
       </div>
     </div>
     <div id="report"></div>
   </div>
-
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
-    // Emplifi processing
+    // Emplifi processing: export CSV
     let workbookEmplifi = null;
-    const inputEmplifi = document.getElementById('file-input-emplifi');
-    const btnEmplifi = document.getElementById('process-emplifi');
-    inputEmplifi.addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (!file) {
-        alert('Nessun file selezionato.');
-        return;
-      }
+    document.getElementById('file-input-emplifi').addEventListener('change', e => {
+      const f = e.target.files[0]; if(!f) return alert('Nessun file selezionato');
       const reader = new FileReader();
-      reader.onload = evt => {
-        try {
-          workbookEmplifi = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
-          console.log('Workbook Emplifi caricato:', workbookEmplifi);
-        } catch (err) {
-          console.error(err);
-          alert('Errore nel caricamento del file Emplifi.');
-        }
-      };
-      reader.readAsArrayBuffer(file);
+      reader.onload = ev => { workbookEmplifi = XLSX.read(new Uint8Array(ev.target.result), { type:'array' }); };
+      reader.readAsArrayBuffer(f);
     });
-    btnEmplifi.addEventListener('click', () => {
-      if (!workbookEmplifi) {
-        alert('Seleziona prima un file Excel Emplifi');
-        return;
-      }
+    document.getElementById('process-emplifi').addEventListener('click', () => {
+      if(!workbookEmplifi) return alert('Seleziona prima un file Emplifi');
       const ws = workbookEmplifi.Sheets[workbookEmplifi.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json(ws, { raw: false, defval: '' });
-      if (!data.length) {
-        alert('Il file Emplifi caricato non contiene righe.');
-        return;
-      }
+      const data = XLSX.utils.sheet_to_json(ws, { raw:false, defval:'' });
+      if(!data.length) return alert('File Emplifi vuoto');
       const out = data.map(r => {
-        const link = r['View on platform'] || r['Content type'] || '';
-        const detail = r['Post detail URL'] || '';
-        const dateOrig = r['Date'] || '';
-        const plat = (r['Platform'] || '').toLowerCase() === 'youtube' ? 'Youtube' : (r['Platform'] || '');
-        const auth = r['Author name'] || '';
-        const canale = auth.trim() && auth !== 'Poste Italiane' ? `${plat} ${auth}` : plat;
-        const campagna = (Number(r['Paid impression']) || 0) > 0 ? 'Campagna' : 'Editoriale';
-        const labelsArr = (r['Labels'] || '').split(';').map(s => s.trim());
-        const mapLab = {
-          '#PES':'Prodotti e servizi','#TER':'Territorio','#ISR':'Investor e stakeholder relations',
-          '#FIL':'Filatelia','#EB':'Employer branding','#P160':'Poste 160','#NED':'News editoriali',
-          '#CET':'CSR e trasparenza','#DEI':'Digital e Innovazione','#ST':'Storici','#RIC':'Ricorrenze'
-        };
-        let labelOut = '', argOut = '';
-        labelsArr.forEach(l => {
-          if (l.includes('#') && mapLab[l]) labelOut = mapLab[l];
-          else if (l && !l.includes('#')) argOut = l;
-        });
-        const inter = r['Total interactions'] || r['Taps forward'] || '';
-        const vis = r['Total impressions'] || r['Video view count'] || '';
-        const reachOut = (Number(r['Total reach']) || 0) > 0 ? r['Total reach'] : '';
-        const clickOut = (Number(r['Post clicks']) || 0) > 0 ? r['Post clicks'] : '';
-        const reactsOut = (Number(r['Total reactions']) || 0) > 0 ? r['Total reactions'] : '';
-        const sharesOut = (Number(r['Total shares']) || 0) > 0 ? r['Total shares'] : '';
-        const commentsOut = (Number(r['Total comments']) || 0) > 0 ? r['Total comments'] : '';
-        const copy = r['Content'] || '';
-        const istit = /lasco|del fante|rovere/i.test((r['Content']||'').toLowerCase()) ? 1 : '';
+        const dateOrig = r['Date']||'';
         return {
-          'Link': link,
-          'Dettagli Emplifi': detail,
-          'Mese': dateOrig,
-          'Data': dateOrig,
-          'Canale': canale,
-          'Interazioni': inter,
-          'Visualizzazioni': vis,
-          'Persone raggiunte': reachOut,
-          'Click': clickOut,
-          'Like e reazioni': reactsOut,
-          'Condivisioni': sharesOut,
-          'Commenti': commentsOut,
-          'Campagna': campagna,
-          'Label': labelOut,
-          'Argomento': argOut,
-          'Copy': copy,
-          'Istituzionale': istit
+          Link: r['View on platform']||r['Content type']||'',
+          'Dettagli Emplifi': r['Post detail URL']||'',
+          Mese: dateOrig,
+          Data: dateOrig,
+          Canale: ((r['Platform']||'').toLowerCase()==='youtube'? 'Youtube': r['Platform']||'') + ((r['Author name']||'').trim()&&r['Author name']!=='Poste Italiane'?' '+r['Author name']:'') ,
+          Interazioni: r['Total interactions']||r['Taps forward']||'',
+          Visualizzazioni: r['Total impressions']||r['Video view count']||'',
+          'Persone raggiunte': (Number(r['Total reach'])||0)>0?r['Total reach']:'',
+          Click: (Number(r['Post clicks'])||0)>0?r['Post clicks']:'',
+          'Like e reazioni': (Number(r['Total reactions'])||0)>0?r['Total reactions']:'',
+          Condivisioni: (Number(r['Total shares'])||0)>0?r['Total shares']:'',
+          Commenti: (Number(r['Total comments'])||0)>0?r['Total comments']:'',
+          Campagna: (Number(r['Paid impression'])||0)>0?'Campagna':'Editoriale',
+          Label: (r['Labels']||'').split(';').map(s=>s.trim()).filter(l=>l.startsWith('#')).map(l=>({
+            '#PES':'Prodotti e servizi','#TER':'Territorio','#ISR':'Investor e stakeholder relations','#FIL':'Filatelia','#EB':'Employer branding','#P160':'Poste 160','#NED':'News editoriali','#CET':'CSR e trasparenza','#DEI':'Digital e Innovazione','#ST':'Storici','#RIC':'Ricorrenze'
+          }[l]||l))[0]||'',
+          Argomento: (r['Labels']||'').split(';').map(s=>s.trim()).filter(l=>!l.startsWith('#'))[0]||'',
+          Copy: r['Content']||'',
+          Istituzionale: /lasco|del fante|rovere/i.test((r['Content']||'').toLowerCase())?1:''
         };
       });
-      const wsOut = XLSX.utils.json_to_sheet(out, { defval: '' });
-      // Forza Mese e Data come testo
-      const range = XLSX.utils.decode_range(wsOut['!ref']);
-      for (let R = range.s.r + 1; R <= range.e.r; ++R) {
-        [2, 3].forEach(c => {
-          const addr = XLSX.utils.encode_cell({ c, r: R });
-          if (wsOut[addr]) wsOut[addr].t = 's';
-        });
-      }
-      const wbOut = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wbOut, wsOut, 'Report');
-      XLSX.writeFile(wbOut, 'report_elaborato.xls', { bookType: 'xls', bookSST: true });
-      console.log('report_elaborato.xls generato');
+      const headers = Object.keys(out[0]);
+      const rows = out.map(o => headers.map(h => '"'+o[h].toString().replace(/"/g,'""')+'"').join(';'));
+      const csv = headers.join(';') + '\n' + rows.join('\n');
+      const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'report_elaborato.csv'; a.click(); URL.revokeObjectURL(a.href);
     });
-
-    // Standard report processing
+    // Standard report processing (UI)
     let workbookData = null;
     document.getElementById('file-input').addEventListener('change', e => {
-      const file = e.target.files[0]; if (!file) return;
+      const f = e.target.files[0]; if(!f) return;
       const reader = new FileReader();
-      reader.onload = evt => { workbookData = XLSX.read(new Uint8Array(evt.target.result), { type: 'array'}); };
-      reader.readAsArrayBuffer(file);
+      reader.onload = ev => { workbookData = XLSX.read(new Uint8Array(ev.target.result), { type:'array' }); };
+      reader.readAsArrayBuffer(f);
     });
     document.getElementById('process-btn').addEventListener('click', () => {
-      if (!workbookData) { alert('Seleziona prima un file Excel'); return; }
+      if(!workbookData) return alert('Seleziona prima un file Excel');
       const data = XLSX.utils.sheet_to_json(workbookData.Sheets[workbookData.SheetNames[0]], { raw:false });
       renderReport(data);
     });
-
-    function renderReport(data) { /* existing UI logic */ }
-    function createSection(title, posts, metric) { /* ... */ }
-    function createCopyBtn(val) { /* ... */ }
+    function renderReport(data){ /* existing UI logic */ }
+    function createSection(title,posts,metric){ /* ... */ }
+    function createCopyBtn(val){ /* ... */ }
   </script>
 </body>
 </html>
