@@ -26,7 +26,7 @@
   </style>
 </head>
 <body>
-  <header><h1>Report mensile post più visualizzati v2</h1></header>
+  <header><h1>Report mensile post più visualizzati v3</h1></header>
   <div class="container">
     <!-- Emplifi Section -->
     <div class="card">
@@ -114,7 +114,21 @@
           'Istituzionale':istit
         };
       });
-      const wsOut = XLSX.utils.json_to_sheet(out, { dateNF:'dd/mm/yy', defval:'' });
+            const wsOut = XLSX.utils.json_to_sheet(out, { dateNF: 'dd/mm/yyyy', defval: '', cellDates: true });
+      // Imposta formati data per mese (col C) e data (col D)
+      const range = XLSX.utils.decode_range(wsOut['!ref']);
+      for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+        const mc = XLSX.utils.encode_cell({ c: 2, r: R }); // colonna C (indice 2)
+        const dc = XLSX.utils.encode_cell({ c: 3, r: R }); // colonna D (indice 3)
+        if (wsOut[mc] && wsOut[mc].v instanceof Date) {
+          wsOut[mc].t = 'd';
+          wsOut[mc].z = 'mmmm-yy';
+        }
+        if (wsOut[dc] && wsOut[dc].v instanceof Date) {
+          wsOut[dc].t = 'd';
+          wsOut[dc].z = 'dd/mm/yyyy';
+        }
+      }
       const wbOut = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wbOut, wsOut, 'Report');
       XLSX.writeFile(wbOut, 'report_elaborato.xls', { bookType:'xls', bookSST:true });
@@ -145,6 +159,7 @@
   </script>
 </body>
 </html>
+
 
 
 
