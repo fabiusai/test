@@ -150,7 +150,7 @@
             <span class="title-sub">Contatore caratteri</span>
         </div>
     </div>
-<link rel="icon" href="icons8-whatsapp-16.png" type="image/png">
+    <link rel="icon" href="icons8-whatsapp-16.png" type="image/png">
     <div class="tabs">
         <div class="tab active" onclick="switchTab(0)">News 1</div>
         <div class="tab" onclick="switchTab(1)">News 2</div>
@@ -353,63 +353,112 @@
                 });
         }
 
+        // --- Inizio codice CSV modificato per GitHub Pages ---
+        function exportCsv() {
+            const header = ['tabIndex','wa','ytTitle','ytDesc','ytLink','tgLink'];
+            const rows = tabsConfig.map((_, i) => {
+                const data = JSON.parse(localStorage.getItem(`posteTab${i}`) || '{}');
+                return header.map(h => {
+                    const value = data[h] || '';
+                    // Escape quotes and wrap in quotes
+                    return `"${value.toString().replace(/"/g, '""')}"`;
+                }).join(',');
+            });
+
+            const csvContent = [header.join(','), ...rows].join('\r\n');
+            
+            // Create a Blob with the CSV content
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            
+            // Create a link to download the Blob
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'posteData.csv');
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Revoke the object URL after some time to free up memory
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+        function parseCsv(text) {
+            const lines = text.trim().split(/\r?\n/);
+            if (lines.length < 1) return [];
+            
+            const headers = lines[0].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(h => 
+                h.replace(/^"|"$/g, '')
+            );
+            
+            return lines.slice(1).map(line => {
+                const cols = line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(v => 
+                    v.replace(/^"|"$/g, '').replace(/""/g, '"')
+                );
+                const obj = {};
+                headers.forEach((h, idx) => {
+                    obj[h] = cols[idx] || '';
+                });
+                return obj;
+            });
+        }
+
+        function importCsv(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const records = parseCsv(e.target.result);
+                    if (!records || records.length === 0) {
+                        throw new Error('Nessun dato valido trovato nel CSV');
+                    }
+                    
+                    records.forEach(rec => {
+                        if (rec.tabIndex !== undefined) {
+                            localStorage.setItem(`posteTab${rec.tabIndex}`, JSON.stringify(rec));
+                        }
+                    });
+                    
+                    initializeApp();
+                    alert('Importazione CSV completata con successo!');
+                } catch (error) {
+                    console.error('Errore durante l\'importazione:', error);
+                    alert('Errore durante l\'importazione: ' + error.message);
+                }
+            };
+            
+            reader.onerror = function() {
+                alert('Errore durante la lettura del file');
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Set up event listeners when DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('exportCsv').addEventListener('click', exportCsv);
+            
+            const importBtn = document.getElementById('importButton');
+            const fileInput = document.getElementById('importCsvInput');
+            
+            importBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files.length > 0) {
+                    importCsv(e.target.files[0]);
+                    e.target.value = ''; // Reset the input
+                }
+            });
+        });
+
         window.onload = initializeApp;
-    
-
-// --- Inizio codice CSV ---
-
-function exportCsv() {
-  const header = ['tabIndex','wa','ytTitle','ytDesc','ytLink','tgLink'];
-  const rows = tabsConfig.map((_, i) => {
-    const data = JSON.parse(localStorage.getItem(`posteTab${i}`) || '{}');
-    return header.map(h => `"${(data[h]||'').replace(/"/g, '""')}"`).join(',');
-  });
-  const csv = [header.join(','), ...rows].join('\r\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'posteData.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function parseCsv(text) {
-  const lines = text.trim().split(/\r?\n/);
-  const headers = lines[0].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(h => h.replace(/^"|"$/g, ''));
-  return lines.slice(1).map(line => {
-    const cols = line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').replace(/""/g, '"'));
-    const obj = {};
-    headers.forEach((h, idx) => obj[h] = cols[idx] || '');
-    return obj;
-  });
-}
-
-function importCsv(file) {
-  const r = new FileReader();
-  r.onload = e => {
-    const recs = parseCsv(e.target.result);
-    recs.forEach(r => localStorage.setItem(`posteTab${r.tabIndex}`, JSON.stringify(r)));
-    initializeApp();
-    alert('Importazione CSV completata!');
-  };
-  r.readAsText(file);
-}
-
-// Attacco listener
-document.getElementById('exportCsv').addEventListener('click', exportCsv);
-const importBtn = document.getElementById('importButton');
-const fileInput = document.getElementById('importCsvInput');
-importBtn.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => {
-  if (e.target.files.length) {
-    importCsv(e.target.files[0]);
-    e.target.value = '';
-  }
-});
-
-// --- Fine codice CSV ---
-
-</script>
+    </script>
 </body>
 </html>
