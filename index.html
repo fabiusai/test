@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poste Italiane - Contatore Caratteri</title>
     <style>
+        /* Tutti gli stili CSS della versione precedente */
         :root {
             --poste-blue: #0047bb;
             --poste-yellow: #eedc00;
@@ -45,6 +46,7 @@
             display: block;
         }
 
+        /* Resto dello stile invariato */
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -163,6 +165,7 @@
     <div id="tabContents"></div>
 
     <script>
+        // CODICE JAVASCRIPT COMPLETO
         const tabsConfig = Array.from({length: 3}, () => ({
             limits: { wa: 82, ytTitle: 49, ytDesc: 280 },
             fields: ['wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink']
@@ -350,20 +353,24 @@
                 });
         }
 
+        // --- Inizio codice CSV modificato per GitHub Pages ---
         function exportCsv() {
             const header = ['tabIndex','wa','ytTitle','ytDesc','ytLink','tgLink'];
             const rows = tabsConfig.map((_, i) => {
                 const data = JSON.parse(localStorage.getItem(`posteTab${i}`) || '{}');
                 return header.map(h => {
                     const value = data[h] || '';
+                    // Escape quotes and wrap in quotes
                     return `"${value.toString().replace(/"/g, '""')}"`;
                 }).join(',');
             });
 
             const csvContent = [header.join(','), ...rows].join('\r\n');
             
+            // Create a Blob with the CSV content
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             
+            // Create a link to download the Blob
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             
@@ -375,6 +382,7 @@
             link.click();
             document.body.removeChild(link);
             
+            // Revoke the object URL after some time to free up memory
             setTimeout(() => {
                 URL.revokeObjectURL(url);
             }, 100);
@@ -410,30 +418,13 @@
                         throw new Error('Nessun dato valido trovato nel CSV');
                     }
                     
-                    // Salva i dati in localStorage
                     records.forEach(rec => {
                         if (rec.tabIndex !== undefined) {
                             localStorage.setItem(`posteTab${rec.tabIndex}`, JSON.stringify(rec));
                         }
                     });
                     
-                    // Aggiorna direttamente i campi senza ricaricare tutto
-                    records.forEach(rec => {
-                        const tabIndex = rec.tabIndex;
-                        const tab = document.querySelector(`.tab-content[data-tab-index="${tabIndex}"]`);
-                        if (tab) {
-                            Object.entries(rec).forEach(([type, value]) => {
-                                const field = tab.querySelector(`[data-type="${type}"]`);
-                                if (field) {
-                                    field.value = value;
-                                }
-                            });
-                        }
-                    });
-                    
-                    // Aggiorna contatori e output
-                    updateOutputs();
-                    
+                    initializeApp();
                     alert('Importazione CSV completata con successo!');
                 } catch (error) {
                     console.error('Errore durante l\'importazione:', error);
@@ -448,7 +439,7 @@
             reader.readAsText(file);
         }
 
-        // Set up event listeners
+        // Set up event listeners when DOM is fully loaded
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('exportCsv').addEventListener('click', exportCsv);
             
@@ -462,7 +453,7 @@
             fileInput.addEventListener('change', function(e) {
                 if (e.target.files && e.target.files.length > 0) {
                     importCsv(e.target.files[0]);
-                    e.target.value = '';
+                    e.target.value = ''; // Reset the input
                 }
             });
         });
