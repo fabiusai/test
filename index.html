@@ -353,59 +353,70 @@
                 });
         }
 
-        // --- Inizio codice CSV modificato per GitHub Pages ---
+        // ==============================================
+        // NUOVE FUNZIONI CSV (sostituiscono le precedenti)
+        // ==============================================
+
         function exportCsv() {
-            const header = ['tabIndex','wa','ytTitle','ytDesc','ytLink','tgLink'];
-            const rows = tabsConfig.map((_, i) => {
-                const data = JSON.parse(localStorage.getItem(`posteTab${i}`) || '{}');
-                return header.map(h => {
-                    const value = data[h] || '';
-                    // Escape quotes and wrap in quotes
-                    return `"${value.toString().replace(/"/g, '""')}"`;
-                }).join(',');
-            });
+            try {
+                // Prepara i dati da esportare
+                const dataToExport = [];
+                
+                for (let i = 0; i < tabsConfig.length; i++) {
+                    const savedData = localStorage.getItem(`posteTab${i}`);
+                    if (savedData) {
+                        const data = JSON.parse(savedData);
+                        dataToExport.push({
+                            tabIndex: i,
+                            wa: data.wa || '',
+                            ytTitle: data.ytTitle || '',
+                            ytDesc: data.ytDesc || '',
+                            ytLink: data.ytLink || '',
+                            tgLink: data.tgLink || ''
+                        });
+                    }
+                }
 
-            const csvContent = [header.join(','), ...rows].join('\r\n');
-            
-            // Create a Blob with the CSV content
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            
-            // Create a link to download the Blob
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'posteData.csv');
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Revoke the object URL after some time to free up memory
-            setTimeout(() => {
-                URL.revokeObjectURL(url);
-            }, 100);
-        }
+                // Se non ci sono dati da esportare
+                if (dataToExport.length === 0) {
+                    alert('Nessun dato da esportare! Prima salva i dati nei tab.');
+                    return;
+                }
 
-        function parseCsv(text) {
-            const lines = text.trim().split(/\r?\n/);
-            if (lines.length < 1) return [];
-            
-            const headers = lines[0].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(h => 
-                h.replace(/^"|"$/g, '')
-            );
-            
-            return lines.slice(1).map(line => {
-                const cols = line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(v => 
-                    v.replace(/^"|"$/g, '').replace(/""/g, '"')
-                );
-                const obj = {};
-                headers.forEach((h, idx) => {
-                    obj[h] = cols[idx] || '';
+                // Crea l'header CSV
+                const headers = ['tabIndex', 'wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink'];
+                let csvContent = headers.join(';') + '\r\n';
+
+                // Aggiungi i dati
+                dataToExport.forEach(row => {
+                    const rowData = headers.map(header => {
+                        // Escape i valori e sostituisci i newline
+                        let value = row[header] || '';
+                        value = value.toString()
+                            .replace(/"/g, '""') // Escape le virgolette
+                            .replace(/\r?\n/g, '\\n'); // Sostituisci newline con \n
+                        return `"${value}"`; // Metti tra virgolette
+                    });
+                    csvContent += rowData.join(';') + '\r\n';
                 });
-                return obj;
-            });
+
+                // Crea e scarica il file
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `poste_data_${new Date().toISOString().slice(0,10)}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Pulisci dopo il download
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+                
+            } catch (error) {
+                console.error('Errore durante l\'esportazione:', error);
+                alert('Si è verificato un errore durante l\'esportazione: ' + error.message);
+            }
         }
 
         function importCsv(file) {
@@ -413,19 +424,55 @@
             
             reader.onload = function(e) {
                 try {
-                    const records = parseCsv(e.target.result);
-                    if (!records || records.length === 0) {
-                        throw new Error('Nessun dato valido trovato nel CSV');
+                    const csvData = e.target.result;
+                    const lines = csvData.split('\r\n');
+                    
+                    // Verifica che il file sia valido
+                    if (lines.length < 2) {
+                        throw new Error('Il file CSV sembra vuoto o non valido');
                     }
                     
-                    records.forEach(rec => {
-                        if (rec.tabIndex !== undefined) {
-                            localStorage.setItem(`posteTab${rec.tabIndex}`, JSON.stringify(rec));
-                        }
-                    });
+                    // Estrai gli header
+                    const headers = lines[0].split(';').map(h => h.replace(/"/g, ''));
                     
+                    // Processa ogni riga
+                    for (let i = 1; i < lines.length; i++) {
+                        if (!lines[i].trim()) continue;
+                        
+                        const values = lines[i].split(';').map(v => {
+                            // Rimuovi le virgolette esterne e ripristina i newline
+                            let val = v.replace(/^"|"$/g, '')
+                                       .replace(/""/g, '"')
+                                       .replace(/\\n/g, '\n');
+                            return val;
+                        });
+                        
+                        // Crea l'oggetto dati
+                        const rowData = {};
+                        headers.forEach((header, index) => {
+                            rowData[header] = values[index] || '';
+                        });
+                        
+                        // Salva i dati solo se c'è un tabIndex valido
+                        if (rowData.tabIndex !== undefined && !isNaN(rowData.tabIndex)) {
+                            const tabIndex = parseInt(rowData.tabIndex);
+                            if (tabIndex >= 0 && tabIndex < tabsConfig.length) {
+                                // Prepara i dati da salvare
+                                const dataToSave = {};
+                                tabsConfig[tabIndex].fields.forEach(field => {
+                                    dataToSave[field] = rowData[field] || '';
+                                });
+                                
+                                // Salva in localStorage
+                                localStorage.setItem(`posteTab${tabIndex}`, JSON.stringify(dataToSave));
+                            }
+                        }
+                    }
+                    
+                    // Ricarica i dati nell'interfaccia
                     initializeApp();
-                    alert('Importazione CSV completata con successo!');
+                    alert('Importazione completata con successo! I dati sono stati caricati nei rispettivi tab.');
+                    
                 } catch (error) {
                     console.error('Errore durante l\'importazione:', error);
                     alert('Errore durante l\'importazione: ' + error.message);
@@ -433,13 +480,13 @@
             };
             
             reader.onerror = function() {
-                alert('Errore durante la lettura del file');
+                alert('Errore durante la lettura del file. Assicurati che sia un CSV valido.');
             };
             
             reader.readAsText(file);
         }
 
-        // Set up event listeners when DOM is fully loaded
+        // Configura gli event listeners per CSV
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('exportCsv').addEventListener('click', exportCsv);
             
@@ -452,8 +499,10 @@
             
             fileInput.addEventListener('change', function(e) {
                 if (e.target.files && e.target.files.length > 0) {
-                    importCsv(e.target.files[0]);
-                    e.target.value = ''; // Reset the input
+                    if (confirm('Importare il file CSV sovrascriverà i dati correnti. Continuare?')) {
+                        importCsv(e.target.files[0]);
+                    }
+                    e.target.value = ''; // Resetta l'input
                 }
             });
         });
