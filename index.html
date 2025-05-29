@@ -272,9 +272,19 @@
 
         function saveData(tabIndex) {
             const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
+            const saveButton = tab.querySelector('button[onclick^="saveData"]');
+            
             const dataToSave = {};
             tab.querySelectorAll('textarea').forEach(input => dataToSave[input.dataset.type] = input.value);
             localStorage.setItem(`posteTab${tabIndex}`, JSON.stringify(dataToSave));
+            
+            // Aggiungi feedback visivo
+            saveButton.classList.add('copied');
+            saveButton.textContent = 'Salvato!';
+            setTimeout(() => {
+                saveButton.classList.remove('copied');
+                saveButton.textContent = 'Salva';
+            }, 2000);
         }
 
         function clearAll(tabIndex) {
@@ -286,6 +296,8 @@
         }
 
         function copyAllTabsContent() {
+            const copyAllButton = document.querySelector('.copy-all-btn');
+            
             let output = '';
             for(let i = 0; i < 3; i++) {
                 const tab = document.querySelector(`[data-tab-index="${i}"]`);
@@ -293,6 +305,14 @@
                 output += `NEWS ${i + 1}\nContenuto WA: ${getValue('wa')}\nTitolo Youtube: ${getValue('ytTitle')}\nContenuto social: ${getValue('ytDesc')}\n\n`;
             }
             navigator.clipboard.writeText(output.trim());
+            
+            // Aggiungi feedback visivo
+            copyAllButton.classList.add('copied');
+            copyAllButton.textContent = 'Copiato!';
+            setTimeout(() => {
+                copyAllButton.classList.remove('copied');
+                copyAllButton.textContent = 'Contenuto completo';
+            }, 2000);
         }
 
         async function importFromExcel(file) {
