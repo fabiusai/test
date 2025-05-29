@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poste Italiane - Contatore Caratteri</title>
     <style>
-        /* Tutti gli stili CSS della versione precedente */
         :root {
             --poste-blue: #0047bb;
             --poste-yellow: #eedc00;
@@ -46,7 +45,6 @@
             display: block;
         }
 
-        /* Resto dello stile invariato */
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -165,7 +163,6 @@
     <div id="tabContents"></div>
 
     <script>
-        // CODICE JAVASCRIPT COMPLETO
         const tabsConfig = Array.from({length: 3}, () => ({
             limits: { wa: 82, ytTitle: 49, ytDesc: 280 },
             fields: ['wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink']
@@ -353,24 +350,20 @@
                 });
         }
 
-        // --- Inizio codice CSV modificato per GitHub Pages ---
         function exportCsv() {
             const header = ['tabIndex','wa','ytTitle','ytDesc','ytLink','tgLink'];
             const rows = tabsConfig.map((_, i) => {
                 const data = JSON.parse(localStorage.getItem(`posteTab${i}`) || '{}');
                 return header.map(h => {
                     const value = data[h] || '';
-                    // Escape quotes and wrap in quotes
                     return `"${value.toString().replace(/"/g, '""')}"`;
                 }).join(',');
             });
 
             const csvContent = [header.join(','), ...rows].join('\r\n');
             
-            // Create a Blob with the CSV content
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             
-            // Create a link to download the Blob
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             
@@ -382,7 +375,6 @@
             link.click();
             document.body.removeChild(link);
             
-            // Revoke the object URL after some time to free up memory
             setTimeout(() => {
                 URL.revokeObjectURL(url);
             }, 100);
@@ -408,59 +400,55 @@
             });
         }
 
-function importCsv(file) {
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-        try {
-            const records = parseCsv(e.target.result);
-            if (!records || records.length === 0) {
-                throw new Error('Nessun dato valido trovato nel CSV');
-            }
+        function importCsv(file) {
+            const reader = new FileReader();
             
-            // Prima salva tutti i dati in localStorage
-            records.forEach(rec => {
-                if (rec.tabIndex !== undefined) {
-                    localStorage.setItem(`posteTab${rec.tabIndex}`, JSON.stringify(rec));
-                }
-            });
-            
-            // Poi aggiorna l'interfaccia manualmente
-            records.forEach(rec => {
-                const tabIndex = rec.tabIndex;
-                const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
-                if (tab) {
-                    Object.entries(rec).forEach(([type, value]) => {
-                        const field = tab.querySelector(`[data-type="${type}"]`);
-                        if (field) {
-                            field.value = value;
+            reader.onload = function(e) {
+                try {
+                    const records = parseCsv(e.target.result);
+                    if (!records || records.length === 0) {
+                        throw new Error('Nessun dato valido trovato nel CSV');
+                    }
+                    
+                    // Salva i dati in localStorage
+                    records.forEach(rec => {
+                        if (rec.tabIndex !== undefined) {
+                            localStorage.setItem(`posteTab${rec.tabIndex}`, JSON.stringify(rec));
                         }
                     });
+                    
+                    // Aggiorna direttamente i campi senza ricaricare tutto
+                    records.forEach(rec => {
+                        const tabIndex = rec.tabIndex;
+                        const tab = document.querySelector(`.tab-content[data-tab-index="${tabIndex}"]`);
+                        if (tab) {
+                            Object.entries(rec).forEach(([type, value]) => {
+                                const field = tab.querySelector(`[data-type="${type}"]`);
+                                if (field) {
+                                    field.value = value;
+                                }
+                            });
+                        }
+                    });
+                    
+                    // Aggiorna contatori e output
+                    updateOutputs();
+                    
+                    alert('Importazione CSV completata con successo!');
+                } catch (error) {
+                    console.error('Errore durante l\'importazione:', error);
+                    alert('Errore durante l\'importazione: ' + error.message);
                 }
-            });
+            };
             
-            // Infine aggiorna i contatori e gli output
-            updateOutputs();
+            reader.onerror = function() {
+                alert('Errore durante la lettura del file');
+            };
             
-            alert('Importazione CSV completata con successo!');
-        } catch (error) {
-            console.error('Errore durante l\'importazione:', error);
-            alert('Errore durante l\'importazione: ' + error.message);
+            reader.readAsText(file);
         }
-    };
-    
-    reader.onerror = function() {
-        alert('Errore durante la lettura del file');
-    };
-    
-    reader.readAsText(file);
-}        
 
-
-
-
-
-        // Set up event listeners when DOM is fully loaded
+        // Set up event listeners
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('exportCsv').addEventListener('click', exportCsv);
             
@@ -474,7 +462,7 @@ function importCsv(file) {
             fileInput.addEventListener('change', function(e) {
                 if (e.target.files && e.target.files.length > 0) {
                     importCsv(e.target.files[0]);
-                    e.target.value = ''; // Reset the input
+                    e.target.value = '';
                 }
             });
         });
