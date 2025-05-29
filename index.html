@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poste Italiane - Contatore Caratteri</title>
+    <style>
+        /* Tutti gli stili CSS della versione precedente */
+        :root {
+            --poste-blue: #0047bb;
+            --poste-yellow: #eedc00;
+            --poste-light-blue: #0066CC;
+            --poste-gray: #F5F5F5;
+            --poste-green: #4CAF50;
+        }
+
+        .header {
+            background-color: var(--poste-yellow);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .header div {
+            color: var(--poste-blue);
+            line-height: 1.3;
+        }
+
+        .header .title-main {
+            font-weight: bold;
+            font-size: 1.5em;
+            display: block;
+        }
+
+        .header .title-sub {
+            font-size: 1.2em;
+            display: block;
+            font-weight: normal;
+        }
+
+        .counter {
+            font-size: 0.9em;
+            color: var(--poste-blue);
+            margin: 5px 0 10px 0;
+            display: block;
+        }
+
+        /* Resto dello stile invariato */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: white;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: var(--poste-gray);
+            border: 1px solid #ddd;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background-color: var(--poste-light-blue);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .field-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            color: var(--poste-blue);
+        }
+
+        textarea {
+            width: 98%;
+            margin-left: 1%;
+            padding: 10px;
+            border: 2px solid var(--poste-light-blue);
+            border-radius: 5px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .output-field {
+            background-color: var(--poste-gray);
+            border: 2px dashed var(--poste-blue);
+            padding: 10px;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            min-height: 100px;
+            width: 98%;
+            margin-left: 1%;
+        }
+
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--poste-light-blue);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--poste-blue);
+        }
+
+        button.copied {
+            background-color: var(--poste-green) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <span class="title-main">Poste Italiane</span>
+            <span class="title-sub">Contatore caratteri</span>
+        </div>
+    </div>
+<link rel="icon" href="icons8-whatsapp-16.png" type="image/png">
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab(0)">News 1</div>
+        <div class="tab" onclick="switchTab(1)">News 2</div>
+        <div class="tab" onclick="switchTab(2)">News 3</div>
+    </div>
+
+    <div class="csv-buttons" style="margin: 1em 0;">
+        <button id="exportCsv">Esporta CSV</button>
+        <button id="importButton">Importa CSV</button>
+        <input type="file" id="importCsvInput" accept=".csv" style="display:none" />
+    </div>
+    <div id="tabContents"></div>
+
+    <script>
+        // CODICE JAVASCRIPT COMPLETO
+        const tabsConfig = Array.from({length: 3}, () => ({
+            limits: { wa: 82, ytTitle: 49, ytDesc: 280 },
+            fields: ['wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink']
+        }));
+
+        function createTabContent(tabIndex) {
+            return `
+                <div class="tab-content ${tabIndex === 0 ? 'active' : ''}" data-tab-index="${tabIndex}">
+                    <div class="input-group">
+                        <label class="field-label">Testo descrittivo news Canale WA</label>
+                        <div class="counter">0/${tabsConfig[tabIndex].limits.wa}</div>
+                        <textarea data-type="wa"></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="field-label">Titolo YouTube</label>
+                        <div class="counter">0/${tabsConfig[tabIndex].limits.ytTitle}</div>
+                        <textarea data-type="ytTitle"></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="field-label">Copy post e descrizione YT</label>
+                        <div class="counter">0/${tabsConfig[tabIndex].limits.ytDesc}</div>
+                        <textarea data-type="ytDesc"></textarea>
+                    </div>
+
+                    <label class="field-label">Link YouTube</label>
+                    <textarea data-type="ytLink"></textarea>
+
+                    <label class="field-label" style="margin-top:20px;">Link TG Poste</label>
+                    <textarea data-type="tgLink"></textarea>
+
+                    <div class="output-field" data-type="waOutput"></div>
+                    <button class="copy-btn" onclick="copyContent(this)">Copia Contenuto WA</button>
+
+                    <div class="output-field" data-type="socialOutput"></div>
+                    <button class="copy-btn" onclick="copyContent(this)">Copia Contenuto Social</button>
+
+                    <div class="button-group">
+                        <button onclick="saveData(${tabIndex})">Salva</button>
+                        <button onclick="clearAll(${tabIndex})">Cancella tutto</button>
+                        <button class="copy-all-btn" onclick="copyAllTabsContent()">Contenuto completo</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function initializeApp() {
+            const tabContents = document.getElementById('tabContents');
+            tabContents.innerHTML = tabsConfig.map((_, i) => createTabContent(i)).join('');
+            
+            tabsConfig.forEach((_, index) => {
+                const savedData = localStorage.getItem(`posteTab${index}`);
+                if(savedData) {
+                    const data = JSON.parse(savedData);
+                    const tab = document.querySelector(`[data-tab-index="${index}"]`);
+                    Object.entries(data).forEach(([type, value]) => {
+                        const field = tab.querySelector(`[data-type="${type}"]`);
+                        if(field) field.value = value;
+                    });
+                }
+            });
+
+            document.querySelectorAll('textarea').forEach(textarea => {
+                textarea.addEventListener('input', updateOutputs);
+            });
+            
+            updateOutputs();
+        }
+
+        function switchTab(tabIndex) {
+            document.querySelectorAll('.tab').forEach((tab, i) => 
+                tab.classList.toggle('active', i === tabIndex));
+            
+            document.querySelectorAll('.tab-content').forEach((content, i) => 
+                content.classList.toggle('active', i === tabIndex));
+            
+            updateOutputs();
+        }
+
+        function updateOutputs() {
+            document.querySelectorAll('.tab-content').forEach((tab, tabIndex) => {
+                const getValue = type => tab.querySelector(`[data-type="${type}"]`)?.value || '';
+                
+                ['wa', 'ytTitle', 'ytDesc'].forEach(type => {
+                    const counter = tab.querySelector(`[data-type="${type}"]`).previousElementSibling;
+                    const valueLength = getValue(type).length;
+                    if(counter) counter.textContent = `${valueLength}/${tabsConfig[tabIndex].limits[type]}`;
+                });
+
+                const waOutput = `${getValue('wa')}\n${getValue('ytLink')}\n➡️ TG Poste https://tgposte.poste.it`;
+                tab.querySelector('[data-type="waOutput"]').textContent = waOutput;
+
+                const socialOutput = `${getValue('ytDesc')}\n\n#TGPoste #PosteItaliane\n\n➡️ ${getValue('tgLink')}`;
+                tab.querySelector('[data-type="socialOutput"]').textContent = socialOutput;
+            });
+        }
+
+        function copyContent(button) {
+            const outputField = button.previousElementSibling;
+            const textToCopy = outputField.textContent;
+            
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    button.classList.add('copied');
+                    button.textContent = 'Copiato!';
+                    setTimeout(() => {
+                        button.classList.remove('copied');
+                        button.textContent = button.previousElementSibling.dataset.type === 'waOutput' 
+                            ? 'Copia Contenuto WA' 
+                            : 'Copia Contenuto Social';
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Errore nella copia:', err);
+                    alert('Errore durante la copia. Assicurati di concedere i permessi necessari.');
+                });
+        }
+
+        function saveData(tabIndex) {
+            const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
+            const inputs = tab.querySelectorAll('textarea');
+            const dataToSave = {};
+
+            inputs.forEach(input => {
+                dataToSave[input.dataset.type] = input.value;
+            });
+
+            localStorage.setItem(`posteTab${tabIndex}`, JSON.stringify(dataToSave));
+            
+            const saveButton = tab.querySelector('button[onclick^="saveData"]');
+            saveButton.classList.add('copied');
+            const originalText = saveButton.textContent;
+            saveButton.textContent = 'Contenuto salvato!';
+            
+            setTimeout(() => {
+                saveButton.classList.remove('copied');
+                saveButton.textContent = originalText;
+            }, 2000);
+        }
+
+        function clearAll(tabIndex) {
+            if(confirm("Stai cancellando tutto il testo. Sei sicuro?")) {
+                const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
+                tab.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.value = '';
+                });
+                updateOutputs();
+            }
+        }
+
+        function copyAllTabsContent() {
+            let output = '';
+            
+            for(let i = 0; i < 3; i++) {
+                const tab = document.querySelector(`[data-tab-index="${i}"]`);
+                if(!tab) continue;
+                
+                const getValue = type => {
+                    const field = tab.querySelector(`[data-type="${type}"]`);
+                    return field?.value.trim() || '=';
+                };
+
+                output += `NEWS ${i + 1}\n`;
+                output += `Contenuto WA: ${getValue('wa')}\n`;
+                output += `Titolo Youtube: ${getValue('ytTitle')}\n`;
+                output += `Contenuto social: ${getValue('ytDesc')}\n\n`;
+            }
+
+            navigator.clipboard.writeText(output.trim())
+                .then(() => {
+                    const buttons = document.querySelectorAll('.copy-all-btn');
+                    buttons.forEach(button => {
+                        button.classList.add('copied');
+                        button.textContent = 'Copiato!';
+                        setTimeout(() => {
+                            button.classList.remove('copied');
+                            button.textContent = 'Contenuto completo';
+                        }, 2000);
+                    });
+                })
+                .catch(err => {
+                    console.error('Errore nella copia:', err);
+                    alert('Errore durante la copia. Assicurati di concedere i permessi necessari.');
+                });
+        }
+
+        window.onload = initializeApp;
+    
+
+// --- Inizio codice CSV ---
+
+function exportCsv() {
+  const header = ['tabIndex','wa','ytTitle','ytDesc','ytLink','tgLink'];
+  const rows = tabsConfig.map((_, i) => {
+    const data = JSON.parse(localStorage.getItem(`posteTab${i}`) || '{}');
+    return header.map(h => `"${(data[h]||'').replace(/"/g, '""')}"`).join(',');
+  });
+  const csv = [header.join(','), ...rows].join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'posteData.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function parseCsv(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines[0].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(h => h.replace(/^"|"$/g, ''));
+  return lines.slice(1).map(line => {
+    const cols = line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').replace(/""/g, '"'));
+    const obj = {};
+    headers.forEach((h, idx) => obj[h] = cols[idx] || '');
+    return obj;
+  });
+}
+
+function importCsv(file) {
+  const r = new FileReader();
+  r.onload = e => {
+    const recs = parseCsv(e.target.result);
+    recs.forEach(r => localStorage.setItem(`posteTab${r.tabIndex}`, JSON.stringify(r)));
+    initializeApp();
+    alert('Importazione CSV completata!');
+  };
+  r.readAsText(file);
+}
+
+// Attacco listener
+document.getElementById('exportCsv').addEventListener('click', exportCsv);
+const importBtn = document.getElementById('importButton');
+const fileInput = document.getElementById('importCsvInput');
+importBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => {
+  if (e.target.files.length) {
+    importCsv(e.target.files[0]);
+    e.target.value = '';
+  }
+});
+
+// --- Fine codice CSV ---
+
+</script>
+</body>
+</html>
