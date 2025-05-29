@@ -38,13 +38,6 @@
             font-weight: normal;
         }
 
-        .counter {
-            font-size: 0.9em;
-            color: var(--poste-blue);
-            margin: 5px 0 10px 0;
-            display: block;
-        }
-
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -57,7 +50,7 @@
         .tabs {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .tab {
@@ -139,6 +132,27 @@
         button.copied {
             background-color: var(--poste-green) !important;
         }
+
+        .import-excel {
+            margin-bottom: 20px;
+        }
+
+        .import-excel input[type="file"] {
+            display: none;
+        }
+
+        .import-excel label {
+            background-color: var(--poste-light-blue);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .import-excel label:hover {
+            background-color: var(--poste-blue);
+        }
     </style>
 </head>
 <body>
@@ -148,20 +162,21 @@
             <span class="title-sub">Contatore caratteri</span>
         </div>
     </div>
-    <link rel="icon" href="icons8-whatsapp-16.png" type="image/png">
+
     <div class="tabs">
         <div class="tab active" onclick="switchTab(0)">News 1</div>
         <div class="tab" onclick="switchTab(1)">News 2</div>
         <div class="tab" onclick="switchTab(2)">News 3</div>
     </div>
 
-    <div class="csv-buttons" style="margin: 1em 0;">
-        <button id="exportCsv">Esporta CSV</button>
-        <button id="importButton">Importa CSV</button>
-        <input type="file" id="importCsvInput" accept=".csv" style="display:none" />
+    <div class="import-excel">
+        <label for="excelInput">Importa da Excel</label>
+        <input type="file" id="excelInput" accept=".xlsx" onchange="importFromExcel(this.files[0])">
     </div>
+
     <div id="tabContents"></div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         const tabsConfig = Array.from({length: 3}, () => ({
             limits: { wa: 82, ytTitle: 49, ytDesc: 280 },
@@ -176,90 +191,67 @@
                         <div class="counter">0/${tabsConfig[tabIndex].limits.wa}</div>
                         <textarea data-type="wa"></textarea>
                     </div>
-
                     <div class="input-group">
                         <label class="field-label">Titolo YouTube</label>
                         <div class="counter">0/${tabsConfig[tabIndex].limits.ytTitle}</div>
                         <textarea data-type="ytTitle"></textarea>
                     </div>
-
                     <div class="input-group">
                         <label class="field-label">Copy post e descrizione YT</label>
                         <div class="counter">0/${tabsConfig[tabIndex].limits.ytDesc}</div>
                         <textarea data-type="ytDesc"></textarea>
                     </div>
-
                     <label class="field-label">Link YouTube</label>
                     <textarea data-type="ytLink"></textarea>
-
                     <label class="field-label" style="margin-top:20px;">Link TG Poste</label>
                     <textarea data-type="tgLink"></textarea>
-
                     <div class="output-field" data-type="waOutput"></div>
                     <button class="copy-btn" onclick="copyContent(this)">Copia Contenuto WA</button>
-
                     <div class="output-field" data-type="socialOutput"></div>
                     <button class="copy-btn" onclick="copyContent(this)">Copia Contenuto Social</button>
-
                     <div class="button-group">
                         <button onclick="saveData(${tabIndex})">Salva</button>
                         <button onclick="clearAll(${tabIndex})">Cancella tutto</button>
                         <button class="copy-all-btn" onclick="copyAllTabsContent()">Contenuto completo</button>
+                        <button onclick="exportToExcel()">Esporta in Excel</button>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
 
         function initializeApp() {
             const tabContents = document.getElementById('tabContents');
             tabContents.innerHTML = tabsConfig.map((_, i) => createTabContent(i)).join('');
-            
             tabsConfig.forEach((_, index) => {
                 const savedData = localStorage.getItem(`posteTab${index}`);
                 if(savedData) {
-                    try {
-                        const data = JSON.parse(savedData);
-                        const tab = document.querySelector(`[data-tab-index="${index}"]`);
-                        Object.entries(data).forEach(([type, value]) => {
-                            const field = tab.querySelector(`[data-type="${type}"]`);
-                            if(field) field.value = value;
-                        });
-                    } catch (e) {
-                        console.error("Errore nel caricamento dei dati salvati:", e);
-                    }
+                    const data = JSON.parse(savedData);
+                    const tab = document.querySelector(`[data-tab-index="${index}"]`);
+                    Object.entries(data).forEach(([type, value]) => {
+                        const field = tab.querySelector(`[data-type="${type}"]`);
+                        if(field) field.value = value;
+                    });
                 }
             });
-
-            document.querySelectorAll('textarea').forEach(textarea => {
-                textarea.addEventListener('input', updateOutputs);
-            });
-            
+            document.querySelectorAll('textarea').forEach(textarea => textarea.addEventListener('input', updateOutputs));
             updateOutputs();
         }
 
         function switchTab(tabIndex) {
-            document.querySelectorAll('.tab').forEach((tab, i) => 
-                tab.classList.toggle('active', i === tabIndex));
-            
-            document.querySelectorAll('.tab-content').forEach((content, i) => 
-                content.classList.toggle('active', i === tabIndex));
-            
+            document.querySelectorAll('.tab').forEach((tab, i) => tab.classList.toggle('active', i === tabIndex));
+            document.querySelectorAll('.tab-content').forEach((content, i) => content.classList.toggle('active', i === tabIndex));
             updateOutputs();
         }
 
         function updateOutputs() {
             document.querySelectorAll('.tab-content').forEach((tab, tabIndex) => {
                 const getValue = type => tab.querySelector(`[data-type="${type}"]`)?.value || '';
-                
                 ['wa', 'ytTitle', 'ytDesc'].forEach(type => {
                     const counter = tab.querySelector(`[data-type="${type}"]`).previousElementSibling;
                     const valueLength = getValue(type).length;
                     if(counter) counter.textContent = `${valueLength}/${tabsConfig[tabIndex].limits[type]}`;
                 });
-
                 const waOutput = `${getValue('wa')}\n${getValue('ytLink')}\n➡️ TG Poste https://tgposte.poste.it`;
                 tab.querySelector('[data-type="waOutput"]').textContent = waOutput;
-
                 const socialOutput = `${getValue('ytDesc')}\n\n#TGPoste #PosteItaliane\n\n➡️ ${getValue('tgLink')}`;
                 tab.querySelector('[data-type="socialOutput"]').textContent = socialOutput;
             });
@@ -267,242 +259,115 @@
 
         function copyContent(button) {
             const outputField = button.previousElementSibling;
-            const textToCopy = outputField.textContent;
-            
-            navigator.clipboard.writeText(textToCopy)
+            navigator.clipboard.writeText(outputField.textContent)
                 .then(() => {
                     button.classList.add('copied');
                     button.textContent = 'Copiato!';
                     setTimeout(() => {
                         button.classList.remove('copied');
-                        button.textContent = button.previousElementSibling.dataset.type === 'waOutput' 
-                            ? 'Copia Contenuto WA' 
-                            : 'Copia Contenuto Social';
+                        button.textContent = button.previousElementSibling.dataset.type === 'waOutput' ? 'Copia Contenuto WA' : 'Copia Contenuto Social';
                     }, 2000);
-                })
-                .catch(err => {
-                    console.error('Errore nella copia:', err);
-                    alert('Errore durante la copia. Assicurati di concedere i permessi necessari.');
                 });
         }
 
         function saveData(tabIndex) {
             const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
-            const inputs = tab.querySelectorAll('textarea');
             const dataToSave = {};
-
-            inputs.forEach(input => {
-                dataToSave[input.dataset.type] = input.value;
-            });
-
+            tab.querySelectorAll('textarea').forEach(input => dataToSave[input.dataset.type] = input.value);
             localStorage.setItem(`posteTab${tabIndex}`, JSON.stringify(dataToSave));
-            
-            const saveButton = tab.querySelector('button[onclick^="saveData"]');
-            saveButton.classList.add('copied');
-            const originalText = saveButton.textContent;
-            saveButton.textContent = 'Contenuto salvato!';
-            
-            setTimeout(() => {
-                saveButton.classList.remove('copied');
-                saveButton.textContent = originalText;
-            }, 2000);
         }
 
         function clearAll(tabIndex) {
             if(confirm("Stai cancellando tutto il testo. Sei sicuro?")) {
                 const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
-                tab.querySelectorAll('textarea').forEach(textarea => {
-                    textarea.value = '';
-                });
-                localStorage.removeItem(`posteTab${tabIndex}`);
+                tab.querySelectorAll('textarea').forEach(textarea => textarea.value = '');
                 updateOutputs();
             }
         }
 
         function copyAllTabsContent() {
             let output = '';
-            
             for(let i = 0; i < 3; i++) {
                 const tab = document.querySelector(`[data-tab-index="${i}"]`);
-                if(!tab) continue;
+                const getValue = type => tab.querySelector(`[data-type="${type}"]`)?.value.trim() || '=';
+                output += `NEWS ${i + 1}\nContenuto WA: ${getValue('wa')}\nTitolo Youtube: ${getValue('ytTitle')}\nContenuto social: ${getValue('ytDesc')}\n\n`;
+            }
+            navigator.clipboard.writeText(output.trim());
+        }
+
+        async function importFromExcel(file) {
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data);
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+            // Mappa valori colonna A -> data-type
+            const fieldMap = {
+                'Testo descrittivo news Canale WA': 'wa',
+                'Titolo YouTube': 'ytTitle',
+                'Copy post e descrizione YT': 'ytDesc',
+                'Link YouTube': 'ytLink',
+                'Link TG Poste': 'tgLink'
+            };
+
+            rows.slice(1).forEach(row => {
+                const rawField = row[0]?.trim();
+                const fieldType = fieldMap[rawField];
+                if (fieldType) {
+                    for (let tabIndex = 0; tabIndex < 3; tabIndex++) {
+                        const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
+                        const value = row[tabIndex + 1];
+                        const field = tab.querySelector(`[data-type="${fieldType}"]`);
+                        if (field) {
+                            field.value = value !== undefined ? value : '';
+                        }
+                    }
+                }
+            });
+            updateOutputs();
+        }
+
+        function exportToExcel() {
+            // Crea un array di dati nello stesso formato del file Excel di esempio
+            const excelData = [
+                ["", "News 1", "News 2", "News 3"],
+                ["Testo descrittivo news Canale WA", "", "", ""],
+                ["Titolo YouTube", "", "", ""],
+                ["Copy post e descrizione YT", "", "", ""],
+                ["Link YouTube", "", "", ""],
+                ["Link TG Poste", "", "", ""]
+            ];
+
+            // Popola l'array con i dati dai campi
+            for (let tabIndex = 0; tabIndex < 3; tabIndex++) {
+                const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
                 
-                const getValue = type => {
-                    const field = tab.querySelector(`[data-type="${type}"]`);
-                    return field?.value.trim() || '=';
+                // Mappa i data-type alle righe corrispondenti nell'array excelData
+                const fieldMap = {
+                    'wa': 1,
+                    'ytTitle': 2,
+                    'ytDesc': 3,
+                    'ytLink': 4,
+                    'tgLink': 5
                 };
 
-                output += `NEWS ${i + 1}\n`;
-                output += `Contenuto WA: ${getValue('wa')}\n`;
-                output += `Titolo Youtube: ${getValue('ytTitle')}\n`;
-                output += `Contenuto social: ${getValue('ytDesc')}\n\n`;
+                tab.querySelectorAll('textarea').forEach(textarea => {
+                    const fieldType = textarea.dataset.type;
+                    const rowIndex = fieldMap[fieldType];
+                    if (rowIndex !== undefined) {
+                        excelData[rowIndex][tabIndex + 1] = textarea.value;
+                    }
+                });
             }
 
-            navigator.clipboard.writeText(output.trim())
-                .then(() => {
-                    const buttons = document.querySelectorAll('.copy-all-btn');
-                    buttons.forEach(button => {
-                        button.classList.add('copied');
-                        button.textContent = 'Copiato!';
-                        setTimeout(() => {
-                            button.classList.remove('copied');
-                            button.textContent = 'Contenuto completo';
-                        }, 2000);
-                    });
-                })
-                .catch(err => {
-                    console.error('Errore nella copia:', err);
-                    alert('Errore durante la copia. Assicurati di concedere i permessi necessari.');
-                });
+            // Crea il workbook e il foglio di lavoro
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            XLSX.utils.book_append_sheet(wb, ws, "Foglio1");
+
+            // Genera il file Excel e lo scarica
+            XLSX.writeFile(wb, "poste_export.xlsx");
         }
-
-        // FUNZIONI CSV RIVISTE E TESTATE
-        function exportCsv() {
-            try {
-                const dataToExport = [];
-                const headers = ['tabIndex', 'wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink'];
-                
-                // Raccogli i dati da tutti i tab
-                for (let i = 0; i < tabsConfig.length; i++) {
-                    const savedData = localStorage.getItem(`posteTab${i}`);
-                    if (savedData) {
-                        const data = JSON.parse(savedData);
-                        const rowData = { tabIndex: i };
-                        
-                        // Assicurati che tutti i campi siano presenti
-                        headers.slice(1).forEach(header => {
-                            rowData[header] = data[header] || '';
-                        });
-                        
-                        dataToExport.push(rowData);
-                    }
-                }
-
-                if (dataToExport.length === 0) {
-                    alert('Nessun dato da esportare! Prima salva i dati nei tab.');
-                    return;
-                }
-
-                // Crea il contenuto CSV
-                let csvContent = headers.join(',') + '\r\n';
-                
-                dataToExport.forEach(row => {
-                    const rowValues = headers.map(header => {
-                        let value = row[header] || '';
-                        // Formattazione valori per CSV
-                        value = value.toString()
-                            .replace(/"/g, '""') // Escape virgolette
-                            .replace(/\r?\n/g, '\\n'); // Gestione a capo
-                        return `"${value}"`; // Racchiudi tra virgolette
-                    });
-                    csvContent += rowValues.join(',') + '\r\n';
-                });
-
-                // Crea e scarica il file
-                const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `poste_data_${new Date().toISOString().slice(0,10)}.csv`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setTimeout(() => URL.revokeObjectURL(url), 100);
-                
-            } catch (error) {
-                console.error('Errore esportazione:', error);
-                alert(`Errore durante l'esportazione:\n${error.message}`);
-            }
-        }
-
-        function importCsv(file) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                try {
-                    const csvText = e.target.result;
-                    const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
-                    
-                    if (lines.length < 2) {
-                        throw new Error('Il file CSV è vuoto o non valido');
-                    }
-                    
-                    // Estrai intestazioni
-                    const headers = lines[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
-                        .map(h => h.replace(/^"|"$/g, '').trim());
-                    
-                    // Verifica struttura del file
-                    const requiredFields = ['tabIndex', 'wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink'];
-                    const missingFields = requiredFields.filter(f => !headers.includes(f));
-                    if (missingFields.length > 0) {
-                        throw new Error(`Campo/i mancante/i nel CSV: ${missingFields.join(', ')}`);
-                    }
-                    
-                    // Processa ogni riga
-                    for (let i = 1; i < lines.length; i++) {
-                        const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                        const rowData = {};
-                        
-                        headers.forEach((header, index) => {
-                            let value = values[index] || '';
-                            // Pulizia e formattazione valori
-                            value = value.replace(/^"|"$/g, '')
-                                        .replace(/""/g, '"')
-                                        .replace(/\\n/g, '\n')
-                                        .trim();
-                            rowData[header] = value;
-                        });
-                        
-                        // Verifica tabIndex valido
-                        const tabIndex = parseInt(rowData.tabIndex);
-                        if (isNaN(tabIndex) continue;
-                        
-                        // Prepara dati per il salvataggio
-                        const dataToSave = {};
-                        tabsConfig[0].fields.forEach(field => {
-                            dataToSave[field] = rowData[field] || '';
-                        });
-                        
-                        // Salva in localStorage
-                        localStorage.setItem(`posteTab${tabIndex}`, JSON.stringify(dataToSave));
-                    }
-                    
-                    // Ricarica l'interfaccia con i nuovi dati
-                    initializeApp();
-                    alert('Importazione completata con successo!\nI dati sono stati caricati nei rispettivi tab.');
-                    
-                } catch (error) {
-                    console.error('Errore importazione:', error);
-                    alert(`ERRORE durante l'importazione:\n${error.message}\n\nAssicurati di usare un file CSV esportato da questa applicazione.`);
-                }
-            };
-            
-            reader.onerror = function() {
-                alert('Errore durante la lettura del file. Assicurati che sia un CSV valido.');
-            };
-            
-            reader.readAsText(file, 'UTF-8');
-        }
-
-        // Configurazione eventi
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('exportCsv').addEventListener('click', exportCsv);
-            
-            const importBtn = document.getElementById('importButton');
-            const fileInput = document.getElementById('importCsvInput');
-            
-            importBtn.addEventListener('click', function() {
-                fileInput.click();
-            });
-            
-            fileInput.addEventListener('change', function(e) {
-                if (e.target.files && e.target.files.length > 0) {
-                    if (confirm('ATTENZIONE: Importare il file CSV sovrascriverà i dati correnti.\n\nVuoi continuare?')) {
-                        importCsv(e.target.files[0]);
-                    }
-                    e.target.value = '';
-                }
-            });
-        });
 
         window.onload = initializeApp;
     </script>
