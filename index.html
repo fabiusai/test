@@ -348,6 +348,13 @@
         }
 
         function exportToExcel() {
+            // Ottieni la data corrente nel formato AAAA-MM-GG
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const fileName = `copyWA_${year}-${month}-${day}.xlsx`;
+
             // Crea un array di dati nello stesso formato del file Excel di esempio
             const excelData = [
                 ["", "News 1", "News 2", "News 3"],
@@ -385,8 +392,8 @@
             const ws = XLSX.utils.aoa_to_sheet(excelData);
             XLSX.utils.book_append_sheet(wb, ws, "Foglio1");
 
-            // Genera il file Excel e lo scarica
-            XLSX.writeFile(wb, "poste_export.xlsx");
+            // Genera il file Excel e lo scarica con il nuovo nome
+            XLSX.writeFile(wb, fileName);
         }
 
         window.onload = initializeApp;
