@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poste Italiane - Contatore Caratteri</title>
     <style>
-        /* Tutti gli stili CSS della versione precedente */
         :root {
             --poste-blue: #0047bb;
             --poste-yellow: #eedc00;
@@ -46,7 +45,6 @@
             display: block;
         }
 
-        /* Resto dello stile invariato */
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -165,7 +163,6 @@
     <div id="tabContents"></div>
 
     <script>
-        // CODICE JAVASCRIPT COMPLETO
         const tabsConfig = Array.from({length: 3}, () => ({
             limits: { wa: 82, ytTitle: 49, ytDesc: 280 },
             fields: ['wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink']
@@ -220,12 +217,16 @@
             tabsConfig.forEach((_, index) => {
                 const savedData = localStorage.getItem(`posteTab${index}`);
                 if(savedData) {
-                    const data = JSON.parse(savedData);
-                    const tab = document.querySelector(`[data-tab-index="${index}"]`);
-                    Object.entries(data).forEach(([type, value]) => {
-                        const field = tab.querySelector(`[data-type="${type}"]`);
-                        if(field) field.value = value;
-                    });
+                    try {
+                        const data = JSON.parse(savedData);
+                        const tab = document.querySelector(`[data-tab-index="${index}"]`);
+                        Object.entries(data).forEach(([type, value]) => {
+                            const field = tab.querySelector(`[data-type="${type}"]`);
+                            if(field) field.value = value;
+                        });
+                    } catch (e) {
+                        console.error("Errore nel caricamento dei dati salvati:", e);
+                    }
                 }
             });
 
@@ -313,6 +314,7 @@
                 tab.querySelectorAll('textarea').forEach(textarea => {
                     textarea.value = '';
                 });
+                localStorage.removeItem(`posteTab${tabIndex}`);
                 updateOutputs();
             }
         }
@@ -353,69 +355,62 @@
                 });
         }
 
-        // ==============================================
-        // NUOVE FUNZIONI CSV (sostituiscono le precedenti)
-        // ==============================================
-
+        // FUNZIONI CSV RIVISTE E TESTATE
         function exportCsv() {
             try {
-                // Prepara i dati da esportare
                 const dataToExport = [];
+                const headers = ['tabIndex', 'wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink'];
                 
+                // Raccogli i dati da tutti i tab
                 for (let i = 0; i < tabsConfig.length; i++) {
                     const savedData = localStorage.getItem(`posteTab${i}`);
                     if (savedData) {
                         const data = JSON.parse(savedData);
-                        dataToExport.push({
-                            tabIndex: i,
-                            wa: data.wa || '',
-                            ytTitle: data.ytTitle || '',
-                            ytDesc: data.ytDesc || '',
-                            ytLink: data.ytLink || '',
-                            tgLink: data.tgLink || ''
+                        const rowData = { tabIndex: i };
+                        
+                        // Assicurati che tutti i campi siano presenti
+                        headers.slice(1).forEach(header => {
+                            rowData[header] = data[header] || '';
                         });
+                        
+                        dataToExport.push(rowData);
                     }
                 }
 
-                // Se non ci sono dati da esportare
                 if (dataToExport.length === 0) {
                     alert('Nessun dato da esportare! Prima salva i dati nei tab.');
                     return;
                 }
 
-                // Crea l'header CSV
-                const headers = ['tabIndex', 'wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink'];
-                let csvContent = headers.join(';') + '\r\n';
-
-                // Aggiungi i dati
+                // Crea il contenuto CSV
+                let csvContent = headers.join(',') + '\r\n';
+                
                 dataToExport.forEach(row => {
-                    const rowData = headers.map(header => {
-                        // Escape i valori e sostituisci i newline
+                    const rowValues = headers.map(header => {
                         let value = row[header] || '';
+                        // Formattazione valori per CSV
                         value = value.toString()
-                            .replace(/"/g, '""') // Escape le virgolette
-                            .replace(/\r?\n/g, '\\n'); // Sostituisci newline con \n
-                        return `"${value}"`; // Metti tra virgolette
+                            .replace(/"/g, '""') // Escape virgolette
+                            .replace(/\r?\n/g, '\\n'); // Gestione a capo
+                        return `"${value}"`; // Racchiudi tra virgolette
                     });
-                    csvContent += rowData.join(';') + '\r\n';
+                    csvContent += rowValues.join(',') + '\r\n';
                 });
 
                 // Crea e scarica il file
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
-                link.setAttribute('href', url);
-                link.setAttribute('download', `poste_data_${new Date().toISOString().slice(0,10)}.csv`);
+                link.href = url;
+                link.download = `poste_data_${new Date().toISOString().slice(0,10)}.csv`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                
-                // Pulisci dopo il download
                 setTimeout(() => URL.revokeObjectURL(url), 100);
                 
             } catch (error) {
-                console.error('Errore durante l\'esportazione:', error);
-                alert('Si è verificato un errore durante l\'esportazione: ' + error.message);
+                console.error('Errore esportazione:', error);
+                alert(`Errore durante l'esportazione:\n${error.message}`);
             }
         }
 
@@ -424,58 +419,60 @@
             
             reader.onload = function(e) {
                 try {
-                    const csvData = e.target.result;
-                    const lines = csvData.split('\r\n');
+                    const csvText = e.target.result;
+                    const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
                     
-                    // Verifica che il file sia valido
                     if (lines.length < 2) {
-                        throw new Error('Il file CSV sembra vuoto o non valido');
+                        throw new Error('Il file CSV è vuoto o non valido');
                     }
                     
-                    // Estrai gli header
-                    const headers = lines[0].split(';').map(h => h.replace(/"/g, ''));
+                    // Estrai intestazioni
+                    const headers = lines[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+                        .map(h => h.replace(/^"|"$/g, '').trim());
+                    
+                    // Verifica struttura del file
+                    const requiredFields = ['tabIndex', 'wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink'];
+                    const missingFields = requiredFields.filter(f => !headers.includes(f));
+                    if (missingFields.length > 0) {
+                        throw new Error(`Campo/i mancante/i nel CSV: ${missingFields.join(', ')}`);
+                    }
                     
                     // Processa ogni riga
                     for (let i = 1; i < lines.length; i++) {
-                        if (!lines[i].trim()) continue;
-                        
-                        const values = lines[i].split(';').map(v => {
-                            // Rimuovi le virgolette esterne e ripristina i newline
-                            let val = v.replace(/^"|"$/g, '')
-                                       .replace(/""/g, '"')
-                                       .replace(/\\n/g, '\n');
-                            return val;
-                        });
-                        
-                        // Crea l'oggetto dati
+                        const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                         const rowData = {};
+                        
                         headers.forEach((header, index) => {
-                            rowData[header] = values[index] || '';
+                            let value = values[index] || '';
+                            // Pulizia e formattazione valori
+                            value = value.replace(/^"|"$/g, '')
+                                        .replace(/""/g, '"')
+                                        .replace(/\\n/g, '\n')
+                                        .trim();
+                            rowData[header] = value;
                         });
                         
-                        // Salva i dati solo se c'è un tabIndex valido
-                        if (rowData.tabIndex !== undefined && !isNaN(rowData.tabIndex)) {
-                            const tabIndex = parseInt(rowData.tabIndex);
-                            if (tabIndex >= 0 && tabIndex < tabsConfig.length) {
-                                // Prepara i dati da salvare
-                                const dataToSave = {};
-                                tabsConfig[tabIndex].fields.forEach(field => {
-                                    dataToSave[field] = rowData[field] || '';
-                                });
-                                
-                                // Salva in localStorage
-                                localStorage.setItem(`posteTab${tabIndex}`, JSON.stringify(dataToSave));
-                            }
-                        }
+                        // Verifica tabIndex valido
+                        const tabIndex = parseInt(rowData.tabIndex);
+                        if (isNaN(tabIndex) continue;
+                        
+                        // Prepara dati per il salvataggio
+                        const dataToSave = {};
+                        tabsConfig[0].fields.forEach(field => {
+                            dataToSave[field] = rowData[field] || '';
+                        });
+                        
+                        // Salva in localStorage
+                        localStorage.setItem(`posteTab${tabIndex}`, JSON.stringify(dataToSave));
                     }
                     
-                    // Ricarica i dati nell'interfaccia
+                    // Ricarica l'interfaccia con i nuovi dati
                     initializeApp();
-                    alert('Importazione completata con successo! I dati sono stati caricati nei rispettivi tab.');
+                    alert('Importazione completata con successo!\nI dati sono stati caricati nei rispettivi tab.');
                     
                 } catch (error) {
-                    console.error('Errore durante l\'importazione:', error);
-                    alert('Errore durante l\'importazione: ' + error.message);
+                    console.error('Errore importazione:', error);
+                    alert(`ERRORE durante l'importazione:\n${error.message}\n\nAssicurati di usare un file CSV esportato da questa applicazione.`);
                 }
             };
             
@@ -483,10 +480,10 @@
                 alert('Errore durante la lettura del file. Assicurati che sia un CSV valido.');
             };
             
-            reader.readAsText(file);
+            reader.readAsText(file, 'UTF-8');
         }
 
-        // Configura gli event listeners per CSV
+        // Configurazione eventi
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('exportCsv').addEventListener('click', exportCsv);
             
@@ -499,10 +496,10 @@
             
             fileInput.addEventListener('change', function(e) {
                 if (e.target.files && e.target.files.length > 0) {
-                    if (confirm('Importare il file CSV sovrascriverà i dati correnti. Continuare?')) {
+                    if (confirm('ATTENZIONE: Importare il file CSV sovrascriverà i dati correnti.\n\nVuoi continuare?')) {
                         importCsv(e.target.files[0]);
                     }
-                    e.target.value = ''; // Resetta l'input
+                    e.target.value = '';
                 }
             });
         });
