@@ -408,36 +408,57 @@
             });
         }
 
-        function importCsv(file) {
-            const reader = new FileReader();
+function importCsv(file) {
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const records = parseCsv(e.target.result);
+            if (!records || records.length === 0) {
+                throw new Error('Nessun dato valido trovato nel CSV');
+            }
             
-            reader.onload = function(e) {
-                try {
-                    const records = parseCsv(e.target.result);
-                    if (!records || records.length === 0) {
-                        throw new Error('Nessun dato valido trovato nel CSV');
-                    }
-                    
-                    records.forEach(rec => {
-                        if (rec.tabIndex !== undefined) {
-                            localStorage.setItem(`posteTab${rec.tabIndex}`, JSON.stringify(rec));
+            // Prima salva tutti i dati in localStorage
+            records.forEach(rec => {
+                if (rec.tabIndex !== undefined) {
+                    localStorage.setItem(`posteTab${rec.tabIndex}`, JSON.stringify(rec));
+                }
+            });
+            
+            // Poi aggiorna l'interfaccia manualmente
+            records.forEach(rec => {
+                const tabIndex = rec.tabIndex;
+                const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
+                if (tab) {
+                    Object.entries(rec).forEach(([type, value]) => {
+                        const field = tab.querySelector(`[data-type="${type}"]`);
+                        if (field) {
+                            field.value = value;
                         }
                     });
-                    
-                    initializeApp();
-                    alert('Importazione CSV completata con successo!');
-                } catch (error) {
-                    console.error('Errore durante l\'importazione:', error);
-                    alert('Errore durante l\'importazione: ' + error.message);
                 }
-            };
+            });
             
-            reader.onerror = function() {
-                alert('Errore durante la lettura del file');
-            };
+            // Infine aggiorna i contatori e gli output
+            updateOutputs();
             
-            reader.readAsText(file);
+            alert('Importazione CSV completata con successo!');
+        } catch (error) {
+            console.error('Errore durante l\'importazione:', error);
+            alert('Errore durante l\'importazione: ' + error.message);
         }
+    };
+    
+    reader.onerror = function() {
+        alert('Errore durante la lettura del file');
+    };
+    
+    reader.readAsText(file);
+}        
+
+
+
+
 
         // Set up event listeners when DOM is fully loaded
         document.addEventListener('DOMContentLoaded', function() {
