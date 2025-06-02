@@ -1,402 +1,151 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poste Italiane - Contatore Caratteri</title>
-    <style>
-        :root {
-            --poste-blue: #0047bb;
-            --poste-yellow: #eedc00;
-            --poste-light-blue: #0066CC;
-            --poste-gray: #F5F5F5;
-            --poste-green: #4CAF50;
-        }
-
-        .header {
-            background-color: var(--poste-yellow);
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .header div {
-            color: var(--poste-blue);
-            line-height: 1.3;
-        }
-
-        .header .title-main {
-            font-weight: bold;
-            font-size: 1.5em;
-            display: block;
-        }
-
-        .header .title-sub {
-            font-size: 1.2em;
-            display: block;
-            font-weight: normal;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: white;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            background-color: var(--poste-gray);
-            border: 1px solid #ddd;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            background-color: var(--poste-light-blue);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .field-label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            display: block;
-            color: var(--poste-blue);
-        }
-
-        textarea {
-            width: 98%;
-            margin-left: 1%;
-            padding: 10px;
-            border: 2px solid var(--poste-light-blue);
-            border-radius: 5px;
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .output-field {
-            background-color: var(--poste-gray);
-            border: 2px dashed var(--poste-blue);
-            padding: 10px;
-            white-space: pre-wrap;
-            margin: 15px 0;
-            min-height: 100px;
-            width: 98%;
-            margin-left: 1%;
-        }
-
-        .button-group {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            background-color: var(--poste-light-blue);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        button:hover {
-            background-color: var(--poste-blue);
-        }
-
-        button.copied {
-            background-color: var(--poste-green) !important;
-        }
-
-        .import-excel {
-            margin-bottom: 20px;
-        }
-
-        .import-excel input[type="file"] {
-            display: none;
-        }
-
-        .import-excel label {
-            background-color: var(--poste-light-blue);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            display: inline-block;
-        }
-
-        .import-excel label:hover {
-            background-color: var(--poste-blue);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Converti Excel Testo→Date</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    input, button {
+      font-size: 1rem;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+    }
+    #log {
+      margin-top: 1rem;
+      color: #555;
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <span class="title-main">Poste Italiane</span>
-            <span class="title-sub">Contatore caratteri</span>
-        </div>
-    </div>
+  <h1>Converti Excel (Testo→Date)</h1>
+  <p>
+    Carica qui il tuo file Excel (con colonne “Mese” e “Data” in formato testo `gg/MM/AAAA`),<br>
+    e otterrai in uscita un nuovo file Excel con quelle colonne salvate come veri campi data.
+  </p>
 
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab(0)">News 1</div>
-        <div class="tab" onclick="switchTab(1)">News 2</div>
-        <div class="tab" onclick="switchTab(2)">News 3</div>
-    </div>
+  <!-- Input per il file Excel di partenza -->
+  <input type="file" id="file-input" accept=".xlsx, .xls" />
 
-    <div class="import-excel">
-        <label for="excelInput">Importa da Excel</label>
-        <input type="file" id="excelInput" accept=".xlsx" onchange="importFromExcel(this.files[0])">
-    </div>
+  <!-- Pulsante per avviare la conversione -->
+  <button id="convert-btn" disabled>Converti e Scarica</button>
 
-    <div id="tabContents"></div>
+  <!-- Elemento per mostrare messaggi di log/errore -->
+  <div id="log"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script>
-        const tabsConfig = Array.from({length: 3}, () => ({
-            limits: { wa: 82, ytTitle: 49, ytDesc: 280 },
-            fields: ['wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink']
-        }));
+  <!-- Includo la libreria SheetJS via CDN -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
-        function createTabContent(tabIndex) {
-            return `
-                <div class="tab-content ${tabIndex === 0 ? 'active' : ''}" data-tab-index="${tabIndex}">
-                    <div class="input-group">
-                        <label class="field-label">Testo descrittivo news Canale WA</label>
-                        <div class="counter">0/${tabsConfig[tabIndex].limits.wa}</div>
-                        <textarea data-type="wa"></textarea>
-                    </div>
-                    <div class="input-group">
-                        <label class="field-label">Titolo YouTube</label>
-                        <div class="counter">0/${tabsConfig[tabIndex].limits.ytTitle}</div>
-                        <textarea data-type="ytTitle"></textarea>
-                    </div>
-                    <div class="input-group">
-                        <label class="field-label">Copy post e descrizione YT</label>
-                        <div class="counter">0/${tabsConfig[tabIndex].limits.ytDesc}</div>
-                        <textarea data-type="ytDesc"></textarea>
-                    </div>
-                    <label class="field-label">Link YouTube</label>
-                    <textarea data-type="ytLink"></textarea>
-                    <label class="field-label" style="margin-top:20px;">Link TG Poste</label>
-                    <textarea data-type="tgLink"></textarea>
-                    <div class="output-field" data-type="waOutput"></div>
-                    <button class="copy-btn" onclick="copyContent(this)">Copia Contenuto WA</button>
-                    <div class="output-field" data-type="socialOutput"></div>
-                    <button class="copy-btn" onclick="copyContent(this)">Copia Contenuto Social</button>
-                    <div class="button-group">
-                        <button onclick="saveData(${tabIndex})">Salva</button>
-                        <button onclick="clearAll(${tabIndex})">Cancella tutto</button>
-                        <button class="copy-all-btn" onclick="copyAllTabsContent()">Contenuto completo</button>
-                        <button onclick="exportToExcel()">Esporta in Excel</button>
-                    </div>
-                </div>`;
+  <script>
+    (function() {
+      const fileInput = document.getElementById('file-input');
+      const convertBtn = document.getElementById('convert-btn');
+      const logEl = document.getElementById('log');
+      let workbookBinary; // Buffer del file caricato
+
+      // Quando viene selezionato un file, carichiamo l'ArrayBuffer
+      fileInput.addEventListener('change', function(evt) {
+        logEl.textContent = "";
+        convertBtn.disabled = true;
+        const file = evt.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          workbookBinary = e.target.result; // ArrayBuffer del file caricato
+          logEl.textContent = `File "${file.name}" caricato, dimensione ${file.size} byte.`;
+          convertBtn.disabled = false;
+        };
+        reader.onerror = function() {
+          logEl.textContent = "Errore nel leggere il file.";
+        };
+        reader.readAsArrayBuffer(file);
+      });
+
+      // Funzione di utilità: trasforma una stringa "gg/MM/AAAA" in Date
+      function parseDate_ddmmyyyy(str) {
+        const parts = str.split('/');
+        if (parts.length !== 3) return null;
+        const giorno = parseInt(parts[0], 10);
+        const mese = parseInt(parts[1], 10) - 1; // in JS i mesi partono da 0
+        const anno = parseInt(parts[2], 10);
+        if (isNaN(giorno) || isNaN(mese) || isNaN(anno)) return null;
+        return new Date(anno, mese, giorno);
+      }
+
+      // Quando l'utente clicca “Converti e Scarica”
+      convertBtn.addEventListener('click', function() {
+        if (!workbookBinary) {
+          logEl.textContent = "Nessun file caricato.";
+          return;
         }
+        logEl.textContent = "Processo in corso… attendi qualche istante.";
 
-        function initializeApp() {
-            const tabContents = document.getElementById('tabContents');
-            tabContents.innerHTML = tabsConfig.map((_, i) => createTabContent(i)).join('');
-            tabsConfig.forEach((_, index) => {
-                const savedData = localStorage.getItem(`posteTab${index}`);
-                if(savedData) {
-                    const data = JSON.parse(savedData);
-                    const tab = document.querySelector(`[data-tab-index="${index}"]`);
-                    Object.entries(data).forEach(([type, value]) => {
-                        const field = tab.querySelector(`[data-type="${type}"]`);
-                        if(field) field.value = value;
-                    });
+        // 1) Leggo il workbook da ArrayBuffer
+        const wb = XLSX.read(workbookBinary, { type: 'array', cellDates: false, raw: true });
+
+        // 2) Per ogni Foglio (sheet) del workbook:
+        wb.SheetNames.forEach(function(sheetName) {
+          const ws = wb.Sheets[sheetName];
+          if (!ws || !ws['!ref']) return;
+
+          // Determino range di celle (es. "A1:F20")
+          const range = XLSX.utils.decode_range(ws['!ref']);
+
+          // Scorro tutte le righe, dalla prima all'ultima
+          for (let row = range.s.r + 1; row <= range.e.r; row++) {
+            // Colonna C = index 2 (A=0, B=1, C=2)
+            // Colonna D = index 3 (D=3)
+            [2, 3].forEach(function(colIdx) {
+              const cellAddress = { c: colIdx, r: row };
+              const cellRef = XLSX.utils.encode_cell(cellAddress);
+              const cell = ws[cellRef];
+              if (!cell) return;
+
+              // Mi aspetto che il valore sia stringa formattata "gg/MM/AAAA"
+              if (cell.t === 's' || cell.t === 'str' || cell.t === 'n') {
+                // Se è numero, Excel potrebbe aver interpretato male: lo converto comunque in stringa
+                const textValue = String(cell.v).trim();
+                const jsDate = parseDate_ddmmyyyy(textValue);
+                if (jsDate && !isNaN(jsDate.getTime())) {
+                  // Sovrascrivo cella: imposta tipo “d” e valore in formato Date
+                  cell.t = 'd';
+                  cell.v = jsDate;
+                  // (Opzionale) Impostare un formato di visualizzazione (es. "dd/mm/yyyy"):
+                  cell.z = 'dd/mm/yyyy';
                 }
+              }
             });
-            document.querySelectorAll('textarea').forEach(textarea => textarea.addEventListener('input', updateOutputs));
-            updateOutputs();
-        }
+          }
+        });
 
-        function switchTab(tabIndex) {
-            document.querySelectorAll('.tab').forEach((tab, i) => tab.classList.toggle('active', i === tabIndex));
-            document.querySelectorAll('.tab-content').forEach((content, i) => content.classList.toggle('active', i === tabIndex));
-            updateOutputs();
-        }
+        // 3) Genero il nuovo file Excel: Array di byte
+        const newWbArray = XLSX.write(wb, {
+          bookType: 'xlsx',
+          type: 'array',
+          cellDates: true // necessario per esportare davvero le date
+        });
 
-        function updateOutputs() {
-            document.querySelectorAll('.tab-content').forEach((tab, tabIndex) => {
-                const getValue = type => tab.querySelector(`[data-type="${type}"]`)?.value || '';
-                ['wa', 'ytTitle', 'ytDesc'].forEach(type => {
-                    const counter = tab.querySelector(`[data-type="${type}"]`).previousElementSibling;
-                    const valueLength = getValue(type).length;
-                    if(counter) counter.textContent = `${valueLength}/${tabsConfig[tabIndex].limits[type]}`;
-                });
-                const waOutput = `${getValue('wa')}\n${getValue('ytLink')}\n➡️ TG Poste https://tgposte.poste.it`;
-                tab.querySelector('[data-type="waOutput"]').textContent = waOutput;
-                const socialOutput = `${getValue('ytDesc')}\n\n#TGPoste #PosteItaliane\n\n➡️ ${getValue('tgLink')}`;
-                tab.querySelector('[data-type="socialOutput"]').textContent = socialOutput;
-            });
-        }
+        // 4) Creo un Blob e forzo il download
+        const blob = new Blob([newWbArray], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'converted_dates.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
 
-        function copyContent(button) {
-            const outputField = button.previousElementSibling;
-            navigator.clipboard.writeText(outputField.textContent)
-                .then(() => {
-                    button.classList.add('copied');
-                    button.textContent = 'Copiato!';
-                    setTimeout(() => {
-                        button.classList.remove('copied');
-                        button.textContent = button.previousElementSibling.dataset.type === 'waOutput' ? 'Copia Contenuto WA' : 'Copia Contenuto Social';
-                    }, 2000);
-                });
-        }
-
-        function saveData(tabIndex) {
-            const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
-            const saveButton = tab.querySelector('button[onclick^="saveData"]');
-            
-            const dataToSave = {};
-            tab.querySelectorAll('textarea').forEach(input => dataToSave[input.dataset.type] = input.value);
-            localStorage.setItem(`posteTab${tabIndex}`, JSON.stringify(dataToSave));
-            
-            // Aggiungi feedback visivo
-            saveButton.classList.add('copied');
-            saveButton.textContent = 'Salvato!';
-            setTimeout(() => {
-                saveButton.classList.remove('copied');
-                saveButton.textContent = 'Salva';
-            }, 2000);
-        }
-
-        function clearAll(tabIndex) {
-            if(confirm("Stai cancellando tutto il testo. Sei sicuro?")) {
-                const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
-                tab.querySelectorAll('textarea').forEach(textarea => textarea.value = '');
-                updateOutputs();
-            }
-        }
-
-        function copyAllTabsContent() {
-            const copyAllButton = document.querySelector('.copy-all-btn');
-            
-            let output = '';
-            for(let i = 0; i < 3; i++) {
-                const tab = document.querySelector(`[data-tab-index="${i}"]`);
-                const getValue = type => tab.querySelector(`[data-type="${type}"]`)?.value.trim() || '=';
-                output += `NEWS ${i + 1}\nContenuto WA: ${getValue('wa')}\nTitolo Youtube: ${getValue('ytTitle')}\nContenuto social: ${getValue('ytDesc')}\n\n`;
-            }
-            navigator.clipboard.writeText(output.trim());
-            
-            // Aggiungi feedback visivo
-            copyAllButton.classList.add('copied');
-            copyAllButton.textContent = 'Copiato!';
-            setTimeout(() => {
-                copyAllButton.classList.remove('copied');
-                copyAllButton.textContent = 'Contenuto completo';
-            }, 2000);
-        }
-
-        async function importFromExcel(file) {
-            const data = await file.arrayBuffer();
-            const workbook = XLSX.read(data);
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-            // Mappa valori colonna A -> data-type
-            const fieldMap = {
-                'Testo descrittivo news Canale WA': 'wa',
-                'Titolo YouTube': 'ytTitle',
-                'Copy post e descrizione YT': 'ytDesc',
-                'Link YouTube': 'ytLink',
-                'Link TG Poste': 'tgLink'
-            };
-
-            rows.slice(1).forEach(row => {
-                const rawField = row[0]?.trim();
-                const fieldType = fieldMap[rawField];
-                if (fieldType) {
-                    for (let tabIndex = 0; tabIndex < 3; tabIndex++) {
-                        const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
-                        const value = row[tabIndex + 1];
-                        const field = tab.querySelector(`[data-type="${fieldType}"]`);
-                        if (field) {
-                            field.value = value !== undefined ? value : '';
-                        }
-                    }
-                }
-            });
-            updateOutputs();
-        }
-
-        function exportToExcel() {
-            // Ottieni la data corrente nel formato AAAA-MM-GG
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const fileName = `copyWA_${year}-${month}-${day}.xlsx`;
-
-            // Crea un array di dati nello stesso formato del file Excel di esempio
-            const excelData = [
-                ["", "News 1", "News 2", "News 3"],
-                ["Testo descrittivo news Canale WA", "", "", ""],
-                ["Titolo YouTube", "", "", ""],
-                ["Copy post e descrizione YT", "", "", ""],
-                ["Link YouTube", "", "", ""],
-                ["Link TG Poste", "", "", ""]
-            ];
-
-            // Popola l'array con i dati dai campi
-            for (let tabIndex = 0; tabIndex < 3; tabIndex++) {
-                const tab = document.querySelector(`[data-tab-index="${tabIndex}"]`);
-                
-                // Mappa i data-type alle righe corrispondenti nell'array excelData
-                const fieldMap = {
-                    'wa': 1,
-                    'ytTitle': 2,
-                    'ytDesc': 3,
-                    'ytLink': 4,
-                    'tgLink': 5
-                };
-
-                tab.querySelectorAll('textarea').forEach(textarea => {
-                    const fieldType = textarea.dataset.type;
-                    const rowIndex = fieldMap[fieldType];
-                    if (rowIndex !== undefined) {
-                        excelData[rowIndex][tabIndex + 1] = textarea.value;
-                    }
-                });
-            }
-
-            // Crea il workbook e il foglio di lavoro
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(excelData);
-            XLSX.utils.book_append_sheet(wb, ws, "Foglio1");
-
-            // Genera il file Excel e lo scarica con il nuovo nome
-            XLSX.writeFile(wb, fileName);
-        }
-
-        window.onload = initializeApp;
-    </script>
+        logEl.textContent = "Download avviato: il file “converted_dates.xlsx” contiene ora le colonne C e D come veri campi data.";
+      });
+    })();
+  </script>
 </body>
 </html>
