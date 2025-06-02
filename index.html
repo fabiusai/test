@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Converti Excel – Data Fissa in C + Conversione D</title>
+  <title>Converti Excel – Data Fissa in C + Conversione D (Corretto)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
@@ -24,7 +24,7 @@
   </style>
 </head>
 <body>
-  <h1>Converti Excel – Colonna C con Primo Giorno del Mese più Vecchio in D</h1>
+  <h1>Converti Excel – Colonna C con Primo Giorno del Mese più Vecchio in D (Corretto)</h1>
   <p>
     Carica qui il tuo file Excel (con colonne “C” e “D” in formato testo `gg/MM/AAAA`),<br>
     e otterrai un nuovo file Excel in cui:
@@ -80,6 +80,7 @@
         const mese = parseInt(parts[1], 10) - 1; // in JS i mesi partono da 0
         const anno = parseInt(parts[2], 10);
         if (isNaN(giorno) || isNaN(mese) || isNaN(anno)) return null;
+        // Generiamo la data in locale, poi la useremo solo per il confronto
         return new Date(anno, mese, giorno);
       }
 
@@ -117,9 +118,11 @@
               if (jsDate && !isNaN(jsDate.getTime())) {
                 // Memorizzo la data per il calcolo del minimo
                 datesInD.push(jsDate);
-                // Sovrascrivo la cella D con tipo “d” e valore Date
+                // Sovrascrivo la cella D con tipo “d” e valore Date in UTC
+                // Usiamo Date.UTC per evitare spostamenti di fuso:
+                const utcDate = new Date(Date.UTC(jsDate.getFullYear(), jsDate.getMonth(), jsDate.getDate()));
                 dCell.t = 'd';
-                dCell.v = jsDate;
+                dCell.v = utcDate;
                 dCell.z = 'dd/mm/yyyy'; // mantengo la stessa formattazione
               }
             }
@@ -131,7 +134,7 @@
             return;
           }
 
-          // Trovo la data più vecchia nell'array (min)
+          // Trovo la data più vecchia nell'array (min) basata sui millisecondi
           let minDate = datesInD[0];
           for (let i = 1; i < datesInD.length; i++) {
             if (datesInD[i] < minDate) {
@@ -139,20 +142,24 @@
             }
           }
 
-          // Calcolo il primo giorno di quel mese
-          const primoGiorno = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+          // Calcolo il primo giorno di quel mese in UTC
+          const primoGiornoUTC = new Date(Date.UTC(minDate.getFullYear(), minDate.getMonth(), 1));
 
-          // Seconda passata: imposto TUTTE le celle di colonna C al primo giorno del mese
+          // Seconda passata: imposto TUTTE le celle di colonna C al primo giorno del mese (in UTC)
           for (let row = range.s.r + 1; row <= range.e.r; row++) {
             const cCellAddr = { c: 2, r: row }; // colonna C = indice 2
             const cCellRef = XLSX.utils.encode_cell(cCellAddr);
-            // Creo o sovrascrivo la cella come tipo “d”
+            // Creo o sovrascrivo la cella come tipo “d” con data in UTC
             ws[cCellRef] = {
               t: 'd',
-              v: new Date(primoGiorno.getTime()), // assegno una copia della data
+              v: new Date(primoGiornoUTC.getTime()), // assegno una copia della data UTC
               z: 'dd/mm/yyyy'
             };
           }
+
+          // Aggiorno il log con il valore calcolato (mostrato come gg/MM/yyyy)
+          const logDate = formatDateUTC(primoGiornoUTC);
+          logEl.textContent = `Foglio "${sheetName}": colonna C impostata a ${logDate}, colonna D convertita in date.`;
         });
 
         // 3) Genero il nuovo file Excel: Array di byte
@@ -172,15 +179,13 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-
-        logEl.textContent = `Download avviato: il file “converted_dates.xlsx” contiene ora la colonna C con ${formatDate(primoGiorno)} e colonna D convertita in data.`;
       });
 
-      // Funzione di comodo per mostrare la data nel log
-      function formatDate(dt) {
-        const gg = String(dt.getDate()).padStart(2, '0');
-        const mm = String(dt.getMonth() + 1).padStart(2, '0');
-        const yyyy = dt.getFullYear();
+      // Funzione di comodo per mostrare la data nel log, basata su UTC
+      function formatDateUTC(dt) {
+        const gg = String(dt.getUTCDate()).padStart(2, '0');
+        const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+        const yyyy = dt.getUTCFullYear();
         return `${gg}/${mm}/${yyyy}`;
       }
     })();
