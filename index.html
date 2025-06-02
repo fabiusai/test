@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Converti Excel Testo→Date</title>
+  <title>Converti Excel – Data Fissa in C + Conversione D</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
@@ -24,10 +24,14 @@
   </style>
 </head>
 <body>
-  <h1>Converti Excel (Testo→Date)</h1>
+  <h1>Converti Excel – Colonna C con Primo Giorno del Mese più Vecchio in D</h1>
   <p>
-    Carica qui il tuo file Excel (con colonne “Mese” e “Data” in formato testo `gg/MM/AAAA`),<br>
-    e otterrai in uscita un nuovo file Excel con quelle colonne salvate come veri campi data.
+    Carica qui il tuo file Excel (con colonne “C” e “D” in formato testo `gg/MM/AAAA`),<br>
+    e otterrai un nuovo file Excel in cui:
+    <ul>
+      <li>Colonna C = primo giorno del mese relativo alla data più vecchia di colonna D</li>
+      <li>Colonna D = convertita in veri campi data</li>
+    </ul>
   </p>
 
   <!-- Input per il file Excel di partenza -->
@@ -97,31 +101,57 @@
 
           // Determino range di celle (es. "A1:F20")
           const range = XLSX.utils.decode_range(ws['!ref']);
+          const datesInD = []; // array temporaneo per raccogliere le date convertite di colonna D
 
-          // Scorro tutte le righe, dalla prima all'ultima
+          // Prima passata: converto colonna D da testo a Date e memorizzo le date per trovare la più vecchia
           for (let row = range.s.r + 1; row <= range.e.r; row++) {
-            // Colonna C = index 2 (A=0, B=1, C=2)
-            // Colonna D = index 3 (D=3)
-            [2, 3].forEach(function(colIdx) {
-              const cellAddress = { c: colIdx, r: row };
-              const cellRef = XLSX.utils.encode_cell(cellAddress);
-              const cell = ws[cellRef];
-              if (!cell) return;
+            const dCellAddr = { c: 3, r: row }; // colonna D = indice 3
+            const dCellRef = XLSX.utils.encode_cell(dCellAddr);
+            const dCell = ws[dCellRef];
+            if (!dCell) continue;
 
-              // Mi aspetto che il valore sia stringa formattata "gg/MM/AAAA"
-              if (cell.t === 's' || cell.t === 'str' || cell.t === 'n') {
-                // Se è numero, Excel potrebbe aver interpretato male: lo converto comunque in stringa
-                const textValue = String(cell.v).trim();
-                const jsDate = parseDate_ddmmyyyy(textValue);
-                if (jsDate && !isNaN(jsDate.getTime())) {
-                  // Sovrascrivo cella: imposta tipo “d” e valore in formato Date
-                  cell.t = 'd';
-                  cell.v = jsDate;
-                  // (Opzionale) Impostare un formato di visualizzazione (es. "dd/mm/yyyy"):
-                  cell.z = 'dd/mm/yyyy';
-                }
+            // Se è stringa (o numero estraneo), provo a convertirlo in Date
+            if (dCell.t === 's' || dCell.t === 'str' || dCell.t === 'n') {
+              const textVal = String(dCell.v).trim();
+              const jsDate = parseDate_ddmmyyyy(textVal);
+              if (jsDate && !isNaN(jsDate.getTime())) {
+                // Memorizzo la data per il calcolo del minimo
+                datesInD.push(jsDate);
+                // Sovrascrivo la cella D con tipo “d” e valore Date
+                dCell.t = 'd';
+                dCell.v = jsDate;
+                dCell.z = 'dd/mm/yyyy'; // mantengo la stessa formattazione
               }
-            });
+            }
+          }
+
+          // Se non ci sono date valide in colonna D, salto la logica su colonna C
+          if (datesInD.length === 0) {
+            console.warn(`Foglio "${sheetName}": nessuna data valida trovata in colonna D.`);
+            return;
+          }
+
+          // Trovo la data più vecchia nell'array (min)
+          let minDate = datesInD[0];
+          for (let i = 1; i < datesInD.length; i++) {
+            if (datesInD[i] < minDate) {
+              minDate = datesInD[i];
+            }
+          }
+
+          // Calcolo il primo giorno di quel mese
+          const primoGiorno = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+
+          // Seconda passata: imposto TUTTE le celle di colonna C al primo giorno del mese
+          for (let row = range.s.r + 1; row <= range.e.r; row++) {
+            const cCellAddr = { c: 2, r: row }; // colonna C = indice 2
+            const cCellRef = XLSX.utils.encode_cell(cCellAddr);
+            // Creo o sovrascrivo la cella come tipo “d”
+            ws[cCellRef] = {
+              t: 'd',
+              v: new Date(primoGiorno.getTime()), // assegno una copia della data
+              z: 'dd/mm/yyyy'
+            };
           }
         });
 
@@ -129,7 +159,7 @@
         const newWbArray = XLSX.write(wb, {
           bookType: 'xlsx',
           type: 'array',
-          cellDates: true // necessario per esportare davvero le date
+          cellDates: true // fondamentale per esportare le date
         });
 
         // 4) Creo un Blob e forzo il download
@@ -143,8 +173,16 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        logEl.textContent = "Download avviato: il file “converted_dates.xlsx” contiene ora le colonne C e D come veri campi data.";
+        logEl.textContent = `Download avviato: il file “converted_dates.xlsx” contiene ora la colonna C con ${formatDate(primoGiorno)} e colonna D convertita in data.`;
       });
+
+      // Funzione di comodo per mostrare la data nel log
+      function formatDate(dt) {
+        const gg = String(dt.getDate()).padStart(2, '0');
+        const mm = String(dt.getMonth() + 1).padStart(2, '0');
+        const yyyy = dt.getFullYear();
+        return `${gg}/${mm}/${yyyy}`;
+      }
     })();
   </script>
 </body>
