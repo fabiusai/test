@@ -2,193 +2,661 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Converti Excel – Data Fissa in C + Conversione D (Corretto)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Social - Poste Italiane</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <style>
+    :root {
+      --poste-blue: #003d82;
+      --poste-yellow: #ffcc00;
+      --poste-light-blue: #e6f3ff;
+      --poste-dark-blue: #002952;
+      --text-primary: #333333;
+      --text-secondary: #666666;
+      --border-color: #e0e6ed;
+      --background-light: #f8f9fa;
+      --shadow-light: 0 2px 8px rgba(0, 61, 130, 0.1);
+      --shadow-medium: 0 4px 16px rgba(0, 61, 130, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: sans-serif;
-      margin: 2rem;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, var(--background-light) 0%, var(--poste-light-blue) 100%);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
     }
-    h1 {
-      margin-bottom: 1rem;
+
+    .header {
+      background: linear-gradient(135deg, var(--poste-blue) 0%, var(--poste-dark-blue) 100%);
+      color: white;
+      padding: 2rem 0;
+      text-align: center;
+      box-shadow: var(--shadow-medium);
     }
-    input, button {
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 300;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      font-weight: 300;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .form-section {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-light);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .section-header {
+      background: linear-gradient(135deg, var(--poste-yellow) 0%, #ffe066 100%);
+      padding: 1.5rem;
+      border-bottom: 3px solid var(--poste-blue);
+    }
+
+    .section-header h2 {
+      color: var(--poste-dark-blue);
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .section-content {
+      padding: 2rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .field-label {
+      font-weight: 600;
+      color: var(--poste-blue);
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .field-label::before {
+      content: "▸";
+      color: var(--poste-yellow);
+      margin-right: 0.5rem;
+      font-weight: bold;
+    }
+
+    .field-input {
+      padding: 12px 16px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
       font-size: 1rem;
-      margin: 0.5rem 0;
-      padding: 0.5rem;
+      transition: all 0.3s ease;
+      background: white;
     }
-    #log {
-      margin-top: 1rem;
-      color: #555;
+
+    .field-input:focus {
+      outline: none;
+      border-color: var(--poste-blue);
+      box-shadow: 0 0 0 3px rgba(0, 61, 130, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .field-input:hover {
+      border-color: var(--poste-yellow);
+    }
+
+    textarea.field-input {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 2rem 0;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 140px;
+      justify-content: center;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--poste-blue) 0%, var(--poste-dark-blue) 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-medium);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--poste-yellow) 0%, #ffe066 100%);
+      color: var(--poste-dark-blue);
+      border: 2px solid var(--poste-blue);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-medium);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(220, 53, 69, 0.3);
+    }
+
+    .preview-section {
+      margin-top: 3rem;
+    }
+
+    .preview-card {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-light);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .preview-header {
+      background: linear-gradient(135deg, var(--poste-blue) 0%, var(--poste-dark-blue) 100%);
+      color: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .preview-header h3 {
+      font-size: 1.3rem;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .copy-btn {
+      background: var(--poste-yellow);
+      color: var(--poste-dark-blue);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .copy-btn:hover {
+      background: #ffe066;
+      transform: scale(1.05);
+    }
+
+    .preview-content {
+      padding: 2rem;
+      white-space: pre-wrap;
+      border: 2px dashed var(--border-color);
+      margin: 1rem;
+      border-radius: 8px;
+      background: var(--background-light);
+      min-height: 100px;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .rosso {
+      color: #dc3545;
+      font-weight: bold;
+      background: #fff5f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #fecaca;
+    }
+
+    .loading {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .loading::after {
+      content: " ⏳";
+    }
+
+    .success::after {
+      content: " ✓";
+      color: #28a745;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .preview-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+    }
+
+    .hidden-file-input {
+      display: none;
+    }
+
+    .info-badge {
+      background: var(--poste-light-blue);
+      color: var(--poste-blue);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      margin: 1rem 0;
+      border: 1px solid var(--poste-blue);
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h1>Converti Excel – Colonna C con Primo Giorno del Mese più Vecchio in D (Corretto)</h1>
-  <p>
-    Carica qui il tuo file Excel (con colonne “C” e “D” in formato testo `gg/MM/AAAA`),<br>
-    e otterrai un nuovo file Excel in cui:
-    <ul>
-      <li>Colonna C = primo giorno del mese relativo alla data più vecchia di colonna D</li>
-      <li>Colonna D = convertita in veri campi data</li>
-    </ul>
-  </p>
+  <div class="header">
+    <h1>Report Social</h1>
+    <div class="subtitle">Sistema di Generazione Report - Poste Italiane</div>
+  </div>
 
-  <!-- Input per il file Excel di partenza -->
-  <input type="file" id="file-input" accept=".xlsx, .xls" />
+  <div class="container">
+    <!-- Sezione Dati Generali -->
+    <div class="form-section fade-in">
+      <div class="section-header">
+        <h2>📊 Dati Generali del Report</h2>
+      </div>
+      <div class="section-content">
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label">Mese di Riferimento</label>
+            <input id="mese" class="field-input" placeholder="Inserisci il mese (es. Gennaio 2024)" />
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <!-- Pulsante per avviare la conversione -->
-  <button id="convert-btn" disabled>Converti e Scarica</button>
+    <!-- Sezione Iscritti -->
+    <div class="form-section fade-in">
+      <div class="section-header">
+        <h2>👥 Dati Iscritti Social Network</h2>
+      </div>
+      <div class="section-content">
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label">Numero Complessivo Iscritti</label>
+            <input id="iscritti" class="field-input" placeholder="Totale iscritti su tutti i canali" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Iscritti Facebook</label>
+            <input id="facebook" class="field-input" placeholder="Numero fan Facebook" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Iscritti Twitter/X</label>
+            <input id="twitter" class="field-input" placeholder="Numero followers Twitter/X" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Iscritti LinkedIn</label>
+            <input id="linkedin" class="field-input" placeholder="Numero followers LinkedIn" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Iscritti Instagram</label>
+            <input id="instagram" class="field-input" placeholder="Numero followers Instagram" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Iscritti YouTube</label>
+            <input id="youtube" class="field-input" placeholder="Numero iscritti YouTube" />
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <!-- Elemento per mostrare messaggi di log/errore -->
-  <div id="log"></div>
+    <!-- Sezione Post -->
+    <div class="form-section fade-in">
+      <div class="section-header">
+        <h2>📝 Attività di Pubblicazione</h2>
+      </div>
+      <div class="section-content">
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label">Totale Post Pubblicati</label>
+            <input id="totalePost" class="field-input" placeholder="Numero totale post del mese" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Post Editoriali</label>
+            <input id="postEditoriali" class="field-input" placeholder="Post non sponsorizzati" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Post Sponsorizzati (ADV)</label>
+            <input id="postADV" class="field-input" placeholder="Post pubblicitari" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Post Facebook</label>
+            <input id="postFacebook" class="field-input" placeholder="Post pubblicati su Facebook" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Post Instagram</label>
+            <input id="postInstagram" class="field-input" placeholder="Post pubblicati su Instagram" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Post LinkedIn</label>
+            <input id="postLinkedin" class="field-input" placeholder="Post pubblicati su LinkedIn" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Tweet</label>
+            <input id="tweet" class="field-input" placeholder="Tweet pubblicati" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Video YouTube</label>
+            <input id="videoYoutube" class="field-input" placeholder="Video pubblicati su YouTube" />
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <!-- Includo la libreria SheetJS via CDN -->
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- Sezione Top Content -->
+    <div class="form-section fade-in">
+      <div class="section-header">
+        <h2>🏆 Contenuti Top Performance</h2>
+      </div>
+      <div class="section-content">
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label">Titolo Primo Contenuto</label>
+            <input id="titolo1" class="field-input" placeholder="Titolo del contenuto più visualizzato" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Visualizzazioni Primo Contenuto</label>
+            <input id="vis1" class="field-input" placeholder="Numero visualizzazioni" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Titolo Secondo Contenuto</label>
+            <input id="titolo2" class="field-input" placeholder="Titolo del secondo contenuto" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Visualizzazioni Secondo Contenuto</label>
+            <input id="vis2" class="field-input" placeholder="Numero visualizzazioni" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Titolo Terzo Contenuto</label>
+            <input id="titolo3" class="field-input" placeholder="Titolo del terzo contenuto" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Visualizzazioni Terzo Contenuto</label>
+            <input id="vis3" class="field-input" placeholder="Numero visualizzazioni" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sezione Comunicazione Istituzionale -->
+    <div class="form-section fade-in">
+      <div class="section-header">
+        <h2>🏛️ Comunicazione Istituzionale</h2>
+      </div>
+      <div class="section-content">
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label">Post Istituzionali</label>
+            <input id="postIstituzionali" class="field-input" placeholder="Numero post istituzionali" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Views Post Istituzionali</label>
+            <input id="viewsIstituzionali" class="field-input" placeholder="Visualizzazioni totali" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Interazioni Post Istituzionali</label>
+            <input id="interazioniIstituzionali" class="field-input" placeholder="Like e interazioni totali" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sezione Campagne ATL -->
+    <div class="form-section fade-in">
+      <div class="section-header">
+        <h2>📢 Campagne Above The Line (ATL)</h2>
+      </div>
+      <div class="section-content">
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label">Numero Campagne ATL</label>
+            <input id="campagneATL" class="field-input" placeholder="Campagne gestite nel mese" />
+          </div>
+          <div class="field-group" style="grid-column: 1 / -1;">
+            <label class="field-label">Elenco Campagne</label>
+            <textarea id="elencoCampagne" class="field-input" rows="3" placeholder="Descrizione dettagliata delle campagne ATL"></textarea>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Views/Impression ATL</label>
+            <input id="viewsATL" class="field-input" placeholder="Impressioni totali campagne" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Utenti Unici Raggiunti</label>
+            <input id="utentiATL" class="field-input" placeholder="Reach unico delle campagne" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Link Click ATL</label>
+            <input id="clickATL" class="field-input" placeholder="Click sui link delle campagne" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Interazioni ATL</label>
+            <input id="interazioniATL" class="field-input" placeholder="Engagement totale campagne" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sezione Commenti e Engagement -->
+    <div class="form-section fade-in">
+      <div class="section-header">
+        <h2>💬 Analisi Commenti e Engagement</h2>
+      </div>
+      <div class="section-content">
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label">Commenti Complessivi</label>
+            <input id="commenti" class="field-input" placeholder="Totale commenti ricevuti" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Tendenza Commenti</label>
+            <input id="tendenzaCommenti" class="field-input" placeholder="Aumento/Diminuzione vs mese precedente" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Argomenti Prevalenti Facebook</label>
+            <input id="argomentiFacebook" class="field-input" placeholder="Temi più discussi nei commenti" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Prevalenza Commenti (%)</label>
+            <input id="prevalenzaCommenti" class="field-input" placeholder="Percentuale dell'argomento principale" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pulsanti Azione -->
+    <div class="action-buttons">
+      <button class="btn btn-primary" onclick="generaAnteprima(this)">
+        💾 Genera Report
+      </button>
+      <button class="btn btn-secondary" onclick="exportExcel(this)">
+        📊 Esporta Excel
+      </button>
+      <button class="btn btn-secondary" onclick="document.getElementById('fileImport').click()">
+        📂 Importa Excel
+      </button>
+      <button class="btn btn-danger" onclick="cancellaTutto(this)">
+        🗑️ Cancella Tutto
+      </button>
+      <input type="file" id="fileImport" class="hidden-file-input" onchange="importExcel(event)" />
+    </div>
+
+    <div class="info-badge">
+      💡 Tip: I campi evidenziati in rosso nel report indicano dati mancanti che devono essere compilati
+    </div>
+
+    <!-- Sezione Preview -->
+    <div class="preview-section" id="previewSection" style="display: none;">
+      <div class="preview-card fade-in">
+        <div class="preview-header">
+          <h3>📋 PPT1 - Sintesi Esecutiva</h3>
+          <button class="copy-btn" onclick="copyHtmlContent('textPPT1', this)">Copia per Word</button>
+        </div>
+        <div id="textPPT1" class="preview-content"></div>
+      </div>
+
+      <div class="preview-card fade-in">
+        <div class="preview-header">
+          <h3>📊 PPT2 - Dettaglio Metriche</h3>
+          <button class="copy-btn" onclick="copyHtmlContent('textPPT2', this)">Copia per Word</button>
+        </div>
+        <div id="textPPT2" class="preview-content"></div>
+      </div>
+
+      <div class="preview-card fade-in">
+        <div class="preview-header">
+          <h3>📖 Report Esteso - Analisi Completa</h3>
+          <button class="copy-btn" onclick="copyHtmlContent('textEsteso', this)">Copia per Word</button>
+        </div>
+        <div id="textEsteso" class="preview-content"></div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    (function() {
-      const fileInput = document.getElementById('file-input');
-      const convertBtn = document.getElementById('convert-btn');
-      const logEl = document.getElementById('log');
-      let workbookBinary; // Buffer del file caricato
+    function get(id) {
+      const el = document.getElementById(id);
+      return el ? el.value || "<span class='rosso'>XXX</span>" : "XXX";
+    }
 
-      // Quando viene selezionato un file, carichiamo l'ArrayBuffer
-      fileInput.addEventListener('change', function(evt) {
-        logEl.textContent = "";
-        convertBtn.disabled = true;
-        const file = evt.target.files[0];
-        if (!file) return;
+    function addButtonFeedback(button, type = 'success') {
+      button.classList.add(type);
+      setTimeout(() => {
+        button.classList.remove(type);
+      }, 2000);
+    }
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          workbookBinary = e.target.result; // ArrayBuffer del file caricato
-          logEl.textContent = `File "${file.name}" caricato, dimensione ${file.size} byte.`;
-          convertBtn.disabled = false;
-        };
-        reader.onerror = function() {
-          logEl.textContent = "Errore nel leggere il file.";
-        };
-        reader.readAsArrayBuffer(file);
-      });
+    function generaAnteprima(button) {
+      button.classList.add('loading');
+      
+      setTimeout(() => {
+        const ppt1 = `<b>Emesso il Report social di ${get('mese')}</b>: ${get('iscritti')} iscritti totali; ${get('totalePost')} post pubblicati di cui ${get('postIstituzionali')} su temi istituzionali; ${get('campagneATL')} campagne ATL; ${get('commenti')} commenti.`;
 
-      // Funzione di utilità: trasforma una stringa "gg/MM/AAAA" in Date
-      function parseDate_ddmmyyyy(str) {
-        const parts = str.split('/');
-        if (parts.length !== 3) return null;
-        const giorno = parseInt(parts[0], 10);
-        const mese = parseInt(parts[1], 10) - 1; // in JS i mesi partono da 0
-        const anno = parseInt(parts[2], 10);
-        if (isNaN(giorno) || isNaN(mese) || isNaN(anno)) return null;
-        // Generiamo la data in locale, poi la useremo solo per il confronto
-        return new Date(anno, mese, giorno);
-      }
+        const ppt2 = `Il numero complessivo degli iscritti è pari a ${get('iscritti')}: Facebook ${get('facebook')}; X ${get('twitter')}; Linkedin ${get('linkedin')}; Instagram ${get('instagram')}; YouTube ${get('youtube')}.<br><br>
+Durante il mese abbiamo pubblicato ${get('totalePost')} post (${get('postEditoriali')} editoriali e ${get('postADV')} sponsorizzati): ${get('postFacebook')} post Facebook, ${get('postInstagram')} post Instagram, ${get('postLinkedin')} post Linkedin, ${get('tweet')} tweet, ${get('videoYoutube')} video YouTube, ${get('postADV')} post relativi alle campagne ADV (Facebook e Instagram).<br><br>
+I contenuti editoriali più visualizzati sono stati i post dedicati a: ${get('titolo1')} (${get('vis1')} Visualizzazioni); ${get('titolo2')} (${get('vis2')} Visualizzazioni); ${get('titolo3')} (${get('vis3')} Visualizzazioni).<br><br>
+Sono stati pubblicati ${get('postIstituzionali')} post a contenuto «istituzionale» che hanno generato ${get('viewsIstituzionali')} visualizzazioni e ${get('interazioniIstituzionali')} like e interazioni.<br><br>
+Nel corso del mese sono state gestite ${get('campagneATL')} campagne ATL che hanno sviluppato complessivamente ${get('viewsATL')} impression, raggiunto ${get('utentiATL')} utenti unici e generato un engagement per ${get('clickATL')} link click e ${get('interazioniATL')} interazioni.<br><br>
+Nel mese gli utenti hanno pubblicato ${get('commenti')} commenti ai post. I commenti hanno riguardato, in prevalenza, i "${get('argomentiFacebook')}" (${get('prevalenzaCommenti')}).`;
 
-      // Quando l'utente clicca “Converti e Scarica”
-      convertBtn.addEventListener('click', function() {
-        if (!workbookBinary) {
-          logEl.textContent = "Nessun file caricato.";
-          return;
-        }
-        logEl.textContent = "Processo in corso… attendi qualche istante.";
+        const esteso = `Report social del mese di <b>${get('mese')}</b>.<br><br>
+Il numero complessivo degli <b>iscritti</b> è pari a <b>${get('iscritti')}</b>.<br><br>
+I fan <b>Facebook</b> (Poste Italiane, PosteMobile, Postepay) sono <b>${get('facebook')}</b>, mentre su <b>X</b> il numero di followers ammonta a <b>${get('twitter')}</b>. Su <b>Linkedin</b> sono <b>${get('linkedin')}</b>, su <b>Instagram</b>  <b>${get('instagram')}</b> e su <b>YouTube</b> <b>${get('youtube')}</b>.<br><br>
+Durante il mese abbiamo pubblicato <b>${get('totalePost')} post</b> (<b>${get('postEditoriali')} editoriali</b> e <b>${get('postADV')} sponsorizzati</b>):<br>
+• ${get('postFacebook')} post Facebook<br>
+• ${get('postInstagram')} post Instagram<br>
+• ${get('postLinkedin')} post LinkedIn<br>
+• ${get('tweet')} tweet<br>
+• ${get('videoYoutube')} video YouTube<br>
+• ${get('postADV')} post relativi alle campagne ADV (Facebook e Instagram)<br><br>
+<b>I contenuti editoriali più visualizzati</b> sono stati:<br>
+• <b>${get('titolo1')}</b> (${get('vis1')} Visualizzazioni)<br>
+• <b>${get('titolo2')}</b> (${get('vis2')} Visualizzazioni)<br>
+• <b>${get('titolo3')}</b> (${get('vis3')} Visualizzazioni)<br><br>
+L'attività di <b>comunicazione istituzionale</b> ha portato alla pubblicazione di <b>${get('postIstituzionali')} post</b> che hanno generato <b>${get('viewsIstituzionali')} visualizzazioni</b> e <b>${get('interazioniIstituzionali')} like e interazioni</b>.<br><br>
+Sono state gestite <b>${get('campagneATL')} campagne ATL</b> (Facebook e Instagram): <b>${get('elencoCampagne')}</b>.<br><br>
+Le campagne hanno sviluppato complessivamente:<br>
+• <b>${get('viewsATL')} impression</b><br>
+• <b>${get('utentiATL')} utenti unici</b><br>
+e generato engagement per <b>${get('clickATL')} link click</b> e <b>${get('interazioniATL')} interazioni</b>.<br><br>
+Nel mese si registrano <b>${get('commenti')} commenti</b> pubblici sui canali, in ${get('tendenzaCommenti')}  rispetto al mese precedente. I commenti sulla pagina Facebook di Poste Italiane hanno riguardato in prevalenza il tema <b>"${get('argomentiFacebook')}"</b> (${get('prevalenzaCommenti')}).`;
 
-        // 1) Leggo il workbook da ArrayBuffer
-        const wb = XLSX.read(workbookBinary, { type: 'array', cellDates: false, raw: true });
-
-        // 2) Per ogni Foglio (sheet) del workbook:
-        wb.SheetNames.forEach(function(sheetName) {
-          const ws = wb.Sheets[sheetName];
-          if (!ws || !ws['!ref']) return;
-
-          // Determino range di celle (es. "A1:F20")
-          const range = XLSX.utils.decode_range(ws['!ref']);
-          const datesInD = []; // array temporaneo per raccogliere le date convertite di colonna D
-
-          // Prima passata: converto colonna D da testo a Date e memorizzo le date per trovare la più vecchia
-          for (let row = range.s.r + 1; row <= range.e.r; row++) {
-            const dCellAddr = { c: 3, r: row }; // colonna D = indice 3
-            const dCellRef = XLSX.utils.encode_cell(dCellAddr);
-            const dCell = ws[dCellRef];
-            if (!dCell) continue;
-
-            // Se è stringa (o numero estraneo), provo a convertirlo in Date
-            if (dCell.t === 's' || dCell.t === 'str' || dCell.t === 'n') {
-              const textVal = String(dCell.v).trim();
-              const jsDate = parseDate_ddmmyyyy(textVal);
-              if (jsDate && !isNaN(jsDate.getTime())) {
-                // Memorizzo la data per il calcolo del minimo
-                datesInD.push(jsDate);
-                // Sovrascrivo la cella D con tipo “d” e valore Date in UTC
-                // Usiamo Date.UTC per evitare spostamenti di fuso:
-                const utcDate = new Date(Date.UTC(jsDate.getFullYear(), jsDate.getMonth(), jsDate.getDate()));
-                dCell.t = 'd';
-                dCell.v = utcDate;
-                dCell.z = 'dd/mm/yyyy'; // mantengo la stessa formattazione
-              }
-            }
-          }
-
-          // Se non ci sono date valide in colonna D, salto la logica su colonna C
-          if (datesInD.length === 0) {
-            console.warn(`Foglio "${sheetName}": nessuna data valida trovata in colonna D.`);
-            return;
-          }
-
-          // Trovo la data più vecchia nell'array (min) basata sui millisecondi
-          let minDate = datesInD[0];
-          for (let i = 1; i < datesInD.length; i++) {
-            if (datesInD[i] < minDate) {
-              minDate = datesInD[i];
-            }
-          }
-
-          // Calcolo il primo giorno di quel mese in UTC
-          const primoGiornoUTC = new Date(Date.UTC(minDate.getFullYear(), minDate.getMonth(), 1));
-
-          // Seconda passata: imposto TUTTE le celle di colonna C al primo giorno del mese (in UTC)
-          for (let row = range.s.r + 1; row <= range.e.r; row++) {
-            const cCellAddr = { c: 2, r: row }; // colonna C = indice 2
-            const cCellRef = XLSX.utils.encode_cell(cCellAddr);
-            // Creo o sovrascrivo la cella come tipo “d” con data in UTC
-            ws[cCellRef] = {
-              t: 'd',
-              v: new Date(primoGiornoUTC.getTime()), // assegno una copia della data UTC
-              z: 'dd/mm/yyyy'
-            };
-          }
-
-          // Aggiorno il log con il valore calcolato (mostrato come gg/MM/yyyy)
-          const logDate = formatDateUTC(primoGiornoUTC);
-          logEl.textContent = `Foglio "${sheetName}": colonna C impostata a ${logDate}, colonna D convertita in date.`;
-        });
-
-        // 3) Genero il nuovo file Excel: Array di byte
-        const newWbArray = XLSX.write(wb, {
-          bookType: 'xlsx',
-          type: 'array',
-          cellDates: true // fondamentale per esportare le date
-        });
-
-        // 4) Creo un Blob e forzo il download
-        const blob = new Blob([newWbArray], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'converted_dates.xlsx';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      });
-
-      // Funzione di comodo per mostrare la data nel log, basata su UTC
-      function formatDateUTC(dt) {
-        const gg = String(dt.getUTCDate()).padStart(2, '0');
-        const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
-        const yyyy = dt.getUTCFullYear();
-        return `${gg}/${mm}/${yyyy}`;
-      }
-    })();
-  </script>
-</body>
-</html>
+        document.getElementById('textPP
