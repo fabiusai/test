@@ -5,7 +5,7 @@
   <title>Report Social - Poste Italiane</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
 
-  <!-- Librerie per Excel e Font Awesome (stessa cosa del Restyle) -->
+  <!-- Librerie per Excel e Font Awesome -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -590,7 +590,7 @@
     </div>
   </div>
 
-  <!-- SCRIPT JavaScript del file originale (report mensile.html) -->
+  <!-- SCRIPT JavaScript del file originale (report mensile.html), ma con generazione stringhe senza indentazioni -->
   <script>
     function get(id) {
       const el = document.getElementById(id);
@@ -598,56 +598,89 @@
     }
 
     function generaAnteprima() {
-      const ppt1 = `<b>Emesso il Report social di ${get('mese')}</b>: ${get('iscritti')} iscritti totali; ${get('totalePost')} post pubblicati di cui ${get('postIstituzionali')} su temi istituzionali; ${get('campagneATL')} campagne ATL; ${get('commenti')} commenti.`;
+      // Primo blocco PPT1 (tutto su unica riga, senza spazi di indentazione)
+      const ppt1 = "<b>Emesso il Report social di " + get("mese") + "</b>: " +
+                   get("iscritti") + " iscritti totali; " +
+                   get("totalePost") + " post pubblicati di cui " +
+                   get("postIstituzionali") + " su temi istituzionali; " +
+                   get("campagneATL") + " campagne ATL; " +
+                   get("commenti") + " commenti.";
 
-      const ppt2 = `Il numero complessivo degli iscritti è pari a ${get('iscritti')}: Facebook ${get('facebook')}; X ${get('twitter')}; Linkedin ${get('linkedin')}; Instagram ${get('instagram')}; YouTube ${get('youtube')}.<br><br>
-      Durante il mese abbiamo pubblicato ${get('totalePost')} post (${get('postEditoriali')} editoriali e ${get('postADV')} sponsorizzati): ${get('postFacebook')} post Facebook, ${get('postInstagram')} post Instagram, ${get('postLinkedin')} post Linkedin, ${get('tweet')} tweet, ${get('videoYoutube')} video YouTube, ${get('postADV')} post relativi alle campagne ADV (Facebook e Instagram).<br><br>
-      I contenuti editoriali più visualizzati sono stati i post dedicati a: ${get('titolo1')} (${get('vis1')} Visualizzazioni); ${get('titolo2')} (${get('vis2')} Visualizzazioni); ${get('titolo3')} (${get('vis3')} Visualizzazioni).<br><br>
-      Sono stati pubblicati ${get('postIstituzionali')} post a contenuto «istituzionale» che hanno generato ${get('viewsIstituzionali')} visualizzazioni e ${get('interazioniIstituzionali')} like e interazioni.<br><br>
-      Nel corso del mese sono state gestite ${get('campagneATL')} campagne ATL che hanno sviluppato complessivamente ${get('viewsATL')} impression, raggiunto ${get('utentiATL')} utenti unici e generato un engagement per ${get('clickATL')} link click e ${get('interazioniATL')} interazioni.<br><br>
-      Nel mese gli utenti hanno pubblicato ${get('commenti')} commenti ai post. I commenti hanno riguardato, in prevalenza, i “${get('argomentiFacebook')}” (${get('prevalenzaCommenti')}).`;
+      // Secondo blocco PPT2 (da concatenare con <br> e nessun ritorno a capo nella stringa)
+      const ppt2 = "Il numero complessivo degli iscritti è pari a " + get("iscritti") + ": Facebook " + get("facebook") +
+                   "; X " + get("twitter") + "; Linkedin " + get("linkedin") + "; Instagram " + get("instagram") +
+                   "; YouTube " + get("youtube") + ".<br><br>" +
+                   "Durante il mese abbiamo pubblicato " + get("totalePost") + " post (" + get("postEditoriali") +
+                   " editoriali e " + get("postADV") + " sponsorizzati): " + get("postFacebook") + " post Facebook, " +
+                   get("postInstagram") + " post Instagram, " + get("postLinkedin") + " post Linkedin, " +
+                   get("tweet") + " tweet, " + get("videoYoutube") + " video YouTube, " +
+                   get("postADV") + " post relativi alle campagne ADV (Facebook e Instagram).<br><br>" +
+                   "I contenuti editoriali più visualizzati sono stati i post dedicati a: " +
+                   get("titolo1") + " (" + get("vis1") + " Visualizzazioni); " +
+                   get("titolo2") + " (" + get("vis2") + " Visualizzazioni); " +
+                   get("titolo3") + " (" + get("vis3") + " Visualizzazioni).<br><br>" +
+                   "Sono stati pubblicati " + get("postIstituzionali") + " post a contenuto «istituzionale» che hanno generato " +
+                   get("viewsIstituzionali") + " visualizzazioni e " + get("interazioniIstituzionali") + " like e interazioni.<br><br>" +
+                   "Nel corso del mese sono state gestite " + get("campagneATL") + " campagne ATL che hanno sviluppato complessivamente " +
+                   get("viewsATL") + " impression, raggiunto " + get("utentiATL") + " utenti unici e generato un engagement per " +
+                   get("clickATL") + " link click e " + get("interazioniATL") + " interazioni.<br><br>" +
+                   "Nel mese gli utenti hanno pubblicato " + get("commenti") + " commenti ai post. I commenti hanno riguardato, in prevalenza, i “" +
+                   get("argomentiFacebook") + "” (" + get("prevalenzaCommenti") + ").";
 
-      const esteso = `Report social del mese di <b>${get('mese')}</b>.<br><br>
-      Il numero complessivo degli <b>iscritti</b> è pari a <b>${get('iscritti')}</b>.<br><br>
-      I fan <b>Facebook</b> (Poste Italiane, PosteMobile, Postepay) sono <b>${get('facebook')}</b>, mentre su <b>X</b> il numero di followers ammonta a <b>${get('twitter')}</b>. Su <b>Linkedin</b> sono <b>${get('linkedin')}</b>, su <b>Instagram</b>  <b>${get('instagram')}</b> e su <b>YouTube</b> <b>${get('youtube')}</b>.<br><br>
-      Durante il mese abbiamo pubblicato <b>${get('totalePost')} post</b> (<b>${get('postEditoriali')} editoriali</b> e <b>${get('postADV')} sponsorizzati</b>):<br>
-      • ${get('postFacebook')} post Facebook<br>
-      • ${get('postInstagram')} post Instagram<br>
-      • ${get('postLinkedin')} post LinkedIn<br>
-      • ${get('tweet')} tweet<br>
-      • ${get('videoYoutube')} video YouTube<br>
-      • ${get('postADV')} post relativi alle campagne ADV (Facebook e Instagram)<br><br>
-      <b>I contenuti editoriali più visualizzati</b> sono stati:<br>
-      • <b>${get('titolo1')}</b> (${get('vis1')} Visualizzazioni)<br>
-      • <b>${get('titolo2')}</b> (${get('vis2')} Visualizzazioni)<br>
-      • <b>${get('titolo3')}</b> (${get('vis3')} Visualizzazioni)<br><br>
-      L’attività di <b>comunicazione istituzionale</b> ha portato alla pubblicazione di <b>${get('postIstituzionali')} post</b> che hanno generato <b>${get('viewsIstituzionali')} visualizzazioni</b> e <b>${get('interazioniIstituzionali')} like e interazioni</b>.<br><br>
-      Sono state gestite <b>${get('campagneATL')} campagne ATL</b> (Facebook e Instagram): <b>${get('elencoCampagne')}</b>.<br><br>
-      Le campagne hanno sviluppato complessivamente:<br>
-      • <b>${get('viewsATL')} impression</b><br>
-      • <b>${get('utentiATL')} utenti unici</b><br>
-      e generato engagement per <b>${get('clickATL')} link click</b> e <b>${get('interazioniATL')} interazioni</b>.<br><br>
-      Nel mese si registrano <b>${get('commenti')} commenti</b> pubblici sui canali, in ${get('tendenzaCommenti')}  rispetto al mese precedente. I commenti sulla pagina Facebook di Poste Italiane hanno riguardato in prevalenza il tema <b>“${get('argomentiFacebook')}”</b> (${get('prevalenzaCommenti')}).`;
+      // Terzo blocco Esteso (interamente in una singola stringa)
+      const esteso = "Report social del mese di <b>" + get("mese") + "</b>.<br><br>" +
+                     "Il numero complessivo degli <b>iscritti</b> è pari a <b>" + get("iscritti") + "</b>.<br><br>" +
+                     "I fan <b>Facebook</b> (Poste Italiane, PosteMobile, Postepay) sono <b>" + get("facebook") + "</b>, mentre su <b>X</b> il numero di followers ammonta a <b>" + get("twitter") + "</b>. Su <b>Linkedin</b> sono <b>" + get("linkedin") + "</b>, su <b>Instagram</b> <b>" + get("instagram") + "</b> e su <b>YouTube</b> <b>" + get("youtube") + "</b>.<br><br>" +
+                     "Durante il mese abbiamo pubblicato <b>" + get("totalePost") + " post</b> (<b>" + get("postEditoriali") + " editoriali</b> e <b>" + get("postADV") + " sponsorizzati</b>):<br>" +
+                     "• " + get("postFacebook") + " post Facebook<br>" +
+                     "• " + get("postInstagram") + " post Instagram<br>" +
+                     "• " + get("postLinkedin") + " post LinkedIn<br>" +
+                     "• " + get("tweet") + " tweet<br>" +
+                     "• " + get("videoYoutube") + " video YouTube<br>" +
+                     "• " + get("postADV") + " post relativi alle campagne ADV (Facebook e Instagram)<br><br>" +
+                     "<b>I contenuti editoriali più visualizzati</b> sono stati:<br>" +
+                     "• <b>" + get("titolo1") + "</b> (" + get("vis1") + " Visualizzazioni)<br>" +
+                     "• <b>" + get("titolo2") + "</b> (" + get("vis2") + " Visualizzazioni)<br>" +
+                     "• <b>" + get("titolo3") + "</b> (" + get("vis3") + " Visualizzazioni)<br><br>" +
+                     "L’attività di <b>comunicazione istituzionale</b> ha portato alla pubblicazione di <b>" + get("postIstituzionali") + " post</b> che hanno generato <b>" + get("viewsIstituzionali") + " visualizzazioni</b> e <b>" + get("interazioniIstituzionali") + " like e interazioni</b>.<br><br>" +
+                     "Sono state gestite <b>" + get("campagneATL") + " campagne ATL</b> (Facebook e Instagram): <b>" + get("elencoCampagne") + "</b>.<br><br>" +
+                     "Le campagne hanno sviluppato complessivamente:<br>" +
+                     "• <b>" + get("viewsATL") + " impression</b><br>" +
+                     "• <b>" + get("utentiATL") + " utenti unici</b><br>" +
+                     "e generato engagement per <b>" + get("clickATL") + " link click</b> e <b>" + get("interazioniATL") + " interazioni</b>.<br><br>" +
+                     "Nel mese si registrano <b>" + get("commenti") + " commenti</b> pubblici sui canali, in " + get("tendenzaCommenti") + " rispetto al mese precedente. I commenti sulla pagina Facebook di Poste Italiane hanno riguardato in prevalenza il tema <b>“" + get("argomentiFacebook") + "”</b> (" + get("prevalenzaCommenti") + ").";
 
-      document.getElementById('textPPT1').innerHTML = ppt1;
-      document.getElementById('textPPT2').innerHTML = ppt2;
-      document.getElementById('textEsteso').innerHTML = esteso;
+      document.getElementById("textPPT1").innerHTML = ppt1;
+      document.getElementById("textPPT2").innerHTML = ppt2;
+      document.getElementById("textEsteso").innerHTML = esteso;
     }
 
+    // Nuova copia in Word che preserva tag <b> (grassetto) e rimuove indentazioni spuria
     function copyHtmlContent(id) {
-      const content = document.getElementById(id);
+      const htmlContent = document.getElementById(id).innerHTML;
+      // Creo un div nascosto contenteditable e ci incollo l'HTML
+      const container = document.createElement("div");
+      container.style.position = "absolute";
+      container.style.left = "-9999px";
+      container.contentEditable = "true";
+      container.innerHTML = htmlContent;
+      document.body.appendChild(container);
+      // Seleziono tutto il contenuto del container
       const range = document.createRange();
-      range.selectNode(content);
+      range.selectNodeContents(container);
       const sel = window.getSelection();
       sel.removeAllRanges();
       sel.addRange(range);
+      // Eseguo il copy con execCommand (copio l'HTML, non solo plain text)
       document.execCommand("copy");
+      // Ripulisco
       sel.removeAllRanges();
+      document.body.removeChild(container);
       alert("Contenuto copiato con formattazione Word.");
     }
 
     function exportExcel() {
-      const fields = document.querySelectorAll('input, textarea');
+      const fields = document.querySelectorAll("input, textarea");
       const data = Array.from(fields).map(f => [f.id, f.value]);
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(data);
@@ -659,7 +692,7 @@
       const file = e.target.files[0];
       const reader = new FileReader();
       reader.onload = function(evt) {
-        const wb = XLSX.read(evt.target.result, { type: 'binary' });
+        const wb = XLSX.read(evt.target.result, { type: "binary" });
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
         rows.forEach(([key, val]) => {
           const el = document.getElementById(key);
@@ -670,14 +703,14 @@
     }
 
     function cancellaTutto() {
-      const fields = document.querySelectorAll('input, textarea');
+      const fields = document.querySelectorAll("input, textarea");
       fields.forEach(f => {
-        f.value = '';
+        f.value = "";
         localStorage.removeItem(f.id);
       });
-      document.getElementById('textPPT1').innerHTML = '';
-      document.getElementById('textPPT2').innerHTML = '';
-      document.getElementById('textEsteso').innerHTML = '';
+      document.getElementById("textPPT1").innerHTML = "";
+      document.getElementById("textPPT2").innerHTML = "";
+      document.getElementById("textEsteso").innerHTML = "";
     }
   </script>
 </body>
