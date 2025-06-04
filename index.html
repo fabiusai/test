@@ -108,6 +108,51 @@
 
     .form-group {
       position: relative;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.2s; }
+    .form-group:nth-child(3) { animation-delay: 0.3s; }
+    .form-group:nth-child(4) { animation-delay: 0.4s; }
+    .form-group:nth-child(5) { animation-delay: 0.5s; }
+    .form-group:nth-child(6) { animation-delay: 0.6s; }
+    .form-group:nth-child(7) { animation-delay: 0.7s; }
+    .form-group:nth-child(8) { animation-delay: 0.8s; }
+    .form-group:nth-child(9) { animation-delay: 0.9s; }
+    .form-group:nth-child(10) { animation-delay: 1s; }
+    .form-group:nth-child(11) { animation-delay: 1.1s; }
+    .form-group:nth-child(12) { animation-delay: 1.2s; }
+    .form-group:nth-child(13) { animation-delay: 1.3s; }
+    .form-group:nth-child(14) { animation-delay: 1.4s; }
+    .form-group:nth-child(15) { animation-delay: 1.5s; }
+    .form-group:nth-child(16) { animation-delay: 1.6s; }
+    .form-group:nth-child(17) { animation-delay: 1.7s; }
+    .form-group:nth-child(18) { animation-delay: 1.8s; }
+    .form-group:nth-child(19) { animation-delay: 1.9s; }
+    .form-group:nth-child(20) { animation-delay: 2s; }
+    .form-group:nth-child(21) { animation-delay: 2.1s; }
+    .form-group:nth-child(22) { animation-delay: 2.2s; }
+    .form-group:nth-child(23) { animation-delay: 2.3s; }
+    .form-group:nth-child(24) { animation-delay: 2.4s; }
+    .form-group:nth-child(25) { animation-delay: 2.5s; }
+    .form-group:nth-child(26) { animation-delay: 2.6s; }
+    .form-group:nth-child(27) { animation-delay: 2.7s; }
+    .form-group:nth-child(28) { animation-delay: 2.8s; }
+    .form-group:nth-child(29) { animation-delay: 2.9s; }
+    .form-group:nth-child(30) { animation-delay: 3s; }
+    .form-group:nth-child(31) { animation-delay: 3.1s; }
+    .form-group:nth-child(32) { animation-delay: 3.2s; }
+    .form-group:nth-child(33) { animation-delay: 3.3s; }
+    .form-group:nth-child(34) { animation-delay: 3.4s; }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .form-group label {
@@ -357,25 +402,6 @@
         justify-content: center;
       }
     }
-
-    /* Animazioni */
-    .form-group {
-      animation: fadeInUp 0.6s ease forwards;
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    .form-group:nth-child(1) { animation-delay: 0.1s; }
-    .form-group:nth-child(2) { animation-delay: 0.2s; }
-    .form-group:nth-child(3) { animation-delay: 0.3s; }
-    .form-group:nth-child(4) { animation-delay: 0.4s; }
-
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
   </style>
 </head>
 <body>
@@ -395,7 +421,7 @@
           <input id="mese" type="text" placeholder="es. Gennaio 2025" />
         </div>
         <div class="form-group">
-          <label for="iscritti">Numero Complessivo Iscritti</label>
+          <label for="iscritti">Numero Complessivo Iscritti</nLabel>        
           <input id="iscritti" type="number" placeholder="es. 150000" />
         </div>
       </div>
@@ -519,7 +545,7 @@
 
     <!-- Sezione Campagne ATL -->
     <div class="form-section">
-      <h2 class="section-title"><i class="fas fa-bullhorn"></i> Campagne Above The Line (ATL)</h2>
+      <h2 class="section-title"><i class="fas fa-bullhorn"></i> Campagne Above The Line (ATL)</n      </h2>
       <div class="form-grid">
         <div class="form-group">
           <label for="campagneATL">Numero Campagne ATL</label>
@@ -683,4 +709,64 @@ L'attività di <b>comunicazione istituzionale</b> ha portato alla pubblicazione 
 Sono state gestite <b>${get('campagneATL')} campagne ATL</b> (Facebook e Instagram): <b>${get('elencoCampagne')}</b>.<br><br>
 Le campagne hanno sviluppato complessivamente:<br>
 • <b>${get('viewsATL')} impression</b><br>
-• <b>${get('utentiATL')} utenti unici
+• <b>${get('utentiATL')} utenti unici</b><br>
+e generato engagement per <b>${get('clickATL')} link click</b> e <b>${get('interazioniATL')} interazioni</b>.<br><br>
+Nel mese si registrano <b>${get('commenti')} commenti</b> pubblici sui canali, in ${get('tendenzaCommenti')}  rispetto al mese precedente. I commenti sulla pagina Facebook di Poste Italiane hanno riguardato in prevalenza il tema <b>“${get('argomentiFacebook')}”</b> (${get('prevalenzaCommenti')}).`;
+
+    document.getElementById('textPPT1').innerHTML = ppt1;
+    document.getElementById('textPPT2').innerHTML = ppt2;
+    document.getElementById('textEsteso').innerHTML = esteso;
+    setButtonLoading(button, false);
+    showStatus('Anteprima generata con successo!', 'success');
+  }, 500);
+}
+
+function copyHtmlContent(id) {
+  const content = document.getElementById(id);
+  const range = document.createRange();
+  range.selectNode(content);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  document.execCommand("copy");
+  sel.removeAllRanges();
+  alert("Contenuto copiato con formattazione Word.");
+}
+
+function exportExcel() {
+  const fields = document.querySelectorAll('input, textarea');
+  const data = Array.from(fields).map(f => [f.id, f.value]);
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb, ws, "Report");
+  XLSX.writeFile(wb, "report_social.xlsx");
+  showStatus('File Excel esportato con successo!', 'success');
+}
+
+function importExcel(e) {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const wb = XLSX.read(evt.target.result, { type: 'binary' });
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+    rows.forEach(([key, val]) => {
+      const el = document.getElementById(key);
+      if (el) el.value = val;
+    });
+    showStatus('Dati importati da Excel con successo!', 'success');
+  };
+  reader.readAsBinaryString(file);
+}
+
+function cancellaTutto() {
+  const fields = document.querySelectorAll('input, textarea');
+  fields.forEach(f => {
+    f.value = '';
+    localStorage.removeItem(f.id);
+  });
+  document.querySelectorAll('.preview-content').forEach(el => el.innerHTML = '');
+  showStatus('Tutti i campi sono stati cancellati.', 'error');
+}
+</script>
+</body>
+</html>
