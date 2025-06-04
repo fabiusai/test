@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Social Network – Contatore Caratteri</title>
+    <link rel="icon" href="favicon.ico" />
+
+    <!-- Font Awesome per icone -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-pE6N1H8uZ6rS2E6EeD+WmY8/tPzTiPjzr6yPLGwFqvYykv2kK1oaXV1z+g8fVG8rBpyxOaNvGqZcIYITu5r3Q=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    />
+
+    <!-- XLSX.js per import/export Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --poste-blue: #0047bb;
+            --poste-yellow: #eedc00;
+            --poste-light-blue: #0066cc;
+            --poste-gray: #f5f5f5;
+            --poste-green: #4caf50;
+            --font-family-base: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* Reset margin e padding di base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: #fff;
+            color: #333;
+            line-height: 1.5;
+            padding: 0 15px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* HEADER */
+        .header {
+            background-color: var(--poste-yellow);
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 800px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--poste-blue);
+            margin-bottom: 5px;
+        }
+
+        .header h2 {
+            font-size: 1.2em;
+            font-weight: normal;
+            color: var(--poste-blue);
+        }
+
+        /* CONTENITORE PRINCIPALE */
+        .container {
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--poste-gray);
+            color: var(--poste-blue);
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            position: relative;
+        }
+
+        .tab.active {
+            background-color: var(--poste-blue);
+            color: #fff;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 4px;
+            background-color: var(--poste-yellow);
+            border-radius: 2px;
+        }
+
+        /* CARD PER CONTENUTI TABS */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: #fff;
+            border: 1px solid var(--poste-gray);
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        /* STILE PER INPUT GROUP */
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 1em;
+            font-weight: 600;
+            color: var(--poste-blue);
+            margin-bottom: 8px;
+        }
+
+        .counter {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 0.9em;
+            color: var(--poste-light-blue);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--poste-light-blue);
+            border-radius: 6px;
+            resize: vertical;
+            min-height: 80px;
+            font-size: 1em;
+            font-family: var(--font-family-base);
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--poste-blue);
+        }
+
+        /* BUTTON COPIA TITOLO */
+        .btn-copy-ytTitle {
+            margin-top: 10px;
+            font-size: 0.95em;
+        }
+
+        /* OUTPUT FIELD */
+        .output-field {
+            background-color: var(--poste-gray);
+            border: 2px dashed var(--poste-blue);
+            border-radius: 6px;
+            padding: 12px;
+            white-space: pre-wrap;
+            min-height: 100px;
+            margin: 15px 0;
+            font-family: var(--font-family-base);
+            font-size: 0.95em;
+            color: #333;
+        }
+
+        /* GRUPPO BOTTONI */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--poste-blue);
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        .btn i {
+            font-size: 1em;
+        }
+
+        .btn:hover {
+            background-color: var(--poste-light-blue);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn.outline {
+            background-color: transparent;
+            border: 2px solid var(--poste-blue);
+            color: var(--poste-blue);
+        }
+
+        .btn.outline:hover {
+            background-color: var(--poste-blue);
+            color: #fff;
+        }
+
+        /* STILI SPECIFICI PER INPUT FILE */
+        .import-excel {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .import-excel input[type="file"] {
+            display: none;
+        }
+
+        .import-excel label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--poste-blue);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+
+        .import-excel label:hover {
+            background-color: var(--poste-light-blue);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .button-group {
+                flex-direction: column;
+            }
+            textarea {
+                font-size: 0.95em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Social Network</h1>
+        <h2>Contatore Caratteri</h2>
+    </div>
+
+    <div class="container">
+        <!-- TABS -->
+        <div class="tabs">
+            <div class="tab active" data-tab-index="0">News&nbsp;1</div>
+            <div class="tab" data-tab-index="1">News&nbsp;2</div>
+            <div class="tab" data-tab-index="2">News&nbsp;3</div>
+        </div>
+
+        <!-- Import da Excel -->
+        <div class="import-excel">
+            <label for="excelInput">
+                <i class="fas fa-file-excel"></i>
+                Importa da Excel
+            </label>
+            <input type="file" id="excelInput" accept=".xlsx" />
+        </div>
+
+        <!-- Contenuti delle Tabs -->
+        <div id="tabContents">
+            <!-- I contenuti verranno inseriti via JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Configurazione limiti e tipi di campo per ciascuna tab
+        const tabsConfig = Array.from({ length: 3 }, () => ({
+            limits: { wa: 82, ytTitle: 49, ytDesc: 280 },
+            fields: ['wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink']
+        }));
+
+        // Funzione per creare l'HTML di ogni tab
+        function createTabContent(tabIndex) {
+            return `
+            <div class="tab-content${tabIndex === 0 ? ' active' : ''}" data-tab-index="${tabIndex}">
+                <div class="card">
+                    <!-- Input WA -->
+                    <div class="input-group">
+                        <label class="field-label" for="wa-${tabIndex}">Testo descrittivo news Canale WA</label>
+                        <span class="counter" id="counter-wa-${tabIndex}">0/${tabsConfig[tabIndex].limits.wa}</span>
+                        <textarea id="wa-${tabIndex}" data-type="wa" rows="2"></textarea>
+                    </div>
+                    <!-- Input Titolo YouTube -->
+                    <div class="input-group">
+                        <label class="field-label" for="ytTitle-${tabIndex}">Titolo YouTube</label>
+                        <span class="counter" id="counter-ytTitle-${tabIndex}">0/${tabsConfig[tabIndex].limits.ytTitle}</span>
+                        <textarea id="ytTitle-${tabIndex}" data-type="ytTitle" rows="2"></textarea>
+                        <!-- Nuovo pulsante per copiare il titolo YouTube -->
+                        <button class="btn outline btn-copy-ytTitle" data-type="ytTitle">
+                            <i class="fas fa-copy"></i>
+                            Copia Titolo YouTube
+                        </button>
+                    </div>
+                    <!-- Input Descrizione YouTube -->
+                    <div class="input-group">
+                        <label class="field-label" for="ytDesc-${tabIndex}">Copy post e descrizione YT</label>
+                        <span class="counter" id="counter-ytDesc-${tabIndex}">0/${tabsConfig[tabIndex].limits.ytDesc}</span>
+                        <textarea id="ytDesc-${tabIndex}" data-type="ytDesc" rows="4"></textarea>
+                    </div>
+                    <!-- Input Link YouTube -->
+                    <div class="input-group">
+                        <label class="field-label" for="ytLink-${tabIndex}">Link YouTube</label>
+                        <textarea id="ytLink-${tabIndex}" data-type="ytLink" rows="1"></textarea>
+                    </div>
+                    <!-- Input Link TG -->
+                    <div class="input-group">
+                        <label class="field-label" for="tgLink-${tabIndex}">Link TG Poste</label>
+                        <textarea id="tgLink-${tabIndex}" data-type="tgLink" rows="1"></textarea>
+                    </div>
+
+                    <!-- Output WA -->
+                    <div class="field-label" style="margin-top: 20px;">Anteprima Contenuto WA</div>
+                    <div class="output-field" data-type="waOutput"></div>
+                    <button class="btn outline btn-copy-wa" data-type="waOutput">
+                        <i class="fas fa-copy"></i>
+                        Copia Contenuto WA
+                    </button>
+
+                    <!-- Output Social -->
+                    <div class="field-label" style="margin-top: 20px;">Anteprima Contenuto Social</div>
+                    <div class="output-field" data-type="socialOutput"></div>
+                    <button class="btn outline btn-copy-social" data-type="socialOutput">
+                        <i class="fas fa-copy"></i>
+                        Copia Contenuto Social
+                    </button>
+
+                    <!-- Pulsanti Azioni -->
+                    <div class="button-group" style="margin-top: 30px;">
+                        <button class="btn btn-save" data-tab-index="${tabIndex}">
+                            <i class="fas fa-save"></i>
+                            Salva
+                        </button>
+                        <button class="btn btn-clear" data-tab-index="${tabIndex}">
+                            <i class="fas fa-trash"></i>
+                            Cancella tutto
+                        </button>
+                        <button class="btn btn-copy-all">
+                            <i class="fas fa-copy"></i>
+                            Contenuto completo
+                        </button>
+                        <button class="btn btn-export">
+                            <i class="fas fa-file-export"></i>
+                            Esporta in Excel
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // Inizializza l'applicazione: inserisce le tabs, legge localStorage, aggiunge event listener
+        function initializeApp() {
+            const tabContents = document.getElementById('tabContents');
+            tabContents.innerHTML = tabsConfig.map((_, i) => createTabContent(i)).join('');
+
+            // Ripristina dati salvati da localStorage
+            tabsConfig.forEach((_, index) => {
+                const savedData = localStorage.getItem(`tabData${index}`);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    const tab = document.querySelector(`.tab-content[data-tab-index="${index}"]`);
+                    Object.entries(data).forEach(([type, value]) => {
+                        const field = tab.querySelector(`[data-type="${type}"]`);
+                        if (field) field.value = value;
+                    });
+                }
+            });
+
+            // Aggiungi listener per input e per i contatori
+            document.querySelectorAll('textarea').forEach(textarea => {
+                textarea.addEventListener('input', updateOutputs);
+            });
+
+            // Aggiungi listener per i bottoni Copy WA
+            document.querySelectorAll('.btn-copy-wa').forEach(btn => {
+                btn.addEventListener('click', copyContent);
+            });
+
+            // Aggiungi listener per i bottoni Copy Social
+            document.querySelectorAll('.btn-copy-social').forEach(btn => {
+                btn.addEventListener('click', copyContent);
+            });
+
+            // Aggiungi listener per i bottoni Copy Titolo YouTube
+            document.querySelectorAll('.btn-copy-ytTitle').forEach(btn => {
+                btn.addEventListener('click', copyTitle);
+            });
+
+            // Listener per Salva
+            document.querySelectorAll('.btn-save').forEach(btn => {
+                btn.addEventListener('click', saveData);
+            });
+
+            // Listener per Cancella
+            document.querySelectorAll('.btn-clear').forEach(btn => {
+                btn.addEventListener('click', clearAll);
+            });
+
+            // Listener per Copia tutto
+            document.querySelectorAll('.btn-copy-all').forEach(btn => {
+                btn.addEventListener('click', copyAllTabsContent);
+            });
+
+            // Listener per Esporta
+            document.querySelectorAll('.btn-export').forEach(btn => {
+                btn.addEventListener('click', exportToExcel);
+            });
+
+            // Listener per import from Excel
+            document.getElementById('excelInput').addEventListener('change', function () {
+                importFromExcel(this.files[0]);
+            });
+
+            // Listener per cambio tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchTab(parseInt(tab.dataset.tabIndex));
+                });
+            });
+
+            // Generazione iniziale output
+            updateOutputs();
+        }
+
+        // Cambia tab visibile
+        function switchTab(tabIndex) {
+            document.querySelectorAll('.tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === tabIndex);
+            });
+            document.querySelectorAll('.tab-content').forEach((content, i) => {
+                content.classList.toggle('active', i === tabIndex);
+            });
+            updateOutputs();
+        }
+
+        // Aggiorna i contatori e i campi di output in tutte le tab
+        function updateOutputs() {
+            document.querySelectorAll('.tab-content').forEach((tab, tabIndex) => {
+                const getValue = type => tab.querySelector(`[data-type="${type}"]`)?.value || '';
+
+                // Aggiorna contatori
+                ['wa', 'ytTitle', 'ytDesc'].forEach(type => {
+                    const textarea = tab.querySelector(`[data-type="${type}"]`);
+                    const counter = document.getElementById(`counter-${type}-${tabIndex}`);
+                    const valueLength = textarea.value.length;
+                    const maxLen = tabsConfig[tabIndex].limits[type];
+                    counter.textContent = `${valueLength}/${maxLen}`;
+                    // Cambia colore del contatore se si supera il limite
+                    counter.style.color = valueLength > maxLen ? 'red' : 'var(--poste-light-blue)';
+                });
+
+                // Componi output WA (mantiene il link TG interno)
+                const waOutput = `${getValue('wa')}\n${getValue('ytLink')}\n➡️ TG https://tgposte.poste.it/tgposte/`;
+                tab.querySelector('[data-type="waOutput"]').textContent = waOutput;
+
+                // Componi output Social (rimuove #PosteItaliane)
+                const socialOutput = `${getValue('ytDesc')}\n\n#TGPoste\n\n➡️ ${getValue('tgLink')}`;
+                tab.querySelector('[data-type="socialOutput"]').textContent = socialOutput;
+            });
+        }
+
+        // Copia il contenuto di un campo di output (WA o Social) e mostra feedback nel bottone
+        function copyContent(event) {
+            const button = event.currentTarget;
+            const outputType = button.dataset.type;
+            const tab = button.closest('.tab-content');
+            const outputField = tab.querySelector(`[data-type="${outputType}"]`);
+
+            // Stato iniziale: mostra icona loading
+            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Copiando...`;
+            button.disabled = true;
+
+            navigator.clipboard.writeText(outputField.textContent).then(() => {
+                // Dopo copia, mostra "Fatto!"
+                setTimeout(() => {
+                    button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
+                }, 300);
+
+                // Ripristina stato iniziale dopo 2 secondi
+                setTimeout(() => {
+                    const iconClass = 'fa-copy';
+                    const label = outputType === 'waOutput' ? 'Copia Contenuto WA' : 'Copia Contenuto Social';
+                    button.innerHTML = `<i class="fas ${iconClass}"></i> ${label}`;
+                    button.disabled = false;
+                }, 2000);
+            }).catch(() => {
+                // In caso di errore, ripristina subito
+                const iconClass = 'fa-copy';
+                const label = outputType === 'waOutput' ? 'Copia Contenuto WA' : 'Copia Contenuto Social';
+                button.innerHTML = `<i class="fas ${iconClass}"></i> ${label}`;
+                button.disabled = false;
+            });
+        }
+
+        // Nuova funzione: copia il contenuto del Titolo YouTube e mostra feedback
+        function copyTitle(event) {
+            const button = event.currentTarget;
+            const tab = button.closest('.tab-content');
+            const textarea = tab.querySelector(`[data-type="ytTitle"]`);
+            const textToCopy = textarea.value;
+
+            // Stato iniziale: mostra icona loading
+            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Copiando...`;
+            button.disabled = true;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Dopo copia, mostra "Fatto!"
+                setTimeout(() => {
+                    button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
+                }, 300);
+
+                // Ripristina stato iniziale dopo 2 secondi
+                setTimeout(() => {
+                    button.innerHTML = `<i class="fas fa-copy"></i> Copia Titolo YouTube`;
+                    button.disabled = false;
+                }, 2000);
+            }).catch(() => {
+                // In caso di errore, ripristina subito
+                button.innerHTML = `<i class="fas fa-copy"></i> Copia Titolo YouTube`;
+                button.disabled = false;
+            });
+        }
+
+        // Salva i dati della tab corrente nel localStorage e mostra feedback
+        function saveData(event) {
+            const button = event.currentTarget;
+            const tabIndex = parseInt(button.dataset.tabIndex);
+            const tab = document.querySelector(`.tab-content[data-tab-index="${tabIndex}"]`);
+
+            // Stato iniziale: Caricamento
+            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Caricamento in corso...`;
+            button.disabled = true;
+
+            const dataToSave = {};
+            tab.querySelectorAll('textarea').forEach(input => {
+                dataToSave[input.dataset.type] = input.value;
+            });
+            localStorage.setItem(`tabData${tabIndex}`, JSON.stringify(dataToSave));
+
+            // Feedback "Fatto!"
+            setTimeout(() => {
+                button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
+            }, 300);
+
+            // Ripristina stato iniziale dopo 2 secondi
+            setTimeout(() => {
+                button.innerHTML = `<i class="fas fa-save"></i> Salva`;
+                button.disabled = false;
+            }, 2000);
+        }
+
+        // Cancella tutti i campi della tab e mostra feedback
+        function clearAll(event) {
+            const button = event.currentTarget;
+            const tabIndex = parseInt(button.dataset.tabIndex);
+            const tab = document.querySelector(`.tab-content[data-tab-index="${tabIndex}"]`);
+
+            if (confirm("Stai cancellando tutto il testo. Sei sicuro?")) {
+                // Stato iniziale: Cancellazione
+                button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Cancellazione in corso...`;
+                button.disabled = true;
+
+                // Svuota tutti i textarea
+                tab.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.value = '';
+                });
+                updateOutputs();
+
+                // Feedback "Fatto!"
+                setTimeout(() => {
+                    button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
+                }, 300);
+
+                // Ripristina stato iniziale dopo 2 secondi
+                setTimeout(() => {
+                    button.innerHTML = `<i class="fas fa-trash"></i> Cancella tutto`;
+                    button.disabled = false;
+                }, 2000);
+            }
+        }
+
+        // Copia il contenuto di tutte le tab in un unico output
+        function copyAllTabsContent(event) {
+            const button = event.currentTarget;
+
+            // Stato iniziale: Copiando
+            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Copiando...`;
+            button.disabled = true;
+
+            let output = '';
+            for (let i = 0; i < 3; i++) {
+                const tab = document.querySelector(`.tab-content[data-tab-index="${i}"]`);
+                const getValue = type => tab.querySelector(`[data-type="${type}"]`)?.value.trim() || '=';
+                output += `NEWS ${i + 1}\n` +
+                    `Contenuto WA: ${getValue('wa')}\n` +
+                    `Titolo YouTube: ${getValue('ytTitle')}\n` +
+                    `Contenuto social: ${getValue('ytDesc')}\n\n`;
+            }
+
+            navigator.clipboard.writeText(output.trim()).then(() => {
+                // Feedback "Fatto!"
+                setTimeout(() => {
+                    button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
+                }, 300);
+
+                // Ripristina stato iniziale dopo 2 secondi
+                setTimeout(() => {
+                    button.innerHTML = `<i class="fas fa-copy"></i> Contenuto completo`;
+                    button.disabled = false;
+                }, 2000);
+            }).catch(() => {
+                // In caso di errore, ripristina subito
+                button.innerHTML = `<i class="fas fa-copy"></i> Contenuto completo`;
+                button.disabled = false;
+            });
+        }
+
+        // Esporta tutti i dati in un file Excel e mostra feedback
+        function exportToExcel(event) {
+            const button = event.currentTarget;
+
+            // Stato iniziale: Esportazione
+            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Esportazione in corso...`;
+            button.disabled = true;
+
+            // Genera nome file con data odierna
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const fileName = `copyWA_${year}-${month}-${day}.xlsx`;
+
+            // Crea array per Excel
+            const excelData = [
+                ["", "News 1", "News 2", "News 3"],
+                ["Testo descrittivo news Canale WA", "", "", ""],
+                ["Titolo YouTube", "", "", ""],
+                ["Copy post e descrizione YT", "", "", ""],
+                ["Link YouTube", "", "", ""],
+                ["Link TG Poste", "", "", ""]
+            ];
+
+            // Mappa data-type a righe
+            const fieldMap = {
+                'wa': 1,
+                'ytTitle': 2,
+                'ytDesc': 3,
+                'ytLink': 4,
+                'tgLink': 5
+            };
+
+            for (let tabIndex = 0; tabIndex < 3; tabIndex++) {
+                const tab = document.querySelector(`.tab-content[data-tab-index="${tabIndex}"]`);
+                tab.querySelectorAll('textarea').forEach(textarea => {
+                    const fieldType = textarea.dataset.type;
+                    const rowIndex = fieldMap[fieldType];
+                    if (rowIndex !== undefined) {
+                        excelData[rowIndex][tabIndex + 1] = textarea.value;
+                    }
+                });
+            }
+
+            // Crea workbook e scarica file
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            XLSX.utils.book_append_sheet(wb, ws, "Foglio1");
+            XLSX.writeFile(wb, fileName);
+
+            // Feedback "Fatto!"
+            setTimeout(() => {
+                button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
+            }, 300);
+
+            // Ripristina stato iniziale dopo 2 secondi
+            setTimeout(() => {
+                button.innerHTML = `<i class="fas fa-file-export"></i> Esporta in Excel`;
+                button.disabled = false;
+            }, 2000);
+        }
+
+        // Importa dati da file Excel nelle tab
+        async function importFromExcel(file) {
+            if (!file) return;
+
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data);
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+            // Mappa colonna A ai data-type
+            const fieldMap = {
+                'Testo descrittivo news Canale WA': 'wa',
+                'Titolo YouTube': 'ytTitle',
+                'Copy post e descrizione YT': 'ytDesc',
+                'Link YouTube': 'ytLink',
+                'Link TG Poste': 'tgLink'
+            };
+
+            rows.slice(1).forEach(row => {
+                const rawField = row[0]?.trim();
+                const fieldType = fieldMap[rawField];
+                if (fieldType) {
+                    for (let tabIndex = 0; tabIndex < 3; tabIndex++) {
+                        const tab = document.querySelector(`.tab-content[data-tab-index="${tabIndex}"]`);
+                        const value = row[tabIndex + 1];
+                        const field = tab.querySelector(`[data-type="${fieldType}"]`);
+                        if (field) {
+                            field.value = value !== undefined ? value : '';
+                        }
+                    }
+                }
+            });
+            updateOutputs();
+        }
+
+        // Avvia l'app al caricamento pagina
+        window.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
