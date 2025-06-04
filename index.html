@@ -270,4 +270,516 @@
       border: 2px solid transparent;
       border-top: 2px solid currentColor;
       border-radius: 50%;
-      animation: spin
+      animation: spin 1s linear infinite;
+      transform: translateY(-50%);
+    }
+
+    @keyframes spin {
+      0% { transform: translateY(-50%) rotate(0deg); }
+      100% { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    .preview-section {
+      margin-top: 40px;
+    }
+
+    .preview-card {
+      background: var(--white);
+      border: 2px solid var(--border-gray);
+      border-radius: 12px;
+      margin-bottom: 25px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .preview-card:hover {
+      border-color: var(--poste-yellow);
+      box-shadow: 0 4px 16px rgba(0, 63, 127, 0.1);
+    }
+
+    .preview-header {
+      background: linear-gradient(90deg, var(--poste-blue) 0%, var(--poste-blue-light) 100%);
+      color: var(--white);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .preview-header h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .copy-btn {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      background: var(--poste-yellow);
+      color: var(--poste-blue);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .copy-btn:hover {
+      background: #F4C430;
+      transform: scale(1.05);
+    }
+
+    .preview-content {
+      padding: 25px;
+      background: var(--light-gray);
+      white-space: pre-wrap;
+      line-height: 1.8;
+      font-size: 1rem;
+    }
+
+    .rosso {
+      color: var(--warning-red);
+      font-weight: bold;
+      background: rgba(220, 53, 69, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .status-message {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      color: var(--white);
+      font-weight: 600;
+      z-index: 1000;
+      transform: translateX(400px);
+      transition: all 0.3s ease;
+    }
+
+    .status-message.show {
+      transform: translateX(0);
+    }
+
+    .status-message.success {
+      background: var(--success-green);
+    }
+
+    .status-message.error {
+      background: var(--warning-red);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 20px;
+      }
+
+      .header {
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-chart-line"></i> Report Social</h1>
+      <div class="subtitle">Sistema di Generazione Report - Poste Italiane</div>
+    </div>
+
+    <div class="main-content">
+      <!-- Sezione Informazioni Generali -->
+      <div class="form-section">
+        <h2 class="section-title"><i class="fas fa-info-circle"></i> Informazioni Generali</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="mese">Mese di Riferimento</label>
+            <input id="mese" type="text" placeholder="es. Gennaio 2025" />
+          </div>
+          <div class="form-group">
+            <label for="iscritti">Numero Complessivo Iscritti</label>
+            <input id="iscritti" type="number" placeholder="es. 150000" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sezione Social Media -->
+      <div class="form-section">
+        <h2 class="section-title"><i class="fas fa-share-alt"></i> Iscritti per Piattaforma Social</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="facebook"><i class="fab fa-facebook"></i> Iscritti Facebook</label>
+            <input id="facebook" type="number" placeholder="es. 50000" />
+          </div>
+          <div class="form-group">
+            <label for="twitter"><i class="fab fa-twitter"></i> Iscritti X (Twitter)</label>
+            <input id="twitter" type="number" placeholder="es. 25000" />
+          </div>
+          <div class="form-group">
+            <label for="linkedin"><i class="fab fa-linkedin"></i> Iscritti LinkedIn</label>
+            <input id="linkedin" type="number" placeholder="es. 15000" />
+          </div>
+          <div class="form-group">
+            <label for="instagram"><i class="fab fa-instagram"></i> Iscritti Instagram</label>
+            <input id="instagram" type="number" placeholder="es. 30000" />
+          </div>
+          <div class="form-group">
+            <label for="youtube"><i class="fab fa-youtube"></i> Iscritti YouTube</label>
+            <input id="youtube" type="number" placeholder="es. 20000" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sezione Contenuti Pubblicati -->
+      <div class="form-section">
+        <h2 class="section-title"><i class="fas fa-edit"></i> Contenuti Pubblicati</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="totalePost">Totale Post Pubblicati</label>
+            <input id="totalePost" type="number" placeholder="es. 120" />
+          </div>
+          <div class="form-group">
+            <label for="postEditoriali">Post Editoriali</label>
+            <input id="postEditoriali" type="number" placeholder="es. 80" />
+          </div>
+          <div class="form-group">
+            <label for="postADV">Post Pubblicitari (ADV)</label>
+            <input id="postADV" type="number" placeholder="es. 40" />
+          </div>
+          <div class="form-group">
+            <label for="postFacebook">Post Facebook</label>
+            <input id="postFacebook" type="number" placeholder="es. 30" />
+          </div>
+          <div class="form-group">
+            <label for="postInstagram">Post Instagram</label>
+            <input id="postInstagram" type="number" placeholder="es. 25" />
+          </div>
+          <div class="form-group">
+            <label for="postLinkedin">Post LinkedIn</label>
+            <input id="postLinkedin" type="number" placeholder="es. 20" />
+          </div>
+          <div class="form-group">
+            <label for="tweet">Tweet</label>
+            <input id="tweet" type="number" placeholder="es. 35" />
+          </div>
+          <div class="form-group">
+            <label for="videoYoutube">Video YouTube</label>
+            <input id="videoYoutube" type="number" placeholder="es. 10" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sezione Contenuti Top Performance -->
+      <div class="form-section">
+        <h2 class="section-title"><i class="fas fa-trophy"></i> Contenuti con Migliori Performance</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="titolo1">Titolo Contenuto #1</label>
+            <input id="titolo1" type="text" placeholder="es. Promozione Postepay Evolution" />
+          </div>
+          <div class="form-group">
+            <label for="vis1">Visualizzazioni Contenuto #1</label>
+            <input id="vis1" type="number" placeholder="es. 15000" />
+          </div>
+          <div class="form-group">
+            <label for="titolo2">Titolo Contenuto #2</label>
+            <input id="titolo2" type="text" placeholder="es. Servizi digitali" />
+          </div>
+          <div class="form-group">
+            <label for="vis2">Visualizzazioni Contenuto #2</label>
+            <input id="vis2" type="number" placeholder="es. 12000" />
+          </div>
+          <div class="form-group">
+            <label for="titolo3">Titolo Contenuto #3</label>
+            <input id="titolo3" type="text" placeholder="es. Spedizioni innovative" />
+          </div>
+          <div class="form-group">
+            <label for="vis3">Visualizzazioni Contenuto #3</label>
+            <input id="vis3" type="number" placeholder="es. 10000" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sezione Comunicazione Istituzionale -->
+      <div class="form-section">
+        <h2 class="section-title"><i class="fas fa-building"></i> Comunicazione Istituzionale</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="postIstituzionali">Post Istituzionali</label>
+            <input id="postIstituzionali" type="number" placeholder="es. 25" />
+          </div>
+          <div class="form-group">
+            <label for="viewsIstituzionali">Visualizzazioni Istituzionali</label>
+            <input id="viewsIstituzionali" type="number" placeholder="es. 50000" />
+          </div>
+          <div class="form-group">
+            <label for="interazioniIstituzionali">Interazioni Istituzionali</label>
+            <input id="interazioniIstituzionali" type="number" placeholder="es. 2500" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sezione Campagne ATL -->
+      <div class="form-section">
+        <h2 class="section-title"><i class="fas fa-bullhorn"></i> Campagne Above The Line (ATL)</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="campagneATL">Numero Campagne ATL</label>
+            <input id="campagneATL" type="number" placeholder="es. 5" />
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="elencoCampagne">Elenco Campagne ATL</label>
+            <textarea id="elencoCampagne" rows="3" placeholder="es. Campagna Postepay, Campagna Spedizioni, Campagna Servizi Digitali"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="viewsATL">Impression ATL</label>
+            <input id="viewsATL" type="number" placeholder="es. 500000" />
+          </div>
+          <div class="form-group">
+            <label for="utentiATL">Utenti Unici ATL</label>
+            <input id="utentiATL" type="number" placeholder="es. 100000" />
+          </div>
+          <div class="form-group">
+            <label for="clickATL">Link Click ATL</label>
+            <input id="clickATL" type="number" placeholder="es. 5000" />
+          </div>
+          <div class="form-group">
+            <label for="interazioniATL">Interazioni ATL</label>
+            <input id="interazioniATL" type="number" placeholder="es. 15000" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sezione Engagement -->
+      <div class="form-section">
+        <h2 class="section-title"><i class="fas fa-comments"></i> Engagement e Commenti</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="commenti">Commenti Complessivi</label>
+            <input id="commenti" type="number" placeholder="es. 3000" />
+          </div>
+          <div class="form-group">
+            <label for="tendenzaCommenti">Tendenza Commenti</label>
+            <input id="tendenzaCommenti" type="text" placeholder="es. aumento/diminuzione" />
+          </div>
+          <div class="form-group">
+            <label for="argomentiFacebook">Argomenti Prevalenti Facebook</label>
+            <input id="argomentiFacebook" type="text" placeholder="es. servizi postali" />
+          </div>
+          <div class="form-group">
+            <label for="prevalenzaCommenti">Prevalenza Commenti (%)</label>
+            <input id="prevalenzaCommenti" type="text" placeholder="es. 45%" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Pulsanti di Azione -->
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="generaAnteprima()">
+          <i class="fas fa-save"></i> Genera Report
+        </button>
+        <button class="btn btn-secondary" onclick="exportExcel()">
+          <i class="fas fa-file-excel"></i> Esporta Excel
+        </button>
+        <button class="btn btn-success" onclick="document.getElementById('fileImport').click()">
+          <i class="fas fa-upload"></i> Importa Excel
+        </button>
+        <button class="btn btn-danger" onclick="cancellaTutto()">
+          <i class="fas fa-trash"></i> Cancella Tutto
+        </button>
+        <input type="file" id="fileImport" class="file-input" onchange="importExcel(event)" />
+      </div>
+
+      <!-- Anteprima Report -->
+      <div class="preview-section" id="preview">
+        <div class="preview-card" id="sectionPPT1">
+          <div class="preview-header">
+            <h3><i class="fas fa-presentation"></i> Report Sintetico (PPT1)</h3>
+            <button class="copy-btn" onclick="copyHtmlContent('textPPT1')">
+              <i class="fas fa-copy"></i> Copia per Word
+            </button>
+          </div>
+          <div id="textPPT1" class="preview-content"></div>
+        </div>
+
+        <div class="preview-card" id="sectionPPT2">
+          <div class="preview-header">
+            <h3><i class="fas fa-chart-bar"></i> Report Dettagliato (PPT2)</h3>
+            <button class="copy-btn" onclick="copyHtmlContent('textPPT2')">
+              <i class="fas fa-copy"></i> Copia per Word
+            </button>
+          </div>
+          <div id="textPPT2" class="preview-content"></div>
+        </div>
+
+        <div class="preview-card" id="sectionEsteso">
+          <div class="preview-header">
+            <h3><i class="fas fa-file-alt"></i> Report Completo</h3>
+            <button class="copy-btn" onclick="copyHtmlContent('textEsteso')">
+              <i class="fas fa-copy"></i> Copia per Word
+            </button>
+          </div>
+          <div id="textEsteso" class="preview-content"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="statusMessage" class="status-message"></div>
+
+  <script>
+    function get(id) {
+      const el = document.getElementById(id);
+      return el ? el.value || "<span class='rosso'>XXX</span>" : "XXX";
+    }
+
+    function showStatus(message, type = 'success') {
+      const statusEl = document.getElementById('statusMessage');
+      statusEl.textContent = message;
+      statusEl.className = `status-message ${type} show`;
+      
+      setTimeout(() => {
+        statusEl.classList.remove('show');
+      }, 3000);
+    }
+
+    function setButtonLoading(button, loading = true) {
+      if (loading) {
+        button.classList.add('loading');
+        button.disabled = true;
+      } else {
+        button.classList.remove('loading');
+        button.disabled = false;
+      }
+    }
+
+    function generaAnteprima() {
+      const button = event.target;
+      setButtonLoading(button, true);
+      
+      setTimeout(() => {
+        const ppt1 = `<b>Emesso il Report social di ${get('mese')}</b>: ${get('iscritti')} iscritti totali; ${get('totalePost')} post pubblicati di cui ${get('postIstituzionali')} su temi istituzionali; ${get('campagneATL')} campagne ATL; ${get('commenti')} commenti.`;
+
+        const ppt2 = `Il numero complessivo degli iscritti è pari a ${get('iscritti')}: Facebook ${get('facebook')}; X ${get('twitter')}; Linkedin ${get('linkedin')}; Instagram ${get('instagram')}; YouTube ${get('youtube')}.<br><br>
+Durante il mese abbiamo pubblicato ${get('totalePost')} post (${get('postEditoriali')} editoriali e ${get('postADV')} sponsorizzati): ${get('postFacebook')} post Facebook, ${get('postInstagram')} post Instagram, ${get('postLinkedin')} post Linkedin, ${get('tweet')} tweet, ${get('videoYoutube')} video YouTube, ${get('postADV')} post relativi alle campagne ADV (Facebook e Instagram).<br><br>
+I contenuti editoriali più visualizzati sono stati i post dedicati a: ${get('titolo1')} (${get('vis1')} Visualizzazioni); ${get('titolo2')} (${get('vis2')} Visualizzazioni); ${get('titolo3')} (${get('vis3')} Visualizzazioni).<br><br>
+Sono stati pubblicati ${get('postIstituzionali')} post a contenuto «istituzionale» che hanno generato ${get('viewsIstituzionali')} visualizzazioni e ${get('interazioniIstituzionali')} like e interazioni.<br><br>
+Nel corso del mese sono state gestite ${get('campagneATL')} campagne ATL che hanno sviluppato complessivamente ${get('viewsATL')} impression, raggiunto ${get('utentiATL')} utenti unici e generato un engagement per ${get('clickATL')} link click e ${get('interazioniATL')} interazioni.<br><br>
+Nel mese gli utenti hanno pubblicato ${get('commenti')} commenti ai post. I commenti hanno riguardato, in prevalenza, i "${get('argomentiFacebook')}" (${get('prevalenzaCommenti')}).`;
+
+        const esteso = `Report social del mese di <b>${get('mese')}</b>.<br><br>
+Il numero complessivo degli <b>iscritti</b> è pari a <b>${get('iscritti')}</b>.<br><br>
+I fan <b>Facebook</b> (Poste Italiane, PosteMobile, Postepay) sono <b>${get('facebook')}</b>, mentre su <b>X</b> il numero di followers ammonta a <b>${get('twitter')}</b>. Su <b>Linkedin</b> sono <b>${get('linkedin')}</b>, su <b>Instagram</b>  <b>${get('instagram')}</b> e su <b>YouTube</b> <b>${get('youtube')}</b>.<br><br>
+Durante il mese abbiamo pubblicato <b>${get('totalePost')} post</b> (<b>${get('postEditoriali')} editoriali</b> e <b>${get('postADV')} sponsorizzati</b>):<br>
+• ${get('postFacebook')} post Facebook<br>
+• ${get('postInstagram')} post Instagram<br>
+• ${get('postLinkedin')} post LinkedIn<br>
+• ${get('tweet')} tweet<br>
+• ${get('videoYoutube')} video YouTube<br>
+• ${get('postADV')} post relativi alle campagne ADV (Facebook e Instagram)<br><br>
+<b>I contenuti editoriali più visualizzati</b> sono stati:<br>
+• <b>${get('titolo1')}</b> (${get('vis1')} Visualizzazioni)<br>
+• <b>${get('titolo2')}</b> (${get('vis2')} Visualizzazioni)<br>
+• <b>${get('titolo3')}</b> (${get('vis3')} Visualizzazioni)<br><br>
+L'attività di <b>comunicazione istituzionale</b> ha portato alla pubblicazione di <b>${get('postIstituzionali')} post</b> che hanno generato <b>${get('viewsIstituzionali')} visualizzazioni</b> e <b>${get('interazioniIstituzionali')} like e interazioni</b>.<br><br>
+Sono state gestite <b>${get('campagneATL')} campagne ATL</b> (Facebook e Instagram): <b>${get('elencoCampagne')}</b>.<br><br>
+Le campagne hanno sviluppato complessivamente:<br>
+• <b>${get('viewsATL')} impression</b><br>
+• <b>${get('utentiATL')} utenti unici</b><br>
+e generato engagement per <b>${get('clickATL')} link click</b> e <b>${get('interazioniATL')} interazioni</b>.<br><br>
+Nel mese si registrano <b>${get('commenti')} commenti</b> pubblici sui canali, in ${get('tendenzaCommenti')}  rispetto al mese precedente. I commenti sulla pagina Facebook di Poste Italiane hanno riguardato in prevalenza il tema <b>“${get('argomentiFacebook')}”</b> (${get('prevalenzaCommenti')}).`;
+
+        document.getElementById('textPPT1').innerHTML = ppt1;
+        document.getElementById('textPPT2').innerHTML = ppt2;
+        document.getElementById('textEsteso').innerHTML = esteso;
+        setButtonLoading(button, false);
+        showStatus('Anteprima generata con successo!', 'success');
+      }, 500);
+    }
+
+    function copyHtmlContent(id) {
+      const content = document.getElementById(id);
+      const range = document.createRange();
+      range.selectNode(content);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.execCommand("copy");
+      sel.removeAllRanges();
+      alert("Contenuto copiato con formattazione Word.");
+    }
+
+    function exportExcel() {
+      const fields = document.querySelectorAll('input, textarea');
+      const data = Array.from(fields).map(f => [f.id, f.value]);
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb, ws, "Report");
+      XLSX.writeFile(wb, "report_social.xlsx");
+      showStatus('File Excel esportato con successo!', 'success');
+    }
+
+    function importExcel(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const wb = XLSX.read(evt.target.result, { type: 'binary' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+
+        // Creiamo un array di oggetti { campo: "...", valore: "..." } per ogni riga,
+        // anche se le celle sono vuote. Grazie a "defval: ''" evitiamo che valga undefined.
+        const json = XLSX.utils.sheet_to_json(ws, {
+          header: ['campo', 'valore'],
+          range: 0,
+          defval: ''
+        });
+
+        // Iteriamo sull'array e assegnamo (se esiste) il valore all'input corrispondente.
+        json.forEach(row => {
+          const el = document.getElementById(row.campo);
+          if (el) {
+            el.value = row.valore;
+          }
+        });
+
+        showStatus('Dati importati da Excel con successo!', 'success');
+      };
+      reader.readAsBinaryString(file);
+    }
+
+    function cancellaTutto() {
+      const fields = document.querySelectorAll('input, textarea');
+      fields.forEach(f => {
+        f.value = '';
+        localStorage.removeItem(f.id);
+      });
+      document.querySelectorAll('.preview-content').forEach(el => el.innerHTML = '');
+      showStatus('Tutti i campi sono stati cancellati.', 'error');
+    }
+  </script>
+</body>
+</html>
