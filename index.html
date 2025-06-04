@@ -2,23 +2,24 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Report Social - Poste Italiane</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
     :root {
-      --poste-blue: #003d82;
-      --poste-yellow: #ffcc00;
-      --poste-light-blue: #e6f3ff;
-      --poste-dark-blue: #002952;
-      --text-primary: #333333;
-      --text-secondary: #666666;
-      --border-color: #e0e6ed;
-      --background-light: #f8f9fa;
-      --shadow-light: 0 2px 8px rgba(0, 61, 130, 0.1);
-      --shadow-medium: 0 4px 16px rgba(0, 61, 130, 0.15);
+      --poste-yellow: #FFD700;
+      --poste-blue: #003F7F;
+      --poste-blue-light: #4A90E2;
+      --poste-blue-dark: #002A5C;
+      --white: #FFFFFF;
+      --light-gray: #F8F9FA;
+      --border-gray: #E5E5E5;
+      --text-dark: #333333;
+      --text-medium: #666666;
+      --success-green: #28A745;
+      --warning-red: #DC3545;
     }
 
     * {
@@ -29,113 +30,114 @@
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, var(--background-light) 0%, var(--poste-light-blue) 100%);
-      color: var(--text-primary);
-      line-height: 1.6;
+      background: linear-gradient(135deg, var(--light-gray) 0%, #E8F4FD 100%);
       min-height: 100vh;
-    }
-
-    .header {
-      background: linear-gradient(135deg, var(--poste-blue) 0%, var(--poste-dark-blue) 100%);
-      color: white;
-      padding: 2rem 0;
-      text-align: center;
-      box-shadow: var(--shadow-medium);
-    }
-
-    .header h1 {
-      font-size: 2.5rem;
-      font-weight: 300;
-      margin-bottom: 0.5rem;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .header .subtitle {
-      font-size: 1.1rem;
-      opacity: 0.9;
-      font-weight: 300;
+      padding: 20px;
+      color: var(--text-dark);
+      line-height: 1.6;
     }
 
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 2rem;
-    }
-
-    .form-section {
-      background: white;
+      background: var(--white);
       border-radius: 12px;
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow-light);
-      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 32px rgba(0, 63, 127, 0.15);
       overflow: hidden;
     }
 
-    .section-header {
-      background: linear-gradient(135deg, var(--poste-yellow) 0%, #ffe066 100%);
-      padding: 1.5rem;
-      border-bottom: 3px solid var(--poste-blue);
+    .header {
+      background: linear-gradient(135deg, var(--poste-blue) 0%, var(--poste-blue-light) 100%);
+      color: var(--white);
+      padding: 30px 40px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .section-header h2 {
-      color: var(--poste-dark-blue);
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 300px;
+      height: 300px;
+      background: var(--poste-yellow);
+      border-radius: 50%;
+      opacity: 0.1;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 300;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .header .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      position: relative;
+      z-index: 2;
+    }
+
+    .main-content {
+      padding: 40px;
+    }
+
+    .form-section {
+      margin-bottom: 40px;
+    }
+
+    .section-title {
+      color: var(--poste-blue);
       font-size: 1.5rem;
-      font-weight: 500;
-      margin: 0;
-    }
-
-    .section-content {
-      padding: 2rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--poste-yellow);
+      display: inline-block;
     }
 
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
+      gap: 20px;
+      margin-bottom: 30px;
     }
 
-    .field-group {
-      display: flex;
-      flex-direction: column;
+    .form-group {
+      position: relative;
     }
 
-    .field-label {
+    .form-group label {
+      display: block;
       font-weight: 600;
       color: var(--poste-blue);
-      margin-bottom: 0.5rem;
+      margin-bottom: 8px;
       font-size: 0.95rem;
-      display: flex;
-      align-items: center;
     }
 
-    .field-label::before {
-      content: "▸";
-      color: var(--poste-yellow);
-      margin-right: 0.5rem;
-      font-weight: bold;
-    }
-
-    .field-input {
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
       padding: 12px 16px;
-      border: 2px solid var(--border-color);
+      border: 2px solid var(--border-gray);
       border-radius: 8px;
       font-size: 1rem;
       transition: all 0.3s ease;
-      background: white;
+      background: var(--white);
     }
 
-    .field-input:focus {
+    .form-group input:focus,
+    .form-group textarea:focus {
       outline: none;
-      border-color: var(--poste-blue);
-      box-shadow: 0 0 0 3px rgba(0, 61, 130, 0.1);
-      transform: translateY(-1px);
-    }
-
-    .field-input:hover {
       border-color: var(--poste-yellow);
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+      transform: translateY(-2px);
     }
 
-    textarea.field-input {
+    .form-group textarea {
       resize: vertical;
       min-height: 80px;
     }
@@ -143,92 +145,117 @@
     .action-buttons {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
-      margin: 2rem 0;
+      gap: 15px;
       justify-content: center;
+      margin: 40px 0;
+      padding: 30px;
+      background: var(--light-gray);
+      border-radius: 12px;
+      border: 2px dashed var(--border-gray);
     }
 
     .btn {
-      padding: 12px 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 24px;
       border: none;
       border-radius: 8px;
       font-size: 1rem;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      min-width: 140px;
-      justify-content: center;
       text-decoration: none;
       position: relative;
       overflow: hidden;
     }
 
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-      transition: left 0.5s;
-    }
-
-    .btn:hover::before {
-      left: 100%;
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--poste-blue) 0%, var(--poste-dark-blue) 100%);
-      color: white;
+      background: var(--poste-blue);
+      color: var(--white);
     }
 
     .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-medium);
+      background: var(--poste-blue-dark);
     }
 
     .btn-secondary {
-      background: linear-gradient(135deg, var(--poste-yellow) 0%, #ffe066 100%);
-      color: var(--poste-dark-blue);
-      border: 2px solid var(--poste-blue);
+      background: var(--poste-yellow);
+      color: var(--poste-blue);
     }
 
     .btn-secondary:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-medium);
+      background: #F4C430;
+    }
+
+    .btn-success {
+      background: #6C757D;
+      color: var(--white);
+    }
+
+    .btn-success:hover {
+      background: #5A6268;
     }
 
     .btn-danger {
-      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-      color: white;
+      background: #6F7F8C;
+      color: var(--white);
     }
 
     .btn-danger:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(220, 53, 69, 0.3);
+      background: #5D6B77;
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn.loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      transform: translateY(-50%);
+    }
+
+    @keyframes spin {
+      0% { transform: translateY(-50%) rotate(0deg); }
+      100% { transform: translateY(-50%) rotate(360deg); }
     }
 
     .preview-section {
-      margin-top: 3rem;
+      margin-top: 40px;
     }
 
     .preview-card {
-      background: white;
+      background: var(--white);
+      border: 2px solid var(--border-gray);
       border-radius: 12px;
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow-light);
-      border: 1px solid var(--border-color);
+      margin-bottom: 25px;
       overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .preview-card:hover {
+      border-color: var(--poste-yellow);
+      box-shadow: 0 4px 16px rgba(0, 63, 127, 0.1);
     }
 
     .preview-header {
-      background: linear-gradient(135deg, var(--poste-blue) 0%, var(--poste-dark-blue) 100%);
-      color: white;
-      padding: 1rem 1.5rem;
+      background: linear-gradient(90deg, var(--poste-blue) 0%, var(--poste-blue-light) 100%);
+      color: var(--white);
+      padding: 15px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -236,408 +263,409 @@
 
     .preview-header h3 {
       font-size: 1.3rem;
-      font-weight: 500;
-      margin: 0;
+      font-weight: 600;
     }
 
     .copy-btn {
-      background: var(--poste-yellow);
-      color: var(--poste-dark-blue);
-      border: none;
       padding: 8px 16px;
-      border-radius: 6px;
       font-size: 0.9rem;
-      font-weight: 500;
+      background: var(--poste-yellow);
+      color: var(--poste-blue);
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
+      font-weight: 600;
       transition: all 0.3s ease;
     }
 
     .copy-btn:hover {
-      background: #ffe066;
+      background: #F4C430;
       transform: scale(1.05);
     }
 
     .preview-content {
-      padding: 2rem;
+      padding: 25px;
+      background: var(--light-gray);
       white-space: pre-wrap;
-      border: 2px dashed var(--border-color);
-      margin: 1rem;
-      border-radius: 8px;
-      background: var(--background-light);
-      min-height: 100px;
+      line-height: 1.8;
       font-size: 1rem;
-      line-height: 1.7;
     }
 
     .rosso {
-      color: #dc3545;
+      color: var(--warning-red);
       font-weight: bold;
-      background: #fff5f5;
+      background: rgba(220, 53, 69, 0.1);
       padding: 2px 6px;
       border-radius: 4px;
-      border: 1px solid #fecaca;
     }
 
-    .loading {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-
-    .loading::after {
-      content: " ⏳";
-    }
-
-    .success::after {
-      content: " ✓";
-      color: #28a745;
-    }
-
-    .fade-in {
-      animation: fadeIn 0.5s ease-in;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        padding: 1rem;
-      }
-      
-      .header h1 {
-        font-size: 2rem;
-      }
-      
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .action-buttons {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      
-      .preview-header {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-      }
-    }
-
-    .hidden-file-input {
+    .file-input {
       display: none;
     }
 
-    .info-badge {
-      background: var(--poste-light-blue);
-      color: var(--poste-blue);
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      margin: 1rem 0;
-      border: 1px solid var(--poste-blue);
-      text-align: center;
+    .status-message {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      color: var(--white);
+      font-weight: 600;
+      z-index: 1000;
+      transform: translateX(400px);
+      transition: all 0.3s ease;
+    }
+
+    .status-message.show {
+      transform: translateX(0);
+    }
+
+    .status-message.success {
+      background: var(--success-green);
+    }
+
+    .status-message.error {
+      background: var(--warning-red);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 20px;
+      }
+
+      .header {
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+      }
+    }
+
+    /* Animazioni */
+    .form-group {
+      animation: fadeInUp 0.6s ease forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.2s; }
+    .form-group:nth-child(3) { animation-delay: 0.3s; }
+    .form-group:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 <body>
+<div class="container">
   <div class="header">
-    <h1>Report Social</h1>
+    <h1><i class="fas fa-chart-line"></i> Report Social</h1>
     <div class="subtitle">Sistema di Generazione Report - Poste Italiane</div>
   </div>
 
-  <div class="container">
-    <!-- Sezione Dati Generali -->
-    <div class="form-section fade-in">
-      <div class="section-header">
-        <h2>📊 Dati Generali del Report</h2>
-      </div>
-      <div class="section-content">
-        <div class="form-grid">
-          <div class="field-group">
-            <label class="field-label">Mese di Riferimento</label>
-            <input id="mese" class="field-input" placeholder="Inserisci il mese (es. Gennaio 2024)" />
-          </div>
+  <div class="main-content">
+    <!-- Sezione Informazioni Generali -->
+    <div class="form-section">
+      <h2 class="section-title"><i class="fas fa-info-circle"></i> Informazioni Generali</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="mese">Mese di Riferimento</label>
+          <input id="mese" type="text" placeholder="es. Gennaio 2025" />
+        </div>
+        <div class="form-group">
+          <label for="iscritti">Numero Complessivo Iscritti</label>
+          <input id="iscritti" type="number" placeholder="es. 150000" />
         </div>
       </div>
     </div>
 
-    <!-- Sezione Iscritti -->
-    <div class="form-section fade-in">
-      <div class="section-header">
-        <h2>👥 Dati Iscritti Social Network</h2>
-      </div>
-      <div class="section-content">
-        <div class="form-grid">
-          <div class="field-group">
-            <label class="field-label">Numero Complessivo Iscritti</label>
-            <input id="iscritti" class="field-input" placeholder="Totale iscritti su tutti i canali" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Iscritti Facebook</label>
-            <input id="facebook" class="field-input" placeholder="Numero fan Facebook" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Iscritti Twitter/X</label>
-            <input id="twitter" class="field-input" placeholder="Numero followers Twitter/X" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Iscritti LinkedIn</label>
-            <input id="linkedin" class="field-input" placeholder="Numero followers LinkedIn" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Iscritti Instagram</label>
-            <input id="instagram" class="field-input" placeholder="Numero followers Instagram" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Iscritti YouTube</label>
-            <input id="youtube" class="field-input" placeholder="Numero iscritti YouTube" />
-          </div>
+    <!-- Sezione Social Media -->
+    <div class="form-section">
+      <h2 class="section-title"><i class="fas fa-share-alt"></i> Iscritti per Piattaforma Social</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="facebook"><i class="fab fa-facebook"></i> Iscritti Facebook</label>
+          <input id="facebook" type="number" placeholder="es. 50000" />
+        </div>
+        <div class="form-group">
+          <label for="twitter"><i class="fab fa-twitter"></i> Iscritti X (Twitter)</label>
+          <input id="twitter" type="number" placeholder="es. 25000" />
+        </div>
+        <div class="form-group">
+          <label for="linkedin"><i class="fab fa-linkedin"></i> Iscritti LinkedIn</label>
+          <input id="linkedin" type="number" placeholder="es. 15000" />
+        </div>
+        <div class="form-group">
+          <label for="instagram"><i class="fab fa-instagram"></i> Iscritti Instagram</label>
+          <input id="instagram" type="number" placeholder="es. 30000" />
+        </div>
+        <div class="form-group">
+          <label for="youtube"><i class="fab fa-youtube"></i> Iscritti YouTube</label>
+          <input id="youtube" type="number" placeholder="es. 20000" />
         </div>
       </div>
     </div>
 
-    <!-- Sezione Post -->
-    <div class="form-section fade-in">
-      <div class="section-header">
-        <h2>📝 Attività di Pubblicazione</h2>
-      </div>
-      <div class="section-content">
-        <div class="form-grid">
-          <div class="field-group">
-            <label class="field-label">Totale Post Pubblicati</label>
-            <input id="totalePost" class="field-input" placeholder="Numero totale post del mese" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Post Editoriali</label>
-            <input id="postEditoriali" class="field-input" placeholder="Post non sponsorizzati" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Post Sponsorizzati (ADV)</label>
-            <input id="postADV" class="field-input" placeholder="Post pubblicitari" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Post Facebook</label>
-            <input id="postFacebook" class="field-input" placeholder="Post pubblicati su Facebook" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Post Instagram</label>
-            <input id="postInstagram" class="field-input" placeholder="Post pubblicati su Instagram" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Post LinkedIn</label>
-            <input id="postLinkedin" class="field-input" placeholder="Post pubblicati su LinkedIn" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Tweet</label>
-            <input id="tweet" class="field-input" placeholder="Tweet pubblicati" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Video YouTube</label>
-            <input id="videoYoutube" class="field-input" placeholder="Video pubblicati su YouTube" />
-          </div>
+    <!-- Sezione Contenuti Pubblicati -->
+    <div class="form-section">
+      <h2 class="section-title"><i class="fas fa-edit"></i> Contenuti Pubblicati</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="totalePost">Totale Post Pubblicati</label>
+          <input id="totalePost" type="number" placeholder="es. 120" />
+        </div>
+        <div class="form-group">
+          <label for="postEditoriali">Post Editoriali</label>
+          <input id="postEditoriali" type="number" placeholder="es. 80" />
+        </div>
+        <div class="form-group">
+          <label for="postADV">Post Pubblicitari (ADV)</label>
+          <input id="postADV" type="number" placeholder="es. 40" />
+        </div>
+        <div class="form-group">
+          <label for="postFacebook">Post Facebook</label>
+          <input id="postFacebook" type="number" placeholder="es. 30" />
+        </div>
+        <div class="form-group">
+          <label for="postInstagram">Post Instagram</label>
+          <input id="postInstagram" type="number" placeholder="es. 25" />
+        </div>
+        <div class="form-group">
+          <label for="postLinkedin">Post LinkedIn</label>
+          <input id="postLinkedin" type="number" placeholder="es. 20" />
+        </div>
+        <div class="form-group">
+          <label for="tweet">Tweet</label>
+          <input id="tweet" type="number" placeholder="es. 35" />
+        </div>
+        <div class="form-group">
+          <label for="videoYoutube">Video YouTube</label>
+          <input id="videoYoutube" type="number" placeholder="es. 10" />
         </div>
       </div>
     </div>
 
-    <!-- Sezione Top Content -->
-    <div class="form-section fade-in">
-      <div class="section-header">
-        <h2>🏆 Contenuti Top Performance</h2>
-      </div>
-      <div class="section-content">
-        <div class="form-grid">
-          <div class="field-group">
-            <label class="field-label">Titolo Primo Contenuto</label>
-            <input id="titolo1" class="field-input" placeholder="Titolo del contenuto più visualizzato" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Visualizzazioni Primo Contenuto</label>
-            <input id="vis1" class="field-input" placeholder="Numero visualizzazioni" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Titolo Secondo Contenuto</label>
-            <input id="titolo2" class="field-input" placeholder="Titolo del secondo contenuto" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Visualizzazioni Secondo Contenuto</label>
-            <input id="vis2" class="field-input" placeholder="Numero visualizzazioni" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Titolo Terzo Contenuto</label>
-            <input id="titolo3" class="field-input" placeholder="Titolo del terzo contenuto" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Visualizzazioni Terzo Contenuto</label>
-            <input id="vis3" class="field-input" placeholder="Numero visualizzazioni" />
-          </div>
+    <!-- Sezione Contenuti Top Performance -->
+    <div class="form-section">
+      <h2 class="section-title"><i class="fas fa-trophy"></i> Contenuti con Migliori Performance</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="titolo1">Titolo Contenuto #1</label>
+          <input id="titolo1" type="text" placeholder="es. Promozione Postepay Evolution" />
+        </div>
+        <div class="form-group">
+          <label for="vis1">Visualizzazioni Contenuto #1</label>
+          <input id="vis1" type="number" placeholder="es. 15000" />
+        </div>
+        <div class="form-group">
+          <label for="titolo2">Titolo Contenuto #2</label>
+          <input id="titolo2" type="text" placeholder="es. Servizi digitali" />
+        </div>
+        <div class="form-group">
+          <label for="vis2">Visualizzazioni Contenuto #2</label>
+          <input id="vis2" type="number" placeholder="es. 12000" />
+        </div>
+        <div class="form-group">
+          <label for="titolo3">Titolo Contenuto #3</label>
+          <input id="titolo3" type="text" placeholder="es. Spedizioni innovative" />
+        </div>
+        <div class="form-group">
+          <label for="vis3">Visualizzazioni Contenuto #3</label>
+          <input id="vis3" type="number" placeholder="es. 10000" />
         </div>
       </div>
     </div>
 
     <!-- Sezione Comunicazione Istituzionale -->
-    <div class="form-section fade-in">
-      <div class="section-header">
-        <h2>🏛️ Comunicazione Istituzionale</h2>
-      </div>
-      <div class="section-content">
-        <div class="form-grid">
-          <div class="field-group">
-            <label class="field-label">Post Istituzionali</label>
-            <input id="postIstituzionali" class="field-input" placeholder="Numero post istituzionali" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Views Post Istituzionali</label>
-            <input id="viewsIstituzionali" class="field-input" placeholder="Visualizzazioni totali" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Interazioni Post Istituzionali</label>
-            <input id="interazioniIstituzionali" class="field-input" placeholder="Like e interazioni totali" />
-          </div>
+    <div class="form-section">
+      <h2 class="section-title"><i class="fas fa-building"></i> Comunicazione Istituzionale</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="postIstituzionali">Post Istituzionali</label>
+          <input id="postIstituzionali" type="number" placeholder="es. 25" />
+        </div>
+        <div class="form-group">
+          <label for="viewsIstituzionali">Visualizzazioni Istituzionali</label>
+          <input id="viewsIstituzionali" type="number" placeholder="es. 50000" />
+        </div>
+        <div class="form-group">
+          <label for="interazioniIstituzionali">Interazioni Istituzionali</label>
+          <input id="interazioniIstituzionali" type="number" placeholder="es. 2500" />
         </div>
       </div>
     </div>
 
     <!-- Sezione Campagne ATL -->
-    <div class="form-section fade-in">
-      <div class="section-header">
-        <h2>📢 Campagne Above The Line (ATL)</h2>
-      </div>
-      <div class="section-content">
-        <div class="form-grid">
-          <div class="field-group">
-            <label class="field-label">Numero Campagne ATL</label>
-            <input id="campagneATL" class="field-input" placeholder="Campagne gestite nel mese" />
-          </div>
-          <div class="field-group" style="grid-column: 1 / -1;">
-            <label class="field-label">Elenco Campagne</label>
-            <textarea id="elencoCampagne" class="field-input" rows="3" placeholder="Descrizione dettagliata delle campagne ATL"></textarea>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Views/Impression ATL</label>
-            <input id="viewsATL" class="field-input" placeholder="Impressioni totali campagne" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Utenti Unici Raggiunti</label>
-            <input id="utentiATL" class="field-input" placeholder="Reach unico delle campagne" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Link Click ATL</label>
-            <input id="clickATL" class="field-input" placeholder="Click sui link delle campagne" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Interazioni ATL</label>
-            <input id="interazioniATL" class="field-input" placeholder="Engagement totale campagne" />
-          </div>
+    <div class="form-section">
+      <h2 class="section-title"><i class="fas fa-bullhorn"></i> Campagne Above The Line (ATL)</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="campagneATL">Numero Campagne ATL</label>
+          <input id="campagneATL" type="number" placeholder="es. 5" />
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label for="elencoCampagne">Elenco Campagne ATL</label>
+          <textarea id="elencoCampagne" rows="3" placeholder="es. Campagna Postepay, Campagna Spedizioni, Campagna Servizi Digitali"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="viewsATL">Impression ATL</label>
+          <input id="viewsATL" type="number" placeholder="es. 500000" />
+        </div>
+        <div class="form-group">
+          <label for="utentiATL">Utenti Unici ATL</label>
+          <input id="utentiATL" type="number" placeholder="es. 100000" />
+        </div>
+        <div class="form-group">
+          <label for="clickATL">Link Click ATL</label>
+          <input id="clickATL" type="number" placeholder="es. 5000" />
+        </div>
+        <div class="form-group">
+          <label for="interazioniATL">Interazioni ATL</label>
+          <input id="interazioniATL" type="number" placeholder="es. 15000" />
         </div>
       </div>
     </div>
 
-    <!-- Sezione Commenti e Engagement -->
-    <div class="form-section fade-in">
-      <div class="section-header">
-        <h2>💬 Analisi Commenti e Engagement</h2>
-      </div>
-      <div class="section-content">
-        <div class="form-grid">
-          <div class="field-group">
-            <label class="field-label">Commenti Complessivi</label>
-            <input id="commenti" class="field-input" placeholder="Totale commenti ricevuti" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Tendenza Commenti</label>
-            <input id="tendenzaCommenti" class="field-input" placeholder="Aumento/Diminuzione vs mese precedente" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Argomenti Prevalenti Facebook</label>
-            <input id="argomentiFacebook" class="field-input" placeholder="Temi più discussi nei commenti" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Prevalenza Commenti (%)</label>
-            <input id="prevalenzaCommenti" class="field-input" placeholder="Percentuale dell'argomento principale" />
-          </div>
+    <!-- Sezione Engagement -->
+    <div class="form-section">
+      <h2 class="section-title"><i class="fas fa-comments"></i> Engagement e Commenti</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="commenti">Commenti Complessivi</label>
+          <input id="commenti" type="number" placeholder="es. 3000" />
+        </div>
+        <div class="form-group">
+          <label for="tendenzaCommenti">Tendenza Commenti</label>
+          <input id="tendenzaCommenti" type="text" placeholder="es. aumento/diminuzione" />
+        </div>
+        <div class="form-group">
+          <label for="argomentiFacebook">Argomenti Prevalenti Facebook</label>
+          <input id="argomentiFacebook" type="text" placeholder="es. servizi postali" />
+        </div>
+        <div class="form-group">
+          <label for="prevalenzaCommenti">Prevalenza Commenti (%)</label>
+          <input id="prevalenzaCommenti" type="text" placeholder="es. 45%" />
         </div>
       </div>
     </div>
 
-    <!-- Pulsanti Azione -->
+    <!-- Pulsanti di Azione -->
     <div class="action-buttons">
-      <button class="btn btn-primary" onclick="generaAnteprima(this)">
-        💾 Genera Report
+      <button class="btn btn-primary" onclick="generaAnteprima()">
+        <i class="fas fa-save"></i> Genera Report
       </button>
-      <button class="btn btn-secondary" onclick="exportExcel(this)">
-        📊 Esporta Excel
+      <button class="btn btn-secondary" onclick="exportExcel()">
+        <i class="fas fa-file-excel"></i> Esporta Excel
       </button>
-      <button class="btn btn-secondary" onclick="document.getElementById('fileImport').click()">
-        📂 Importa Excel
+      <button class="btn btn-success" onclick="document.getElementById('fileImport').click()">
+        <i class="fas fa-upload"></i> Importa Excel
       </button>
-      <button class="btn btn-danger" onclick="cancellaTutto(this)">
-        🗑️ Cancella Tutto
+      <button class="btn btn-danger" onclick="cancellaTutto()">
+        <i class="fas fa-trash"></i> Cancella Tutto
       </button>
-      <input type="file" id="fileImport" class="hidden-file-input" onchange="importExcel(event)" />
+      <input type="file" id="fileImport" class="file-input" onchange="importExcel(event)" />
     </div>
 
-    <div class="info-badge">
-      💡 Tip: I campi evidenziati in rosso nel report indicano dati mancanti che devono essere compilati
-    </div>
-
-    <!-- Sezione Preview -->
-    <div class="preview-section" id="previewSection" style="display: none;">
-      <div class="preview-card fade-in">
+    <!-- Anteprima Report -->
+    <div class="preview-section" id="preview">
+      <div class="preview-card" id="sectionPPT1">
         <div class="preview-header">
-          <h3>📋 PPT1 - Sintesi Esecutiva</h3>
-          <button class="copy-btn" onclick="copyHtmlContent('textPPT1', this)">Copia per Word</button>
+          <h3><i class="fas fa-presentation"></i> Report Sintetico (PPT1)</h3>
+          <button class="copy-btn" onclick="copyHtmlContent('textPPT1')">
+            <i class="fas fa-copy"></i> Copia per Word
+          </button>
         </div>
         <div id="textPPT1" class="preview-content"></div>
       </div>
 
-      <div class="preview-card fade-in">
+      <div class="preview-card" id="sectionPPT2">
         <div class="preview-header">
-          <h3>📊 PPT2 - Dettaglio Metriche</h3>
-          <button class="copy-btn" onclick="copyHtmlContent('textPPT2', this)">Copia per Word</button>
+          <h3><i class="fas fa-chart-bar"></i> Report Dettagliato (PPT2)</h3>
+          <button class="copy-btn" onclick="copyHtmlContent('textPPT2')">
+            <i class="fas fa-copy"></i> Copia per Word
+          </button>
         </div>
         <div id="textPPT2" class="preview-content"></div>
       </div>
 
-      <div class="preview-card fade-in">
+      <div class="preview-card" id="sectionEsteso">
         <div class="preview-header">
-          <h3>📖 Report Esteso - Analisi Completa</h3>
-          <button class="copy-btn" onclick="copyHtmlContent('textEsteso', this)">Copia per Word</button>
+          <h3><i class="fas fa-file-alt"></i> Report Completo</h3>
+          <button class="copy-btn" onclick="copyHtmlContent('textEsteso')">
+            <i class="fas fa-copy"></i> Copia per Word
+          </button>
         </div>
         <div id="textEsteso" class="preview-content"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-    function get(id) {
-      const el = document.getElementById(id);
-      return el ? el.value || "<span class='rosso'>XXX</span>" : "XXX";
-    }
+<div id="statusMessage" class="status-message"></div>
 
-    function addButtonFeedback(button, type = 'success') {
-      button.classList.add(type);
-      setTimeout(() => {
-        button.classList.remove(type);
-      }, 2000);
-    }
+<script>
+function get(id) {
+  const el = document.getElementById(id);
+  return el ? el.value || "<span class='rosso'>XXX</span>" : "XXX";
+}
 
-    function generaAnteprima(button) {
-      button.classList.add('loading');
-      
-      setTimeout(() => {
-        const ppt1 = `<b>Emesso il Report social di ${get('mese')}</b>: ${get('iscritti')} iscritti totali; ${get('totalePost')} post pubblicati di cui ${get('postIstituzionali')} su temi istituzionali; ${get('campagneATL')} campagne ATL; ${get('commenti')} commenti.`;
+function showStatus(message, type = 'success') {
+  const statusEl = document.getElementById('statusMessage');
+  statusEl.textContent = message;
+  statusEl.className = `status-message ${type} show`;
+  
+  setTimeout(() => {
+    statusEl.classList.remove('show');
+  }, 3000);
+}
 
-        const ppt2 = `Il numero complessivo degli iscritti è pari a ${get('iscritti')}: Facebook ${get('facebook')}; X ${get('twitter')}; Linkedin ${get('linkedin')}; Instagram ${get('instagram')}; YouTube ${get('youtube')}.<br><br>
+function setButtonLoading(button, loading = true) {
+  if (loading) {
+    button.classList.add('loading');
+    button.disabled = true;
+  } else {
+    button.classList.remove('loading');
+    button.disabled = false;
+  }
+}
+
+function generaAnteprima() {
+  const button = event.target;
+  setButtonLoading(button, true);
+  
+  setTimeout(() => {
+    const ppt1 = `<b>Emesso il Report social di ${get('mese')}</b>: ${get('iscritti')} iscritti totali; ${get('totalePost')} post pubblicati di cui ${get('postIstituzionali')} su temi istituzionali; ${get('campagneATL')} campagne ATL; ${get('commenti')} commenti.`;
+
+    const ppt2 = `Il numero complessivo degli iscritti è pari a ${get('iscritti')}: Facebook ${get('facebook')}; X ${get('twitter')}; Linkedin ${get('linkedin')}; Instagram ${get('instagram')}; YouTube ${get('youtube')}.<br><br>
 Durante il mese abbiamo pubblicato ${get('totalePost')} post (${get('postEditoriali')} editoriali e ${get('postADV')} sponsorizzati): ${get('postFacebook')} post Facebook, ${get('postInstagram')} post Instagram, ${get('postLinkedin')} post Linkedin, ${get('tweet')} tweet, ${get('videoYoutube')} video YouTube, ${get('postADV')} post relativi alle campagne ADV (Facebook e Instagram).<br><br>
 I contenuti editoriali più visualizzati sono stati i post dedicati a: ${get('titolo1')} (${get('vis1')} Visualizzazioni); ${get('titolo2')} (${get('vis2')} Visualizzazioni); ${get('titolo3')} (${get('vis3')} Visualizzazioni).<br><br>
 Sono stati pubblicati ${get('postIstituzionali')} post a contenuto «istituzionale» che hanno generato ${get('viewsIstituzionali')} visualizzazioni e ${get('interazioniIstituzionali')} like e interazioni.<br><br>
 Nel corso del mese sono state gestite ${get('campagneATL')} campagne ATL che hanno sviluppato complessivamente ${get('viewsATL')} impression, raggiunto ${get('utentiATL')} utenti unici e generato un engagement per ${get('clickATL')} link click e ${get('interazioniATL')} interazioni.<br><br>
 Nel mese gli utenti hanno pubblicato ${get('commenti')} commenti ai post. I commenti hanno riguardato, in prevalenza, i "${get('argomentiFacebook')}" (${get('prevalenzaCommenti')}).`;
 
-        const esteso = `Report social del mese di <b>${get('mese')}</b>.<br><br>
+    const esteso = `Report social del mese di <b>${get('mese')}</b>.<br><br>
 Il numero complessivo degli <b>iscritti</b> è pari a <b>${get('iscritti')}</b>.<br><br>
 I fan <b>Facebook</b> (Poste Italiane, PosteMobile, Postepay) sono <b>${get('facebook')}</b>, mentre su <b>X</b> il numero di followers ammonta a <b>${get('twitter')}</b>. Su <b>Linkedin</b> sono <b>${get('linkedin')}</b>, su <b>Instagram</b>  <b>${get('instagram')}</b> e su <b>YouTube</b> <b>${get('youtube')}</b>.<br><br>
 Durante il mese abbiamo pubblicato <b>${get('totalePost')} post</b> (<b>${get('postEditoriali')} editoriali</b> e <b>${get('postADV')} sponsorizzati</b>):<br>
@@ -655,8 +683,4 @@ L'attività di <b>comunicazione istituzionale</b> ha portato alla pubblicazione 
 Sono state gestite <b>${get('campagneATL')} campagne ATL</b> (Facebook e Instagram): <b>${get('elencoCampagne')}</b>.<br><br>
 Le campagne hanno sviluppato complessivamente:<br>
 • <b>${get('viewsATL')} impression</b><br>
-• <b>${get('utentiATL')} utenti unici</b><br>
-e generato engagement per <b>${get('clickATL')} link click</b> e <b>${get('interazioniATL')} interazioni</b>.<br><br>
-Nel mese si registrano <b>${get('commenti')} commenti</b> pubblici sui canali, in ${get('tendenzaCommenti')}  rispetto al mese precedente. I commenti sulla pagina Facebook di Poste Italiane hanno riguardato in prevalenza il tema <b>"${get('argomentiFacebook')}"</b> (${get('prevalenzaCommenti')}).`;
-
-        document.getElementById('textPP
+• <b>${get('utentiATL')} utenti unici
