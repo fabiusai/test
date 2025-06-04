@@ -590,7 +590,7 @@
     </div>
   </div>
 
-  <!-- SCRIPT JavaScript del file originale (report mensile.html), ma con generazione stringhe senza indentazioni -->
+  <!-- SCRIPT JavaScript del file originale, con funzioni modificate -->
   <script>
     function get(id) {
       const el = document.getElementById(id);
@@ -598,7 +598,6 @@
     }
 
     function generaAnteprima() {
-      // Primo blocco PPT1 (tutto su unica riga, senza spazi di indentazione)
       const ppt1 = "<b>Emesso il Report social di " + get("mese") + "</b>: " +
                    get("iscritti") + " iscritti totali; " +
                    get("totalePost") + " post pubblicati di cui " +
@@ -606,7 +605,6 @@
                    get("campagneATL") + " campagne ATL; " +
                    get("commenti") + " commenti.";
 
-      // Secondo blocco PPT2 (da concatenare con <br> e nessun ritorno a capo nella stringa)
       const ppt2 = "Il numero complessivo degli iscritti è pari a " + get("iscritti") + ": Facebook " + get("facebook") +
                    "; X " + get("twitter") + "; Linkedin " + get("linkedin") + "; Instagram " + get("instagram") +
                    "; YouTube " + get("youtube") + ".<br><br>" +
@@ -627,7 +625,6 @@
                    "Nel mese gli utenti hanno pubblicato " + get("commenti") + " commenti ai post. I commenti hanno riguardato, in prevalenza, i “" +
                    get("argomentiFacebook") + "” (" + get("prevalenzaCommenti") + ").";
 
-      // Terzo blocco Esteso (interamente in una singola stringa)
       const esteso = "Report social del mese di <b>" + get("mese") + "</b>.<br><br>" +
                      "Il numero complessivo degli <b>iscritti</b> è pari a <b>" + get("iscritti") + "</b>.<br><br>" +
                      "I fan <b>Facebook</b> (Poste Italiane, PosteMobile, Postepay) sono <b>" + get("facebook") + "</b>, mentre su <b>X</b> il numero di followers ammonta a <b>" + get("twitter") + "</b>. Su <b>Linkedin</b> sono <b>" + get("linkedin") + "</b>, su <b>Instagram</b> <b>" + get("instagram") + "</b> e su <b>YouTube</b> <b>" + get("youtube") + "</b>.<br><br>" +
@@ -655,28 +652,44 @@
       document.getElementById("textEsteso").innerHTML = esteso;
     }
 
-    // Nuova copia in Word che preserva tag <b> (grassetto) e rimuove indentazioni spuria
-    function copyHtmlContent(id) {
-      const htmlContent = document.getElementById(id).innerHTML;
-      // Creo un div nascosto contenteditable e ci incollo l'HTML
-      const container = document.createElement("div");
-      container.style.position = "absolute";
-      container.style.left = "-9999px";
-      container.contentEditable = "true";
-      container.innerHTML = htmlContent;
-      document.body.appendChild(container);
-      // Seleziono tutto il contenuto del container
-      const range = document.createRange();
-      range.selectNodeContents(container);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-      // Eseguo il copy con execCommand (copio l'HTML, non solo plain text)
-      document.execCommand("copy");
-      // Ripulisco
-      sel.removeAllRanges();
-      document.body.removeChild(container);
-      alert("Contenuto copiato con formattazione Word.");
+    async function copyHtmlContent(id) {
+      const html = document.getElementById(id).innerHTML;
+      const text = document.getElementById(id).innerText;
+
+      // Verifico se la Clipboard API con ClipboardItem è disponibile
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+        try {
+          // Creo un Blob per l'HTML e uno per il plain text
+          const blobHtml = new Blob([html], { type: "text/html" });
+          const blobText = new Blob([text], { type: "text/plain" });
+          const item = new ClipboardItem({ "text/html": blobHtml, "text/plain": blobText });
+          await navigator.clipboard.write([item]);
+          alert("Contenuto copiato con formattazione Word.");
+        } catch (err) {
+          console.error("Errore durante la copia in clipboard:", err);
+          alert("Copia non riuscita. Riprova con il browser aggiornato.");
+        }
+      } else {
+        // Fallback per browser più vecchi: uso contentEditable + execCommand
+        const container = document.createElement("div");
+        container.style.position = "absolute";
+        container.style.left = "-9999px";
+        container.contentEditable = "true";
+        container.innerHTML = html;
+        document.body.appendChild(container);
+
+        const range = document.createRange();
+        range.selectNodeContents(container);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+        document.execCommand("copy");
+
+        sel.removeAllRanges();
+        document.body.removeChild(container);
+        alert("Contenuto copiato con formattazione Word (modalità fallback).");
+      }
     }
 
     function exportExcel() {
