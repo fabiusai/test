@@ -1378,29 +1378,65 @@
           const t = memoryStorage.getItem('text' + i + '-' + net);
           const img = memoryStorage.getItem('img' + i + '-' + net);
           if (t) {
-            document.getElementById('text-news' + i + '-' + net).innerHTML = formatText(t);
-            if (net === 'facebook') document.getElementById('textInput-news' + i).value = t;
+            const textElement = document.getElementById('text-news' + i + '-' + net);
+            if (textElement) {
+              textElement.innerHTML = formatText(t);
+              if (net === 'facebook') {
+                const inputElement = document.getElementById('textInput-news' + i);
+                if (inputElement) {
+                  inputElement.value = t;
+                }
+              }
+            }
           }
           if (img) {
-            const image = document.getElementById('img-news' + i + '-' + net);
-            image.src = img;
-            image.style.display = 'block';
+            const imageElement = document.getElementById('img-news' + i + '-' + net);
+            if (imageElement) {
+              imageElement.src = img;
+              imageElement.style.display = 'block';
+            }
           }
         });
 
         const input = document.getElementById('imageInput-news' + i);
-        input.addEventListener('change', (e => {
-          const file = e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = () => {
-            const activeTab = document.querySelector('#news' + i + ' .social-section.active').id.split('-')[2];
-            const img = document.getElementById('img-news' + i + '-' + activeTab);
-            img.src = reader.result;
-            img.style.display = 'block';
-          };
-          reader.readAsDataURL(file);
-        }));
+        if (input) {
+          input.addEventListener('change', (function(newsIndex) {
+            return function(e) {
+              const file = e.target.files[0];
+              if (!file) return;
+              
+              const reader = new FileReader();
+              reader.onload = () => {
+                try {
+                  const activeSection = document.querySelector('#news' + newsIndex + ' .social-section.active');
+                  if (!activeSection) {
+                    console.error('Nessuna sezione social attiva trovata per news' + newsIndex);
+                    return;
+                  }
+                  
+                  const activeTab = activeSection.id.split('-')[2];
+                  const img = document.getElementById('img-news' + newsIndex + '-' + activeTab);
+                  
+                  if (!img) {
+                    console.error('Elemento immagine non trovato: img-news' + newsIndex + '-' + activeTab);
+                    return;
+                  }
+                  
+                  img.src = reader.result;
+                  img.style.display = 'block';
+                } catch (error) {
+                  console.error('Errore durante il caricamento dell\'immagine:', error);
+                }
+              };
+              
+              reader.onerror = () => {
+                console.error('Errore durante la lettura del file');
+              };
+              
+              reader.readAsDataURL(file);
+            };
+          })(i));
+        }
       }
     };
   </script>
