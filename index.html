@@ -1,761 +1,510 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Social Network – Contatore Caratteri</title>
-    <link rel="icon" href="favicon.ico" />
-
-    <!-- Font Awesome per icone -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        integrity="sha512-pE6N1H8uZ6rS2E6EeD+WmY8/tPzTiPjzr6yPLGwFqvYykv2kK1oaXV1z+g8fVG8rBpyxOaNvGqZcIYITu5r3Q=="
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer"
-    />
-
-    <!-- XLSX.js per import/export Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-    <style>
-        :root {
-            --poste-blue: #0047bb;
-            --poste-yellow: #eedc00;
-            --poste-light-blue: #0066cc;
-            --poste-gray: #f5f5f5;
-            --poste-green: #4caf50;
-            --font-family-base: 'Helvetica Neue', Arial, sans-serif;
-        }
-
-        /* Reset margin e padding di base */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: var(--font-family-base);
-            background-color: #fff;
-            color: #333;
-            line-height: 1.5;
-            padding: 0 15px;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        /* HEADER */
-        .header {
-            background-color: var(--poste-yellow);
-            padding: 20px;
-            border-radius: 6px;
-            text-align: center;
-            margin: 20px auto;
-            max-width: 800px;
-        }
-
-        .header h1 {
-            font-size: 2em;
-            font-weight: bold;
-            color: var(--poste-blue);
-            margin-bottom: 5px;
-        }
-
-        .header h2 {
-            font-size: 1.2em;
-            font-weight: normal;
-            color: var(--poste-blue);
-        }
-
-        /* CONTENITORE PRINCIPALE */
-        .container {
-            max-width: 800px;
-            margin: 0 auto 40px;
-        }
-
-        /* TABS */
-        .tabs {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            margin-bottom: 20px;
-        }
-
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 12px 0;
-            background-color: var(--poste-gray);
-            color: var(--poste-blue);
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            position: relative;
-        }
-
-        .tab.active {
-            background-color: var(--poste-blue);
-            color: #fff;
-        }
-
-        .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50%;
-            height: 4px;
-            background-color: var(--poste-yellow);
-            border-radius: 2px;
-        }
-
-        /* CARD PER CONTENUTI TABS */
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .card {
-            background-color: #fff;
-            border: 1px solid var(--poste-gray);
-            border-radius: 6px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        /* STILE PER INPUT GROUP */
-        .input-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .field-label {
-            display: block;
-            font-size: 1em;
-            font-weight: 600;
-            color: var(--poste-blue);
-            margin-bottom: 8px;
-        }
-
-        .counter {
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 0.9em;
-            color: var(--poste-light-blue);
-        }
-
-        textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--poste-light-blue);
-            border-radius: 6px;
-            resize: vertical;
-            min-height: 80px;
-            font-size: 1em;
-            font-family: var(--font-family-base);
-            transition: border-color 0.3s;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--poste-blue);
-        }
-
-        /* BUTTON COPIA TITOLO */
-        .btn-copy-ytTitle {
-            margin-top: 10px;
-            font-size: 0.95em;
-        }
-
-        /* OUTPUT FIELD */
-        .output-field {
-            background-color: var(--poste-gray);
-            border: 2px dashed var(--poste-blue);
-            border-radius: 6px;
-            padding: 12px;
-            white-space: pre-wrap;
-            min-height: 100px;
-            margin: 15px 0;
-            font-family: var(--font-family-base);
-            font-size: 0.95em;
-            color: #333;
-        }
-
-        /* GRUPPO BOTTONI */
-        .button-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background-color: var(--poste-blue);
-            color: #fff;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
-        }
-
-        .btn i {
-            font-size: 1em;
-        }
-
-        .btn:hover {
-            background-color: var(--poste-light-blue);
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn.outline {
-            background-color: transparent;
-            border: 2px solid var(--poste-blue);
-            color: var(--poste-blue);
-        }
-
-        .btn.outline:hover {
-            background-color: var(--poste-blue);
-            color: #fff;
-        }
-
-        /* STILI SPECIFICI PER INPUT FILE */
-        .import-excel {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .import-excel input[type="file"] {
-            display: none;
-        }
-
-        .import-excel label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background-color: var(--poste-blue);
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s;
-        }
-
-        .import-excel label:hover {
-            background-color: var(--poste-light-blue);
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 600px) {
-            .button-group {
-                flex-direction: column;
-            }
-            textarea {
-                font-size: 0.95em;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Social Mockup</title>
+  <link rel="icon" type="image/ico" href="favicon.ico" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    h1 {
+      color: #0033A0;
+      text-align: center;
+      font-size: 2em;
+      margin-bottom: 30px;
+    }
+    .global-controls {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .news-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .news-tabs button {
+      background-color: #FFD700;
+      color: #0033A0;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .news-tabs button.active {
+      border: 2px solid #0033A0;
+      background-color: #fff;
+    }
+    .social-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .social-tabs button {
+      background-color: #0033A0;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .tab-content, .social-section {
+      display: none;
+    }
+    .tab-content.active, .social-section.active {
+      display: block;
+    }
+    .mockup-container {
+      background: #fff !important;
+      width: 520px;
+      margin: auto;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .mockup-header img, .mockup-footer img {
+      width: 100%;
+      display: block;
+    }
+    .mockup-image {
+      width: 100%;
+      display: none;
+      background: #fff;
+    }
+    .mockup-text {
+      padding: 10px 15px;
+      font-size: 15px;
+      white-space: pre-wrap;
+      color: #050505;
+      background: #fff;
+    }
+    .mockup-text span.link {
+      color: #1877f2;
+    }
+    .controls {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .controls textarea {
+      width: 520px;
+      height: 80px;
+      padding: 10px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .controls input[type='file'] {
+      margin-bottom: 10px;
+    }
+    .controls button {
+      margin: 4px;
+      padding: 8px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      background: #0033A0;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Social Network</h1>
-        <h2>Contatore Caratteri</h2>
+<h1>Social Mockup</h1>
+<div class="global-controls">
+  <button onclick="resetAllNews()">Cancella tutto</button>
+  <button onclick="downloadAllAsZip()">Scarica tutti i mockup (ZIP)</button>
+</div>
+
+<div class="news-tabs">
+  <button onclick="showNews(1, event)">News 1</button>
+  <button onclick="showNews(2, event)">News 2</button>
+  <button onclick="showNews(3, event)">News 3</button>
+  <button onclick="showNews(4, event)">News 4</button>
+  <button onclick="showNews(5, event)">News 5</button>
+</div>
+
+<!-- NEWS 1 -->
+<div class="tab-content active" id="news1">
+  <div class="social-tabs">
+    <button onclick="showSocial(1, 'facebook', event)">Facebook</button>
+    <button onclick="showSocial(1, 'linkedin', event)">LinkedIn</button>
+    <button onclick="showSocial(1, 'x', event)">X</button>
+    <button onclick="showSocial(1, 'instagram', event)">Instagram</button>
+  </div>
+  <div id="news1-facebook" class="social-section active">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoFB.png" /></div>
+      <div class="mockup-text" id="text-news1-facebook"></div>
+      <img class="mockup-image" id="img-news1-facebook" />
+      <div class="mockup-footer"><img src="BassoFB.png" /></div>
     </div>
-
-    <div class="container">
-        <!-- TABS -->
-        <div class="tabs">
-            <div class="tab active" data-tab-index="0">News&nbsp;1</div>
-            <div class="tab" data-tab-index="1">News&nbsp;2</div>
-            <div class="tab" data-tab-index="2">News&nbsp;3</div>
-        </div>
-
-        <!-- Import da Excel -->
-        <div class="import-excel">
-            <label for="excelInput">
-                <i class="fas fa-file-excel"></i>
-                Importa da Excel
-            </label>
-            <input type="file" id="excelInput" accept=".xlsx" />
-        </div>
-
-        <!-- Contenuti delle Tabs -->
-        <div id="tabContents">
-            <!-- I contenuti verranno inseriti via JavaScript -->
-        </div>
+  </div>
+  <div id="news1-linkedin" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoLI.png" /></div>
+      <div class="mockup-text" id="text-news1-linkedin"></div>
+      <img class="mockup-image" id="img-news1-linkedin" />
+      <div class="mockup-footer"><img src="BassoLI.png" /></div>
     </div>
+  </div>
+  <div id="news1-x" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoX.png" /></div>
+      <div class="mockup-text" id="text-news1-x"></div>
+      <img class="mockup-image" id="img-news1-x" />
+      <div class="mockup-footer"><img src="BassoX.png" /></div>
+    </div>
+  </div>
+  <div id="news1-instagram" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoIG.png" /></div>
+      <img class="mockup-image" id="img-news1-instagram" />
+      <div class="mockup-text" id="text-news1-instagram"></div>
+      <div class="mockup-footer"><img src="BassoIG.png" /></div>
+    </div>
+  </div>
+  <div class="controls">
+    <textarea id="textInput-news1" placeholder="Scrivi il testo del post..."></textarea><br>
+    <input type="file" id="imageInput-news1"><br>
+    <button onclick="saveNews(1)">Salva</button>
+    <button onclick="resetNews(1)">Cancella</button>
+  </div>
+</div>
 
-    <script>
-        // Configurazione limiti e tipi di campo per ciascuna tab
-        const tabsConfig = Array.from({ length: 3 }, () => ({
-            limits: { wa: 82, ytTitle: 49, ytDesc: 280 },
-            fields: ['wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink']
-        }));
+<!-- NEWS 2 -->
+<div class="tab-content" id="news2">
+  <div class="social-tabs">
+    <button onclick="showSocial(2, 'facebook', event)">Facebook</button>
+    <button onclick="showSocial(2, 'linkedin', event)">LinkedIn</button>
+    <button onclick="showSocial(2, 'x', event)">X</button>
+    <button onclick="showSocial(2, 'instagram', event)">Instagram</button>
+  </div>
+  <div id="news2-facebook" class="social-section active">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoFB.png" /></div>
+      <div class="mockup-text" id="text-news2-facebook"></div>
+      <img class="mockup-image" id="img-news2-facebook" />
+      <div class="mockup-footer"><img src="BassoFB.png" /></div>
+    </div>
+  </div>
+  <div id="news2-linkedin" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoLI.png" /></div>
+      <div class="mockup-text" id="text-news2-linkedin"></div>
+      <img class="mockup-image" id="img-news2-linkedin" />
+      <div class="mockup-footer"><img src="BassoLI.png" /></div>
+    </div>
+  </div>
+  <div id="news2-x" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoX.png" /></div>
+      <div class="mockup-text" id="text-news2-x"></div>
+      <img class="mockup-image" id="img-news2-x" />
+      <div class="mockup-footer"><img src="BassoX.png" /></div>
+    </div>
+  </div>
+  <div id="news2-instagram" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoIG.png" /></div>
+      <img class="mockup-image" id="img-news2-instagram" />
+      <div class="mockup-text" id="text-news2-instagram"></div>
+      <div class="mockup-footer"><img src="BassoIG.png" /></div>
+    </div>
+  </div>
+  <div class="controls">
+    <textarea id="textInput-news2" placeholder="Scrivi il testo del post..."></textarea><br>
+    <input type="file" id="imageInput-news2"><br>
+    <button onclick="saveNews(2)">Salva</button>
+    <button onclick="resetNews(2)">Cancella</button>
+  </div>
+</div>
 
-        // Funzione per creare l'HTML di ogni tab
-        function createTabContent(tabIndex) {
-            return `
-            <div class="tab-content${tabIndex === 0 ? ' active' : ''}" data-tab-index="${tabIndex}">
-                <div class="card">
-                    <!-- Input WA -->
-                    <div class="input-group">
-                        <label class="field-label" for="wa-${tabIndex}">Testo descrittivo news Canale WA</label>
-                        <span class="counter" id="counter-wa-${tabIndex}">0/${tabsConfig[tabIndex].limits.wa}</span>
-                        <textarea id="wa-${tabIndex}" data-type="wa" rows="2"></textarea>
-                    </div>
-                    <!-- Input Titolo YouTube -->
-                    <div class="input-group">
-                        <label class="field-label" for="ytTitle-${tabIndex}">Titolo YouTube</label>
-                        <span class="counter" id="counter-ytTitle-${tabIndex}">0/${tabsConfig[tabIndex].limits.ytTitle}</span>
-                        <textarea id="ytTitle-${tabIndex}" data-type="ytTitle" rows="2"></textarea>
-                        <!-- Nuovo pulsante per copiare il titolo YouTube -->
-                        <button class="btn outline btn-copy-ytTitle" data-type="ytTitle">
-                            <i class="fas fa-copy"></i>
-                            Copia Titolo YouTube
-                        </button>
-                    </div>
-                    <!-- Input Descrizione YouTube -->
-                    <div class="input-group">
-                        <label class="field-label" for="ytDesc-${tabIndex}">Copy post e descrizione YT</label>
-                        <span class="counter" id="counter-ytDesc-${tabIndex}">0/${tabsConfig[tabIndex].limits.ytDesc}</span>
-                        <textarea id="ytDesc-${tabIndex}" data-type="ytDesc" rows="4"></textarea>
-                    </div>
-                    <!-- Input Link YouTube -->
-                    <div class="input-group">
-                        <label class="field-label" for="ytLink-${tabIndex}">Link YouTube</label>
-                        <textarea id="ytLink-${tabIndex}" data-type="ytLink" rows="1"></textarea>
-                    </div>
-                    <!-- Input Link TG -->
-                    <div class="input-group">
-                        <label class="field-label" for="tgLink-${tabIndex}">Link TG Poste</label>
-                        <textarea id="tgLink-${tabIndex}" data-type="tgLink" rows="1"></textarea>
-                    </div>
+<!-- NEWS 3 -->
+<div class="tab-content" id="news3">
+  <div class="social-tabs">
+    <button onclick="showSocial(3, 'facebook', event)">Facebook</button>
+    <button onclick="showSocial(3, 'linkedin', event)">LinkedIn</button>
+    <button onclick="showSocial(3, 'x', event)">X</button>
+    <button onclick="showSocial(3, 'instagram', event)">Instagram</button>
+  </div>
+  <div id="news3-facebook" class="social-section active">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoFB.png" /></div>
+      <div class="mockup-text" id="text-news3-facebook"></div>
+      <img class="mockup-image" id="img-news3-facebook" />
+      <div class="mockup-footer"><img src="BassoFB.png" /></div>
+    </div>
+  </div>
+  <div id="news3-linkedin" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoLI.png" /></div>
+      <div class="mockup-text" id="text-news3-linkedin"></div>
+      <img class="mockup-image" id="img-news3-linkedin" />
+      <div class="mockup-footer"><img src="BassoLI.png" /></div>
+    </div>
+  </div>
+  <div id="news3-x" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoX.png" /></div>
+      <div class="mockup-text" id="text-news3-x"></div>
+      <img class="mockup-image" id="img-news3-x" />
+      <div class="mockup-footer"><img src="BassoX.png" /></div>
+    </div>
+  </div>
+  <div id="news3-instagram" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoIG.png" /></div>
+      <img class="mockup-image" id="img-news3-instagram" />
+      <div class="mockup-text" id="text-news3-instagram"></div>
+      <div class="mockup-footer"><img src="BassoIG.png" /></div>
+    </div>
+  </div>
+  <div class="controls">
+    <textarea id="textInput-news3" placeholder="Scrivi il testo del post..."></textarea><br>
+    <input type="file" id="imageInput-news3"><br>
+    <button onclick="saveNews(3)">Salva</button>
+    <button onclick="resetNews(3)">Cancella</button>
+  </div>
+</div>
 
-                    <!-- Output WA -->
-                    <div class="field-label" style="margin-top: 20px;">Anteprima Contenuto WA</div>
-                    <div class="output-field" data-type="waOutput"></div>
-                    <button class="btn outline btn-copy-wa" data-type="waOutput">
-                        <i class="fas fa-copy"></i>
-                        Copia Contenuto WA
-                    </button>
+<!-- NEWS 4 -->
+<div class="tab-content" id="news4">
+  <div class="social-tabs">
+    <button onclick="showSocial(4, 'facebook', event)">Facebook</button>
+    <button onclick="showSocial(4, 'linkedin', event)">LinkedIn</button>
+    <button onclick="showSocial(4, 'x', event)">X</button>
+    <button onclick="showSocial(4, 'instagram', event)">Instagram</button>
+  </div>
+  <div id="news4-facebook" class="social-section active">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoFB.png" /></div>
+      <div class="mockup-text" id="text-news4-facebook"></div>
+      <img class="mockup-image" id="img-news4-facebook" />
+      <div class="mockup-footer"><img src="BassoFB.png" /></div>
+    </div>
+  </div>
+  <div id="news4-linkedin" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoLI.png" /></div>
+      <div class="mockup-text" id="text-news4-linkedin"></div>
+      <img class="mockup-image" id="img-news4-linkedin" />
+      <div class="mockup-footer"><img src="BassoLI.png" /></div>
+    </div>
+  </div>
+  <div id="news4-x" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoX.png" /></div>
+      <div class="mockup-text" id="text-news4-x"></div>
+      <img class="mockup-image" id="img-news4-x" />
+      <div class="mockup-footer"><img src="BassoX.png" /></div>
+    </div>
+  </div>
+  <div id="news4-instagram" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoIG.png" /></div>
+      <img class="mockup-image" id="img-news4-instagram" />
+      <div class="mockup-text" id="text-news4-instagram"></div>
+      <div class="mockup-footer"><img src="BassoIG.png" /></div>
+    </div>
+  </div>
+  <div class="controls">
+    <textarea id="textInput-news4" placeholder="Scrivi il testo del post..."></textarea><br>
+    <input type="file" id="imageInput-news4"><br>
+    <button onclick="saveNews(4)">Salva</button>
+    <button onclick="resetNews(4)">Cancella</button>
+  </div>
+</div>
 
-                    <!-- Output Social -->
-                    <div class="field-label" style="margin-top: 20px;">Anteprima Contenuto Social</div>
-                    <div class="output-field" data-type="socialOutput"></div>
-                    <button class="btn outline btn-copy-social" data-type="socialOutput">
-                        <i class="fas fa-copy"></i>
-                        Copia Contenuto Social
-                    </button>
+<!-- NEWS 5 -->
+<div class="tab-content" id="news5">
+  <div class="social-tabs">
+    <button onclick="showSocial(5, 'facebook', event)">Facebook</button>
+    <button onclick="showSocial(5, 'linkedin', event)">LinkedIn</button>
+    <button onclick="showSocial(5, 'x', event)">X</button>
+    <button onclick="showSocial(5, 'instagram', event)">Instagram</button>
+  </div>
+  <div id="news5-facebook" class="social-section active">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoFB.png" /></div>
+      <div class="mockup-text" id="text-news5-facebook"></div>
+      <img class="mockup-image" id="img-news5-facebook" />
+      <div class="mockup-footer"><img src="BassoFB.png" /></div>
+    </div>
+  </div>
+  <div id="news5-linkedin" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoLI.png" /></div>
+      <div class="mockup-text" id="text-news5-linkedin"></div>
+      <img class="mockup-image" id="img-news5-linkedin" />
+      <div class="mockup-footer"><img src="BassoLI.png" /></div>
+    </div>
+  </div>
+  <div id="news5-x" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoX.png" /></div>
+      <div class="mockup-text" id="text-news5-x"></div>
+      <img class="mockup-image" id="img-news5-x" />
+      <div class="mockup-footer"><img src="BassoX.png" /></div>
+    </div>
+  </div>
+  <div id="news5-instagram" class="social-section">
+    <div class="mockup-container">
+      <div class="mockup-header"><img src="AltoIG.png" /></div>
+      <img class="mockup-image" id="img-news4-instagram" />
+      <div class="mockup-text" id="text-news5-instagram"></div>
+      <div class="mockup-footer"><img src="BassoIG.png" /></div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <textarea id="textInput-news5" placeholder="Scrivi il testo del post..."></textarea><br>
+    <input type="file" id="imageInput-news5"><br>
+    <button onclick="saveNews(5)">Salva</button>
+    <button onclick="resetNews(5)">Cancella</button>
+  </div>
+</div>  
 
-                    <!-- Pulsanti Azioni -->
-                    <div class="button-group" style="margin-top: 30px;">
-                        <button class="btn btn-save" data-tab-index="${tabIndex}">
-                            <i class="fas fa-save"></i>
-                            Salva
-                        </button>
-                        <button class="btn btn-clear" data-tab-index="${tabIndex}">
-                            <i class="fas fa-trash"></i>
-                            Cancella tutto
-                        </button>
-                        <button class="btn btn-copy-all">
-                            <i class="fas fa-copy"></i>
-                            Contenuto completo
-                        </button>
-                        <button class="btn btn-export">
-                            <i class="fas fa-file-export"></i>
-                            Esporta in Excel
-                        </button>
-                    </div>
-                </div>
-            </div>`;
-        }
+  
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script>
+  function showNews(id, event) {
+    document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+    document.querySelectorAll('.news-tabs button').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('news' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
 
-        // Inizializza l'applicazione: inserisce le tabs, legge localStorage, aggiunge event listener
-        function initializeApp() {
-            const tabContents = document.getElementById('tabContents');
-            tabContents.innerHTML = tabsConfig.map((_, i) => createTabContent(i)).join('');
+  function showSocial(newsIndex, platform, event) {
+    document.querySelectorAll(`#news${newsIndex} .social-section`).forEach(div => div.classList.remove('active'));
+    document.querySelectorAll(`#news${newsIndex} .social-tabs button`).forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`news${newsIndex}-${platform}`).classList.add('active');
+    event.target.classList.add('active');
+  }
 
-            // Ripristina dati salvati da localStorage
-            tabsConfig.forEach((_, index) => {
-                const savedData = localStorage.getItem(`tabData${index}`);
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    const tab = document.querySelector(`.tab-content[data-tab-index="${index}"]`);
-                    Object.entries(data).forEach(([type, value]) => {
-                        const field = tab.querySelector(`[data-type="${type}"]`);
-                        if (field) field.value = value;
-                    });
-                }
-            });
+  function formatText(text) {
+    return text.replace(/(#[\w\d]+|@[\w\d]+|https?:\/\/\S+)/g, m => '<span class="link">' + m + '</span>');
+  }
 
-            // Aggiungi listener per input e per i contatori
-            document.querySelectorAll('textarea').forEach(textarea => {
-                textarea.addEventListener('input', updateOutputs);
-            });
+  function saveNews(index) {
+    const text = document.getElementById('textInput-news' + index).value;
+    const formatted = formatText(text);
+    const activeTab = document.querySelector('#news' + index + ' .social-section.active').id.split('-')[1];
 
-            // Aggiungi listener per i bottoni Copy WA
-            document.querySelectorAll('.btn-copy-wa').forEach(btn => {
-                btn.addEventListener('click', copyContent);
-            });
+    document.getElementById('text-news' + index + '-' + activeTab).innerHTML = formatted;
+    if (activeTab === 'facebook') {
+      ['linkedin', 'x', 'instagram'].forEach(net => {
+        document.getElementById('text-news' + index + '-' + net).innerHTML = formatted;
+      });
+    }
 
-            // Aggiungi listener per i bottoni Copy Social
-            document.querySelectorAll('.btn-copy-social').forEach(btn => {
-                btn.addEventListener('click', copyContent);
-            });
+    localStorage.setItem('text' + index + '-' + activeTab, text);
 
-            // Aggiungi listener per i bottoni Copy Titolo YouTube
-            document.querySelectorAll('.btn-copy-ytTitle').forEach(btn => {
-                btn.addEventListener('click', copyTitle);
-            });
+    const imgEl = document.getElementById('img-news' + index + '-' + activeTab);
+    if (imgEl.src && imgEl.src.startsWith('data')) {
+      localStorage.setItem('img' + index + '-' + activeTab, imgEl.src);
+      if (activeTab === 'facebook') {
+        ['linkedin', 'x', 'instagram'].forEach(net => {
+          const tgt = document.getElementById('img-news' + index + '-' + net);
+          tgt.src = imgEl.src;
+          tgt.style.display = 'block';
+        });
+      }
+    }
+  }
 
-            // Listener per Salva
-            document.querySelectorAll('.btn-save').forEach(btn => {
-                btn.addEventListener('click', saveData);
-            });
+  function resetNews(index) {
+    ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
+      localStorage.removeItem('text' + index + '-' + net);
+      localStorage.removeItem('img' + index + '-' + net);
+      document.getElementById('text-news' + index + '-' + net).innerHTML = '';
+      const img = document.getElementById('img-news' + index + '-' + net);
+      img.src = '';
+      img.style.display = 'none';
+    });
+    document.getElementById('textInput-news' + index).value = '';
+    document.getElementById('imageInput-news' + index).value = null;
+  }
 
-            // Listener per Cancella
-            document.querySelectorAll('.btn-clear').forEach(btn => {
-                btn.addEventListener('click', clearAll);
-            });
+  function resetAllNews() {
+    for (let i = 1; i <= 5; i++) {
+      resetNews(i);
+    }
+  }
 
-            // Listener per Copia tutto
-            document.querySelectorAll('.btn-copy-all').forEach(btn => {
-                btn.addEventListener('click', copyAllTabsContent);
-            });
+  function downloadAllAsZip() {
+    const zip = new JSZip();
+    const activeNews = document.querySelector('.tab-content.active');
+    const newsId = activeNews.id;
 
-            // Listener per Esporta
-            document.querySelectorAll('.btn-export').forEach(btn => {
-                btn.addEventListener('click', exportToExcel);
-            });
+    const socialSections = activeNews.querySelectorAll('.social-section');
 
-            // Listener per import from Excel
-            document.getElementById('excelInput').addEventListener('change', function () {
-                importFromExcel(this.files[0]);
-            });
+    let done = 0;
+    const total = socialSections.length;
 
-            // Listener per cambio tab
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    switchTab(parseInt(tab.dataset.tabIndex));
-                });
-            });
+    socialSections.forEach((section, index) => {
+      const wasHidden = !section.classList.contains('active');
+      if (wasHidden) section.classList.add('active');
 
-            // Generazione iniziale output
-            updateOutputs();
-        }
-
-        // Cambia tab visibile
-        function switchTab(tabIndex) {
-            document.querySelectorAll('.tab').forEach((tab, i) => {
-                tab.classList.toggle('active', i === tabIndex);
-            });
-            document.querySelectorAll('.tab-content').forEach((content, i) => {
-                content.classList.toggle('active', i === tabIndex);
-            });
-            updateOutputs();
-        }
-
-        // Aggiorna i contatori e i campi di output in tutte le tab
-        function updateOutputs() {
-            document.querySelectorAll('.tab-content').forEach((tab, tabIndex) => {
-                const getValue = type => tab.querySelector(`[data-type="${type}"]`)?.value || '';
-
-                // Aggiorna contatori
-                ['wa', 'ytTitle', 'ytDesc'].forEach(type => {
-                    const textarea = tab.querySelector(`[data-type="${type}"]`);
-                    const counter = document.getElementById(`counter-${type}-${tabIndex}`);
-                    const valueLength = textarea.value.length;
-                    const maxLen = tabsConfig[tabIndex].limits[type];
-                    counter.textContent = `${valueLength}/${maxLen}`;
-                    // Cambia colore del contatore se si supera il limite
-                    counter.style.color = valueLength > maxLen ? 'red' : 'var(--poste-light-blue)';
-                });
-
-                // Componi output WA (mantiene il link TG interno)
-                const waOutput = `${getValue('wa')}\n${getValue('ytLink')}\n➡️ TG https://tgposte.poste.it/tgposte/`;
-                tab.querySelector('[data-type="waOutput"]').textContent = waOutput;
-
-                // Componi output Social (rimuove #PosteItaliane)
-                const socialOutput = `${getValue('ytDesc')}\n\n#TGPoste\n\n➡️ ${getValue('tgLink')}`;
-                tab.querySelector('[data-type="socialOutput"]').textContent = socialOutput;
-            });
-        }
-
-        // Copia il contenuto di un campo di output (WA o Social) e mostra feedback nel bottone
-        function copyContent(event) {
-            const button = event.currentTarget;
-            const outputType = button.dataset.type;
-            const tab = button.closest('.tab-content');
-            const outputField = tab.querySelector(`[data-type="${outputType}"]`);
-
-            // Stato iniziale: mostra icona loading
-            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Copiando...`;
-            button.disabled = true;
-
-            navigator.clipboard.writeText(outputField.textContent).then(() => {
-                // Dopo copia, mostra "Fatto!"
-                setTimeout(() => {
-                    button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
-                }, 300);
-
-                // Ripristina stato iniziale dopo 2 secondi
-                setTimeout(() => {
-                    const iconClass = 'fa-copy';
-                    const label = outputType === 'waOutput' ? 'Copia Contenuto WA' : 'Copia Contenuto Social';
-                    button.innerHTML = `<i class="fas ${iconClass}"></i> ${label}`;
-                    button.disabled = false;
-                }, 2000);
-            }).catch(() => {
-                // In caso di errore, ripristina subito
-                const iconClass = 'fa-copy';
-                const label = outputType === 'waOutput' ? 'Copia Contenuto WA' : 'Copia Contenuto Social';
-                button.innerHTML = `<i class="fas ${iconClass}"></i> ${label}`;
-                button.disabled = false;
-            });
-        }
-
-        // Nuova funzione: copia il contenuto del Titolo YouTube e mostra feedback
-        function copyTitle(event) {
-            const button = event.currentTarget;
-            const tab = button.closest('.tab-content');
-            const textarea = tab.querySelector(`[data-type="ytTitle"]`);
-            const textToCopy = textarea.value;
-
-            // Stato iniziale: mostra icona loading
-            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Copiando...`;
-            button.disabled = true;
-
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                // Dopo copia, mostra "Fatto!"
-                setTimeout(() => {
-                    button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
-                }, 300);
-
-                // Ripristina stato iniziale dopo 2 secondi
-                setTimeout(() => {
-                    button.innerHTML = `<i class="fas fa-copy"></i> Copia Titolo YouTube`;
-                    button.disabled = false;
-                }, 2000);
-            }).catch(() => {
-                // In caso di errore, ripristina subito
-                button.innerHTML = `<i class="fas fa-copy"></i> Copia Titolo YouTube`;
-                button.disabled = false;
-            });
-        }
-
-        // Salva i dati della tab corrente nel localStorage e mostra feedback
-        function saveData(event) {
-            const button = event.currentTarget;
-            const tabIndex = parseInt(button.dataset.tabIndex);
-            const tab = document.querySelector(`.tab-content[data-tab-index="${tabIndex}"]`);
-
-            // Stato iniziale: Caricamento
-            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Caricamento in corso...`;
-            button.disabled = true;
-
-            const dataToSave = {};
-            tab.querySelectorAll('textarea').forEach(input => {
-                dataToSave[input.dataset.type] = input.value;
-            });
-            localStorage.setItem(`tabData${tabIndex}`, JSON.stringify(dataToSave));
-
-            // Feedback "Fatto!"
-            setTimeout(() => {
-                button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
-            }, 300);
-
-            // Ripristina stato iniziale dopo 2 secondi
-            setTimeout(() => {
-                button.innerHTML = `<i class="fas fa-save"></i> Salva`;
-                button.disabled = false;
-            }, 2000);
-        }
-
-        // Cancella tutti i campi della tab e mostra feedback
-        function clearAll(event) {
-            const button = event.currentTarget;
-            const tabIndex = parseInt(button.dataset.tabIndex);
-            const tab = document.querySelector(`.tab-content[data-tab-index="${tabIndex}"]`);
-
-            if (confirm("Stai cancellando tutto il testo. Sei sicuro?")) {
-                // Stato iniziale: Cancellazione
-                button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Cancellazione in corso...`;
-                button.disabled = true;
-
-                // Svuota tutti i textarea
-                tab.querySelectorAll('textarea').forEach(textarea => {
-                    textarea.value = '';
-                });
-                updateOutputs();
-
-                // Feedback "Fatto!"
-                setTimeout(() => {
-                    button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
-                }, 300);
-
-                // Ripristina stato iniziale dopo 2 secondi
-                setTimeout(() => {
-                    button.innerHTML = `<i class="fas fa-trash"></i> Cancella tutto`;
-                    button.disabled = false;
-                }, 2000);
+      const mockup = section.querySelector('.mockup-container');
+      if (mockup) {
+        html2canvas(mockup).then(canvas => {
+          canvas.toBlob(blob => {
+            const platforms = ["Facebook", "Linkedin", "X", "Instagram"];
+            const filename = `${newsId}_${platforms[index]}.jpg`;
+            zip.file(filename, blob);
+            done++;
+            if (done === total) {
+              zip.generateAsync({ type: 'blob' }).then(content => {
+                saveAs(content, "mockup.zip");
+              });
             }
+          });
+        });
+      }
+
+      if (wasHidden) section.classList.remove('active');
+    });
+  }
+
+  window.onload = () => {
+    for (let i = 1; i <= 5; i++) {
+      ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
+        const t = localStorage.getItem('text' + i + '-' + net);
+        const img = localStorage.getItem('img' + i + '-' + net);
+        if (t) {
+          document.getElementById('text-news' + i + '-' + net).innerHTML = formatText(t);
+          if (net === 'facebook') document.getElementById('textInput-news' + i).value = t;
         }
-
-        // Copia il contenuto di tutte le tab in un unico output
-        function copyAllTabsContent(event) {
-            const button = event.currentTarget;
-
-            // Stato iniziale: Copiando
-            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Copiando...`;
-            button.disabled = true;
-
-            let output = '';
-            for (let i = 0; i < 3; i++) {
-                const tab = document.querySelector(`.tab-content[data-tab-index="${i}"]`);
-                const getValue = type => tab.querySelector(`[data-type="${type}"]`)?.value.trim() || '=';
-                output += `NEWS ${i + 1}\n` +
-                    `Contenuto WA: ${getValue('wa')}\n` +
-                    `Titolo YouTube: ${getValue('ytTitle')}\n` +
-                    `Contenuto social: ${getValue('ytDesc')}\n\n`;
-            }
-
-            navigator.clipboard.writeText(output.trim()).then(() => {
-                // Feedback "Fatto!"
-                setTimeout(() => {
-                    button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
-                }, 300);
-
-                // Ripristina stato iniziale dopo 2 secondi
-                setTimeout(() => {
-                    button.innerHTML = `<i class="fas fa-copy"></i> Contenuto completo`;
-                    button.disabled = false;
-                }, 2000);
-            }).catch(() => {
-                // In caso di errore, ripristina subito
-                button.innerHTML = `<i class="fas fa-copy"></i> Contenuto completo`;
-                button.disabled = false;
-            });
+        if (img) {
+          const image = document.getElementById('img-news' + i + '-' + net);
+          image.src = img;
+          image.style.display = 'block';
         }
+      });
 
-        // Esporta tutti i dati in un file Excel e mostra feedback
-        function exportToExcel(event) {
-            const button = event.currentTarget;
-
-            // Stato iniziale: Esportazione
-            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Esportazione in corso...`;
-            button.disabled = true;
-
-            // Genera nome file con data odierna
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const fileName = `copyWA_${year}-${month}-${day}.xlsx`;
-
-            // Crea array per Excel
-            const excelData = [
-                ["", "News 1", "News 2", "News 3"],
-                ["Testo descrittivo news Canale WA", "", "", ""],
-                ["Titolo YouTube", "", "", ""],
-                ["Copy post e descrizione YT", "", "", ""],
-                ["Link YouTube", "", "", ""],
-                ["Link TG Poste", "", "", ""]
-            ];
-
-            // Mappa data-type a righe
-            const fieldMap = {
-                'wa': 1,
-                'ytTitle': 2,
-                'ytDesc': 3,
-                'ytLink': 4,
-                'tgLink': 5
-            };
-
-            for (let tabIndex = 0; tabIndex < 3; tabIndex++) {
-                const tab = document.querySelector(`.tab-content[data-tab-index="${tabIndex}"]`);
-                tab.querySelectorAll('textarea').forEach(textarea => {
-                    const fieldType = textarea.dataset.type;
-                    const rowIndex = fieldMap[fieldType];
-                    if (rowIndex !== undefined) {
-                        excelData[rowIndex][tabIndex + 1] = textarea.value;
-                    }
-                });
-            }
-
-            // Crea workbook e scarica file
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(excelData);
-            XLSX.utils.book_append_sheet(wb, ws, "Foglio1");
-            XLSX.writeFile(wb, fileName);
-
-            // Feedback "Fatto!"
-            setTimeout(() => {
-                button.innerHTML = `<i class="fas fa-check"></i> Fatto!`;
-            }, 300);
-
-            // Ripristina stato iniziale dopo 2 secondi
-            setTimeout(() => {
-                button.innerHTML = `<i class="fas fa-file-export"></i> Esporta in Excel`;
-                button.disabled = false;
-            }, 2000);
-        }
-
-        // Importa dati da file Excel nelle tab
-        async function importFromExcel(file) {
-            if (!file) return;
-
-            const data = await file.arrayBuffer();
-            const workbook = XLSX.read(data);
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-            // Mappa colonna A ai data-type
-            const fieldMap = {
-                'Testo descrittivo news Canale WA': 'wa',
-                'Titolo YouTube': 'ytTitle',
-                'Copy post e descrizione YT': 'ytDesc',
-                'Link YouTube': 'ytLink',
-                'Link TG Poste': 'tgLink'
-            };
-
-            rows.slice(1).forEach(row => {
-                const rawField = row[0]?.trim();
-                const fieldType = fieldMap[rawField];
-                if (fieldType) {
-                    for (let tabIndex = 0; tabIndex < 3; tabIndex++) {
-                        const tab = document.querySelector(`.tab-content[data-tab-index="${tabIndex}"]`);
-                        const value = row[tabIndex + 1];
-                        const field = tab.querySelector(`[data-type="${fieldType}"]`);
-                        if (field) {
-                            field.value = value !== undefined ? value : '';
-                        }
-                    }
-                }
-            });
-            updateOutputs();
-        }
-
-        // Avvia l'app al caricamento pagina
-        window.addEventListener('DOMContentLoaded', initializeApp);
-    </script>
+      const input = document.getElementById('imageInput-news' + i);
+      input.addEventListener('change', (e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const activeTab = document.querySelector('#news' + i + ' .social-section.active').id.split('-')[1];
+          const img = document.getElementById('img-news' + i + '-' + activeTab);
+          img.src = reader.result;
+          img.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }));
+    }
+  };
+</script>
 </body>
 </html>
