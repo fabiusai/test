@@ -1210,6 +1210,23 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
   <script>
+    // Storage in memoria per sostituire localStorage
+    const memoryStorage = {
+      data: {},
+      setItem: function(key, value) {
+        this.data[key] = value;
+      },
+      getItem: function(key) {
+        return this.data[key] || null;
+      },
+      removeItem: function(key) {
+        delete this.data[key];
+      },
+      clear: function() {
+        this.data = {};
+      }
+    };
+
     function showNews(id, event) {
       document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
       document.querySelectorAll('.news-tabs button').forEach(btn => btn.classList.remove('active'));
@@ -1271,11 +1288,11 @@
           });
         }
 
-        localStorage.setItem('text' + index + '-' + activeTab, text);
+        memoryStorage.setItem('text' + index + '-' + activeTab, text);
 
         const imgEl = document.getElementById('img-news' + index + '-' + activeTab);
         if (imgEl.src && imgEl.src.startsWith('data')) {
-          localStorage.setItem('img' + index + '-' + activeTab, imgEl.src);
+          memoryStorage.setItem('img' + index + '-' + activeTab, imgEl.src);
           if (activeTab === 'facebook') {
             ['linkedin', 'x', 'instagram'].forEach(net => {
               const tgt = document.getElementById('img-news' + index + '-' + net);
@@ -1292,8 +1309,8 @@
 
     function resetNews(index) {
       ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
-        localStorage.removeItem('text' + index + '-' + net);
-        localStorage.removeItem('img' + index + '-' + net);
+        memoryStorage.removeItem('text' + index + '-' + net);
+        memoryStorage.removeItem('img' + index + '-' + net);
         document.getElementById('text-news' + index + '-' + net).innerHTML = '';
         const img = document.getElementById('img-news' + index + '-' + net);
         img.src = '';
@@ -1308,6 +1325,7 @@
         for (let i = 1; i <= 5; i++) {
           resetNews(i);
         }
+        memoryStorage.clear();
       }
     }
 
@@ -1357,8 +1375,8 @@
     window.onload = () => {
       for (let i = 1; i <= 5; i++) {
         ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
-          const t = localStorage.getItem('text' + i + '-' + net);
-          const img = localStorage.getItem('img' + i + '-' + net);
+          const t = memoryStorage.getItem('text' + i + '-' + net);
+          const img = memoryStorage.getItem('img' + i + '-' + net);
           if (t) {
             document.getElementById('text-news' + i + '-' + net).innerHTML = formatText(t);
             if (net === 'facebook') document.getElementById('textInput-news' + i).value = t;
