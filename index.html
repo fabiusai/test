@@ -1227,6 +1227,31 @@
       }
     };
 
+    // Funzione di debug per verificare gli elementi
+    function debugElements() {
+      console.log('=== DEBUG ELEMENTI ===');
+      for (let i = 1; i <= 5; i++) {
+        ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
+          const textId = 'text-news' + i + '-' + net;
+          const imgId = 'img-news' + i + '-' + net;
+          const textEl = document.getElementById(textId);
+          const imgEl = document.getElementById(imgId);
+          
+          if (!textEl) console.warn('Elemento testo mancante:', textId);
+          if (!imgEl) console.warn('Elemento immagine mancante:', imgId);
+        });
+        
+        const textInputId = 'textInput-news' + i;
+        const imageInputId = 'imageInput-news' + i;
+        const textInputEl = document.getElementById(textInputId);
+        const imageInputEl = document.getElementById(imageInputId);
+        
+        if (!textInputEl) console.warn('Input testo mancante:', textInputId);
+        if (!imageInputEl) console.warn('Input immagine mancante:', imageInputId);
+      }
+      console.log('=== FINE DEBUG ===');
+    }
+
     function showNews(id, event) {
       document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
       document.querySelectorAll('.news-tabs button').forEach(btn => btn.classList.remove('active'));
@@ -1277,47 +1302,95 @@
       setButtonLoading(saveBtn, true);
 
       setTimeout(() => {
-        const text = document.getElementById('textInput-news' + index).value;
-        const formatted = formatText(text);
-        const activeTab = document.querySelector('#news' + index + ' .social-section.active').id.split('-')[2];
+        try {
+          const textInput = document.getElementById('textInput-news' + index);
+          if (!textInput) {
+            console.error('Input testo non trovato per news' + index);
+            setButtonLoading(saveBtn, false);
+            return;
+          }
 
-        document.getElementById('text-news' + index + '-' + activeTab).innerHTML = formatted;
-        if (activeTab === 'facebook') {
-          ['linkedin', 'x', 'instagram'].forEach(net => {
-            document.getElementById('text-news' + index + '-' + net).innerHTML = formatted;
-          });
-        }
+          const text = textInput.value;
+          const formatted = formatText(text);
+          
+          const activeSection = document.querySelector('#news' + index + ' .social-section.active');
+          if (!activeSection) {
+            console.error('Sezione social attiva non trovata per news' + index);
+            setButtonLoading(saveBtn, false);
+            return;
+          }
 
-        memoryStorage.setItem('text' + index + '-' + activeTab, text);
+          const activeTab = activeSection.id.split('-')[2];
+          
+          const textElement = document.getElementById('text-news' + index + '-' + activeTab);
+          if (textElement) {
+            textElement.innerHTML = formatted;
+          }
 
-        const imgEl = document.getElementById('img-news' + index + '-' + activeTab);
-        if (imgEl.src && imgEl.src.startsWith('data')) {
-          memoryStorage.setItem('img' + index + '-' + activeTab, imgEl.src);
           if (activeTab === 'facebook') {
             ['linkedin', 'x', 'instagram'].forEach(net => {
-              const tgt = document.getElementById('img-news' + index + '-' + net);
-              tgt.src = imgEl.src;
-              tgt.style.display = 'block';
+              const targetTextElement = document.getElementById('text-news' + index + '-' + net);
+              if (targetTextElement) {
+                targetTextElement.innerHTML = formatted;
+              }
             });
           }
-        }
 
-        setButtonLoading(saveBtn, false);
-        showSuccessMessage(index);
+          memoryStorage.setItem('text' + index + '-' + activeTab, text);
+
+          const imgEl = document.getElementById('img-news' + index + '-' + activeTab);
+          if (imgEl && imgEl.src && imgEl.src.startsWith('data')) {
+            memoryStorage.setItem('img' + index + '-' + activeTab, imgEl.src);
+            if (activeTab === 'facebook') {
+              ['linkedin', 'x', 'instagram'].forEach(net => {
+                const tgt = document.getElementById('img-news' + index + '-' + net);
+                if (tgt) {
+                  tgt.src = imgEl.src;
+                  tgt.style.display = 'block';
+                }
+              });
+            }
+          }
+
+          setButtonLoading(saveBtn, false);
+          showSuccessMessage(index);
+        } catch (error) {
+          console.error('Errore durante il salvataggio:', error);
+          setButtonLoading(saveBtn, false);
+        }
       }, 800);
     }
 
     function resetNews(index) {
-      ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
-        memoryStorage.removeItem('text' + index + '-' + net);
-        memoryStorage.removeItem('img' + index + '-' + net);
-        document.getElementById('text-news' + index + '-' + net).innerHTML = '';
-        const img = document.getElementById('img-news' + index + '-' + net);
-        img.src = '';
-        img.style.display = 'none';
-      });
-      document.getElementById('textInput-news' + index).value = '';
-      document.getElementById('imageInput-news' + index).value = null;
+      try {
+        ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
+          memoryStorage.removeItem('text' + index + '-' + net);
+          memoryStorage.removeItem('img' + index + '-' + net);
+          
+          const textElement = document.getElementById('text-news' + index + '-' + net);
+          if (textElement) {
+            textElement.innerHTML = '';
+          }
+          
+          const img = document.getElementById('img-news' + index + '-' + net);
+          if (img) {
+            img.src = '';
+            img.style.display = 'none';
+          }
+        });
+        
+        const textInput = document.getElementById('textInput-news' + index);
+        if (textInput) {
+          textInput.value = '';
+        }
+        
+        const imageInput = document.getElementById('imageInput-news' + index);
+        if (imageInput) {
+          imageInput.value = null;
+        }
+      } catch (error) {
+        console.error('Errore durante il reset:', error);
+      }
     }
 
     function resetAllNews() {
@@ -1373,6 +1446,11 @@
     }
 
     window.onload = () => {
+      // Debug per verificare tutti gli elementi
+      setTimeout(() => {
+        debugElements();
+      }, 100);
+
       for (let i = 1; i <= 5; i++) {
         ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
           const t = memoryStorage.getItem('text' + i + '-' + net);
@@ -1415,15 +1493,19 @@
                   }
                   
                   const activeTab = activeSection.id.split('-')[2];
-                  const img = document.getElementById('img-news' + newsIndex + '-' + activeTab);
+                  const imgId = 'img-news' + newsIndex + '-' + activeTab;
+                  const img = document.getElementById(imgId);
                   
                   if (!img) {
-                    console.error('Elemento immagine non trovato: img-news' + newsIndex + '-' + activeTab);
+                    console.error('Elemento immagine non trovato:', imgId);
+                    console.log('Sezione attiva:', activeSection.id);
+                    console.log('Tab attivo:', activeTab);
                     return;
                   }
                   
                   img.src = reader.result;
                   img.style.display = 'block';
+                  console.log('Immagine caricata con successo in:', imgId);
                 } catch (error) {
                   console.error('Errore durante il caricamento dell\'immagine:', error);
                 }
@@ -1436,6 +1518,8 @@
               reader.readAsDataURL(file);
             };
           })(i));
+        } else {
+          console.warn('Input file non trovato per news' + i);
         }
       }
     };
