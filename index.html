@@ -758,4 +758,347 @@
           <div id="news5-facebook" class="social-section active">
             <div class="mockup-container">
               <div class="mockup-header"><img src="AltoFB.png" /></div>
-              <div class="mockup-text" id="text-news5-facebook">
+              <div class="mockup-text" id="text-news5-facebook"></div>
+              <img class="mockup-image" id="img-news5-facebook" />
+              <div class="mockup-footer"><img src="BassoFB.png" /></div>
+            </div>
+          </div>
+          <div id="news5-linkedin" class="social-section">
+            <div class="mockup-container">
+              <div class="mockup-header"><img src="AltoLI.png" /></div>
+              <div class="mockup-text" id="text-news5-linkedin"></div>
+              <img class="mockup-image" id="img-news5-linkedin" />
+              <div class="mockup-footer"><img src="BassoLI.png" /></div>
+            </div>
+          </div>
+          <div id="news5-x" class="social-section">
+            <div class="mockup-container">
+              <div class="mockup-header"><img src="AltoX.png" /></div>
+              <div class="mockup-text" id="text-news5-x"></div>
+              <img class="mockup-image" id="img-news5-x" />
+              <div class="mockup-footer"><img src="BassoX.png" /></div>
+            </div>
+          </div>
+          <div id="news5-instagram" class="social-section">
+            <div class="mockup-container">
+              <div class="mockup-header"><img src="AltoIG.png" /></div>
+              <img class="mockup-image" id="img-news5-instagram" />
+              <div class="mockup-text" id="text-news5-instagram"></div>
+              <div class="mockup-footer"><img src="BassoIG.png" /></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls-section">
+          <h3>Modifica contenuti</h3>
+          <div class="form-group">
+            <label>Testo del post</label>
+            <textarea class="form-control" id="textInput-news5" rows="4" placeholder="Scrivi il testo del post..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Immagine</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="imageInput-news5" accept="image/*">
+              <div class="file-input-text">📁 Clicca per selezionare un'immagine</div>
+            </div>
+          </div>
+          <div class="controls-buttons">
+            <button class="btn btn-success" onclick="saveNews(5, this)">
+              <span class="btn-text">Salva modifiche</span>
+            </button>
+            <button class="btn btn-warning" onclick="resetNews(5, this)">
+              <span class="btn-text">Cancella contenuti</span>
+            </button>
+          </div>
+          <div class="success-message" id="success-news5">
+            ✅ Contenuti salvati con successo!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+  <script>
+    function showNews(id, event) {
+      document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+      document.querySelectorAll('.news-tabs button').forEach(btn => btn.classList.remove('active'));
+      const newTab = document.getElementById('news' + id);
+      newTab.classList.add('active');
+      newTab.classList.add('fade-in');
+      event.target.classList.add('active');
+      
+      // Reset social tab selection
+      const firstSocialBtn = newTab.querySelector('.social-tabs button');
+      if (firstSocialBtn && !firstSocialBtn.classList.contains('active')) {
+        firstSocialBtn.click();
+      }
+    }
+
+    function showSocial(newsIndex, platform, event) {
+      document.querySelectorAll(`#news${newsIndex} .social-section`).forEach(div => div.classList.remove('active'));
+      document.querySelectorAll(`#news${newsIndex} .social-tabs button`).forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`news${newsIndex}-${platform}`).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function formatText(text) {
+      return text.replace(/(#[\w\d]+|@[\w\d]+|https?:\/\/\S+)/g, m => '<span class="link">' + m + '</span>');
+    }
+
+    function showButtonFeedback(button, message, isSuccess = true) {
+      const originalText = button.querySelector('.btn-text').textContent;
+      button.classList.add('loading');
+      button.querySelector('.btn-text').textContent = message;
+      
+      setTimeout(() => {
+        button.classList.remove('loading');
+        button.querySelector('.btn-text').textContent = isSuccess ? '✅ Fatto!' : originalText;
+        
+        if (isSuccess) {
+          setTimeout(() => {
+            button.querySelector('.btn-text').textContent = originalText;
+          }, 2000);
+        }
+      }, 1000);
+    }
+
+    function showSuccessMessage(newsIndex) {
+      const successMsg = document.getElementById(`success-news${newsIndex}`);
+      successMsg.style.display = 'block';
+      setTimeout(() => {
+        successMsg.style.display = 'none';
+      }, 3000);
+    }
+
+    function saveNews(index, button) {
+      showButtonFeedback(button, 'Salvataggio...');
+      
+      const text = document.getElementById('textInput-news' + index).value;
+      const formatted = formatText(text);
+      const activeTab = document.querySelector('#news' + index + ' .social-section.active').id.split('-')[1];
+
+      document.getElementById('text-news' + index + '-' + activeTab).innerHTML = formatted;
+      if (activeTab === 'facebook') {
+        ['linkedin', 'x', 'instagram'].forEach(net => {
+          document.getElementById('text-news' + index + '-' + net).innerHTML = formatted;
+        });
+      }
+
+      // Save to localStorage
+      ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
+        localStorage.setItem('text' + index + '-' + net, text);
+      });
+
+      const imgEl = document.getElementById('img-news' + index + '-' + activeTab);
+      if (imgEl.src && imgEl.src.startsWith('data')) {
+        ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
+          localStorage.setItem('img' + index + '-' + net, imgEl.src);
+          const tgt = document.getElementById('img-news' + index + '-' + net);
+          tgt.src = imgEl.src;
+          tgt.style.display = 'block';
+        });
+      }
+
+      showSuccessMessage(index);
+    }
+
+    function resetNews(index, button) {
+      showButtonFeedback(button, 'Cancellazione...', false);
+      
+      setTimeout(() => {
+        ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
+          localStorage.removeItem('text' + index + '-' + net);
+          localStorage.removeItem('img' + index + '-' + net);
+          document.getElementById('text-news' + index + '-' + net).innerHTML = '';
+          const img = document.getElementById('img-news' + index + '-' + net);
+          img.src = '';
+          img.style.display = 'none';
+        });
+        document.getElementById('textInput-news' + index).value = '';
+        document.getElementById('imageInput-news' + index).value = '';
+        
+        button.querySelector('.btn-text').textContent = '🗑️ Cancellato!';
+        setTimeout(() => {
+          button.querySelector('.btn-text').textContent = 'Cancella contenuti';
+        }, 2000);
+      }, 1000);
+    }
+
+    function resetAllNews(button) {
+      showButtonFeedback(button, 'Cancellazione totale...', false);
+      
+      setTimeout(() => {
+        for (let i = 1; i <= 5; i++) {
+          ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
+            localStorage.removeItem('text' + i + '-' + net);
+            localStorage.removeItem('img' + i + '-' + net);
+            document.getElementById('text-news' + i + '-' + net).innerHTML = '';
+            const img = document.getElementById('img-news' + i + '-' + net);
+            img.src = '';
+            img.style.display = 'none';
+          });
+          document.getElementById('textInput-news' + i).value = '';
+          document.getElementById('imageInput-news' + i).value = '';
+        }
+        
+        button.querySelector('.btn-text').textContent = '🗑️ Tutto cancellato!';
+        setTimeout(() => {
+          button.querySelector('.btn-text').textContent = 'Cancella tutto';
+        }, 2000);
+      }, 1000);
+    }
+
+    function downloadAllAsZip(button) {
+      showButtonFeedback(button, 'Generazione ZIP...');
+      
+      const zip = new JSZip();
+      const activeNews = document.querySelector('.tab-content.active');
+      const newsId = activeNews.id;
+
+      const socialSections = activeNews.querySelectorAll('.social-section');
+      let done = 0;
+      const total = socialSections.length;
+
+      if (total === 0) {
+        button.querySelector('.btn-text').textContent = '❌ Nessun contenuto';
+        setTimeout(() => {
+          button.querySelector('.btn-text').textContent = 'Scarica tutti i mockup (ZIP)';
+        }, 2000);
+        return;
+      }
+
+      socialSections.forEach((section, index) => {
+        const wasHidden = !section.classList.contains('active');
+        if (wasHidden) section.classList.add('active');
+
+        const mockup = section.querySelector('.mockup-container');
+        if (mockup) {
+          html2canvas(mockup, {
+            backgroundColor: '#ffffff',
+            scale: 2,
+            useCORS: true
+          }).then(canvas => {
+            canvas.toBlob(blob => {
+              const platforms = ["Facebook", "LinkedIn", "X", "Instagram"];
+              const filename = `${newsId}_${platforms[index]}.jpg`;
+              zip.file(filename, blob);
+              done++;
+              
+              if (done === total) {
+                zip.generateAsync({ type: 'blob' }).then(content => {
+                  saveAs(content, `${newsId}_mockups.zip`);
+                  button.classList.remove('loading');
+                  button.querySelector('.btn-text').textContent = '📦 Download completato!';
+                  setTimeout(() => {
+                    button.querySelector('.btn-text').textContent = 'Scarica tutti i mockup (ZIP)';
+                  }, 3000);
+                });
+              }
+            }, 'image/jpeg', 0.95);
+          });
+        }
+
+        if (wasHidden) section.classList.remove('active');
+      });
+    }
+
+    // Initialize on page load
+    window.onload = () => {
+      // Load saved content from localStorage
+      for (let i = 1; i <= 5; i++) {
+        ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
+          const t = localStorage.getItem('text' + i + '-' + net);
+          const img = localStorage.getItem('img' + i + '-' + net);
+          if (t) {
+            document.getElementById('text-news' + i + '-' + net).innerHTML = formatText(t);
+            if (net === 'facebook') document.getElementById('textInput-news' + i).value = t;
+          }
+          if (img) {
+            const image = document.getElementById('img-news' + i + '-' + net);
+            image.src = img;
+            image.style.display = 'block';
+          }
+        });
+
+        // Setup file input handlers
+        const input = document.getElementById('imageInput-news' + i);
+        input.addEventListener('change', (function(newsIndex) {
+          return function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = () => {
+              const activeTab = document.querySelector('#news' + newsIndex + ' .social-section.active').id.split('-')[1];
+              const img = document.getElementById('img-news' + newsIndex + '-' + activeTab);
+              img.src = reader.result;
+              img.style.display = 'block';
+              
+              // Update file input display
+              const wrapper = e.target.closest('.file-input-wrapper');
+              wrapper.querySelector('.file-input-text').textContent = `📷 ${file.name}`;
+            };
+            reader.readAsDataURL(file);
+          };
+        })(i));
+      }
+
+      // Initialize first news tab
+      document.querySelector('.news-tabs button').classList.add('active');
+    };
+
+    // Add smooth scrolling and improved UX
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add ripple effect to buttons
+      document.querySelectorAll('.btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+          const ripple = document.createElement('span');
+          const rect = this.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          const x = e.clientX - rect.left - size / 2;
+          const y = e.clientY - rect.top - size / 2;
+          
+          ripple.style.width = ripple.style.height = size + 'px';
+          ripple.style.left = x + 'px';
+          ripple.style.top = y + 'px';
+          ripple.classList.add('ripple');
+          
+          this.appendChild(ripple);
+          
+          setTimeout(() => {
+            ripple.remove();
+          }, 600);
+        });
+      });
+    });
+
+    // Add CSS for ripple effect
+    const style = document.createElement('style');
+    style.textContent = `
+      .btn {
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(0);
+        animation: ripple-animation 0.6s linear;
+        pointer-events: none;
+      }
+      
+      @keyframes ripple-animation {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
