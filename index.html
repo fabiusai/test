@@ -3,405 +3,426 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Social Mockup Generator - Poste Italiane</title>
+  <title>Social Media Mockup - Poste Italiane</title>
+  <link rel="icon" type="image/ico" href="favicon.ico" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   
   <style>
-    :root {
-      --poste-blue: #004795;
-      --poste-yellow: #FFD700;
-      --poste-light-blue: #E6F2FF;
-      --poste-dark-blue: #002D5C;
-      --gray-light: #F5F7FA;
-      --gray-medium: #E1E8ED;
-      --gray-dark: #657786;
-      --success-green: #00C851;
-      --border-radius: 8px;
-      --transition: all 0.3s ease;
-    }
-
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
+    
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: var(--gray-light);
-      color: var(--poste-dark-blue);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      min-height: 100vh;
       line-height: 1.6;
     }
-
-    /* Header */
+    
     .header {
-      background: white;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      padding: 1.5rem 0;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      background: linear-gradient(90deg, #FFD700 0%, #FFC107 100%);
+      padding: 20px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
     }
-
+    
     .header-content {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 0 2rem;
+      padding: 0 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
     }
-
-    .logo {
+    
+    .logo-section {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 15px;
     }
-
+    
     .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: var(--poste-yellow);
+      width: 50px;
+      height: 50px;
+      background: #003d82;
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      color: var(--poste-blue);
+      color: #FFD700;
       font-size: 24px;
+      font-weight: bold;
     }
-
+    
     h1 {
-      font-size: 1.5rem;
-      color: var(--poste-blue);
+      color: #003d82;
+      font-size: 28px;
       font-weight: 600;
+      letter-spacing: -0.5px;
     }
-
-    /* Container */
-    .container {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 2rem;
+    
+    .subtitle {
+      color: #0066cc;
+      font-size: 14px;
+      margin-top: 2px;
     }
-
-    /* Section Headers */
-    .section-header {
-      margin-bottom: 1.5rem;
-    }
-
-    .section-title {
-      font-size: 1.25rem;
-      color: var(--poste-dark-blue);
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-
-    .section-subtitle {
-      color: var(--gray-dark);
-      font-size: 0.95rem;
-    }
-
-    /* Global Controls */
+    
     .global-controls {
-      background: white;
-      border-radius: var(--border-radius);
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-
-    .control-group {
       display: flex;
-      gap: 1rem;
+      gap: 12px;
       flex-wrap: wrap;
     }
-
-    /* Buttons */
+    
     .btn {
-      padding: 0.75rem 1.5rem;
+      background: #003d82;
+      color: white;
       border: none;
-      border-radius: var(--border-radius);
-      font-size: 0.95rem;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      transition: var(--transition);
-      display: inline-flex;
+      transition: all 0.3s ease;
+      display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 8px;
+      text-decoration: none;
       position: relative;
       overflow: hidden;
     }
-
-    .btn-primary {
-      background: var(--poste-blue);
-      color: white;
+    
+    .btn:hover {
+      background: #0066cc;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,61,130,0.3);
     }
-
-    .btn-primary:hover {
-      background: var(--poste-dark-blue);
-      transform: translateY(-1px);
+    
+    .btn:active {
+      transform: translateY(0);
     }
-
-    .btn-secondary {
-      background: white;
-      color: var(--poste-blue);
-      border: 2px solid var(--poste-blue);
+    
+    .btn.btn-secondary {
+      background: #6c757d;
     }
-
-    .btn-secondary:hover {
-      background: var(--poste-light-blue);
-      transform: translateY(-1px);
+    
+    .btn.btn-secondary:hover {
+      background: #5a6268;
     }
-
-    .btn-danger {
-      background: white;
-      color: #DC3545;
-      border: 2px solid #DC3545;
+    
+    .btn.loading {
+      pointer-events: none;
     }
-
-    .btn-danger:hover {
-      background: #FFF5F5;
-      transform: translateY(-1px);
-    }
-
-    .btn-success {
-      background: var(--success-green);
-      color: white;
-    }
-
-    .btn-success:hover {
-      background: #00A843;
-      transform: translateY(-1px);
-    }
-
-    /* Button States */
+    
     .btn.loading::after {
-      content: 'Caricamento...';
+      content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: inherit;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: fadeIn 0.3s ease;
+      width: 16px;
+      height: 16px;
+      margin: auto;
+      border: 2px solid transparent;
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
     }
-
-    .btn.success::after {
-      content: 'Fatto! ✓';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--success-green);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: fadeIn 0.3s ease;
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
     }
-
-    /* News Tabs */
-    .news-section {
+    
+    .section-title {
       background: white;
-      border-radius: var(--border-radius);
-      padding: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 25px;
+      border-left: 4px solid #FFD700;
     }
-
+    
+    .section-title h2 {
+      color: #003d82;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    .section-title p {
+      color: #6c757d;
+      font-size: 14px;
+    }
+    
     .news-tabs {
       display: flex;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-      border-bottom: 2px solid var(--gray-medium);
-      padding-bottom: 0;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
     }
-
-    .news-tab {
-      padding: 0.75rem 1.5rem;
-      background: transparent;
-      border: none;
-      color: var(--gray-dark);
-      font-weight: 500;
+    
+    .news-tabs button {
+      background: white;
+      color: #003d82;
+      border: 2px solid #e9ecef;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-weight: 600;
       cursor: pointer;
-      transition: var(--transition);
-      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
       position: relative;
-      margin-bottom: -2px;
     }
-
-    .news-tab:hover {
-      color: var(--poste-blue);
-      background: var(--poste-light-blue);
+    
+    .news-tabs button:hover {
+      border-color: #FFD700;
+      background: #fffbf0;
     }
-
-    .news-tab.active {
-      color: var(--poste-blue);
-      border-bottom-color: var(--poste-yellow);
-      background: transparent;
+    
+    .news-tabs button.active {
+      background: linear-gradient(45deg, #FFD700, #FFC107);
+      color: #003d82;
+      border-color: #FFD700;
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
     }
-
-    /* Social Platform Tabs */
+    
+    .social-section-wrapper {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+    
     .social-tabs {
       display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      justify-content: center;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      overflow-x: auto;
     }
-
-    .social-tab {
-      padding: 0.75rem 1.25rem;
-      background: white;
-      border: 2px solid var(--gray-medium);
-      border-radius: var(--border-radius);
-      color: var(--gray-dark);
-      font-weight: 500;
+    
+    .social-tabs button {
+      background: transparent;
+      color: #6c757d;
+      border: none;
+      padding: 16px 20px;
       cursor: pointer;
-      transition: var(--transition);
+      transition: all 0.3s ease;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 8px;
+      font-weight: 500;
+      white-space: nowrap;
+      position: relative;
     }
-
-    .social-tab:hover {
-      border-color: var(--poste-blue);
-      color: var(--poste-blue);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,71,149,0.15);
+    
+    .social-tabs button:hover {
+      background: #e9ecef;
+      color: #003d82;
     }
-
-    .social-tab.active {
-      background: var(--poste-blue);
-      border-color: var(--poste-blue);
-      color: white;
+    
+    .social-tabs button.active {
+      background: white;
+      color: #003d82;
+      font-weight: 600;
     }
-
-    .social-tab i {
-      font-size: 1.1rem;
+    
+    .social-tabs button.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #FFD700, #FFC107);
     }
-
-    /* Tab Content */
-    .tab-content {
+    
+    .tab-content, .social-section {
       display: none;
     }
-
-    .tab-content.active {
-      display: block;
-      animation: fadeInUp 0.4s ease;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .social-section {
-      display: none;
-    }
-
-    .social-section.active {
+    
+    .tab-content.active, .social-section.active {
       display: block;
     }
-
-    /* Mockup Preview */
+    
     .mockup-preview {
-      background: var(--gray-light);
-      border-radius: var(--border-radius);
-      padding: 2rem;
-      margin-bottom: 2rem;
+      padding: 30px;
+      display: flex;
+      justify-content: center;
     }
-
+    
     .mockup-container {
       background: white;
-      width: 520px;
-      margin: 0 auto;
+      width: 380px;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      position: relative;
     }
-
-    .mockup-header img, .mockup-footer img {
-      width: 100%;
-      display: block;
+    
+    .platform-header {
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #e9ecef;
+      position: relative;
     }
-
-    .mockup-image {
-      width: 100%;
-      display: none;
-      background: white;
+    
+    .platform-header.facebook {
+      background: #1877f2;
+      color: white;
     }
-
+    
+    .platform-header.linkedin {
+      background: #0077b5;
+      color: white;
+    }
+    
+    .platform-header.x {
+      background: #000000;
+      color: white;
+    }
+    
+    .platform-header.instagram {
+      background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+      color: white;
+    }
+    
+    .platform-icon {
+      font-size: 24px;
+    }
+    
+    .platform-name {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    
+    .profile-section {
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f8f9fa;
+    }
+    
+    .profile-avatar {
+      width: 40px;
+      height: 40px;
+      background: #FFD700;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #003d82;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    
+    .profile-info h3 {
+      color: #003d82;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    
+    .profile-info span {
+      color: #6c757d;
+      font-size: 12px;
+    }
+    
     .mockup-text {
-      padding: 1rem 1.25rem;
+      padding: 20px;
       font-size: 15px;
-      line-height: 1.6;
+      line-height: 1.5;
+      color: #212529;
       white-space: pre-wrap;
-      color: #050505;
-      background: white;
       min-height: 60px;
     }
-
+    
     .mockup-text .link {
       color: #1877f2;
       text-decoration: none;
     }
-
-    /* Controls Section */
+    
+    .mockup-image {
+      width: 100%;
+      display: none;
+      max-height: 300px;
+      object-fit: cover;
+    }
+    
+    .engagement-bar {
+      padding: 12px 20px;
+      border-top: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #6c757d;
+      background: #f8f9fa;
+    }
+    
     .controls-section {
-      background: var(--poste-light-blue);
-      border-radius: var(--border-radius);
-      padding: 2rem;
+      background: #f8f9fa;
+      padding: 30px;
+      border-top: 1px solid #e9ecef;
     }
-
+    
+    .controls-title {
+      color: #003d82;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
     .form-group {
-      margin-bottom: 1.5rem;
+      margin-bottom: 20px;
     }
-
+    
     .form-label {
       display: block;
-      margin-bottom: 0.5rem;
+      color: #003d82;
       font-weight: 500;
-      color: var(--poste-dark-blue);
+      margin-bottom: 8px;
+      font-size: 14px;
     }
-
-    .form-textarea {
+    
+    .form-control {
       width: 100%;
-      min-height: 100px;
-      padding: 0.75rem;
-      border: 2px solid var(--gray-medium);
-      border-radius: var(--border-radius);
-      font-size: 0.95rem;
-      transition: var(--transition);
-      resize: vertical;
+      padding: 12px 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 14px;
       font-family: inherit;
+      transition: border-color 0.3s ease;
+      resize: vertical;
     }
-
-    .form-textarea:focus {
+    
+    .form-control:focus {
       outline: none;
-      border-color: var(--poste-blue);
-      box-shadow: 0 0 0 3px rgba(0,71,149,0.1);
+      border-color: #FFD700;
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
     }
-
+    
     .file-input-wrapper {
       position: relative;
       display: inline-block;
+      cursor: pointer;
+      width: 100%;
     }
-
+    
     .file-input {
       position: absolute;
       opacity: 0;
@@ -409,403 +430,419 @@
       height: 100%;
       cursor: pointer;
     }
-
-    .file-input-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
-      background: white;
-      border: 2px solid var(--gray-medium);
-      border-radius: var(--border-radius);
-      color: var(--poste-dark-blue);
-      font-weight: 500;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .file-input-label:hover {
-      border-color: var(--poste-blue);
-      color: var(--poste-blue);
-    }
-
-    .button-group {
+    
+    .file-input-display {
       display: flex;
-      gap: 1rem;
-      margin-top: 1.5rem;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border: 2px dashed #e9ecef;
+      border-radius: 8px;
+      background: white;
+      transition: all 0.3s ease;
+      color: #6c757d;
     }
-
-    /* Responsive */
+    
+    .file-input-wrapper:hover .file-input-display {
+      border-color: #FFD700;
+      background: #fffbf0;
+    }
+    
+    .controls-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #c3e6cb;
+      margin-top: 15px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    
     @media (max-width: 768px) {
-      .container {
-        padding: 0 1rem;
-      }
-
       .header-content {
-        padding: 0 1rem;
+        flex-direction: column;
+        text-align: center;
       }
-
-      h1 {
-        font-size: 1.25rem;
-      }
-
+      
       .mockup-container {
         width: 100%;
-        max-width: 520px;
+        max-width: 380px;
       }
-
-      .news-tabs, .social-tabs {
-        flex-wrap: wrap;
-      }
-
-      .control-group {
+      
+      .controls-buttons {
         flex-direction: column;
       }
-
-      .button-group {
-        flex-direction: column;
-      }
-
+      
       .btn {
-        width: 100%;
         justify-content: center;
       }
     }
-
-    /* Hover Effects */
-    .hover-lift {
-      transition: var(--transition);
+    
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
     }
-
-    .hover-lift:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    
+    .loading-spinner {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
-
-    /* Loading Spinner */
+    
     .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #f3f3f3;
-      border-top: 2px solid var(--poste-blue);
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e9ecef;
+      border-top: 4px solid #FFD700;
       border-radius: 50%;
       animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      margin: 0 auto 15px;
     }
   </style>
 </head>
 <body>
-  <!-- Header -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Generazione mockup in corso...</p>
+    </div>
+  </div>
+
   <header class="header">
     <div class="header-content">
-      <div class="logo">
+      <div class="logo-section">
         <div class="logo-icon">P</div>
-        <h1>Social Mockup Generator</h1>
+        <div>
+          <h1>Social Media Mockup</h1>
+          <div class="subtitle">Strumento di creazione post social - Poste Italiane</div>
+        </div>
+      </div>
+      <div class="global-controls">
+        <button class="btn btn-secondary" onclick="resetAllNews()">
+          <i class="fas fa-trash"></i>
+          Cancella tutto
+        </button>
+        <button class="btn" onclick="downloadAllAsZip()">
+          <i class="fas fa-download"></i>
+          Scarica ZIP
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Container -->
   <div class="container">
-    <!-- Global Controls -->
-    <section class="global-controls">
-      <div class="section-header">
-        <h2 class="section-title">Controlli Generali</h2>
-        <p class="section-subtitle">Gestisci tutti i mockup creati</p>
-      </div>
-      <div class="control-group">
-        <button class="btn btn-danger" onclick="resetAllNews()">
-          <i class="fas fa-trash"></i> Cancella tutto
-        </button>
-        <button class="btn btn-primary" onclick="downloadAllAsZip()">
-          <i class="fas fa-download"></i> Scarica tutti i mockup (ZIP)
-        </button>
-      </div>
-    </section>
+    <div class="section-title">
+      <h2><i class="fas fa-newspaper"></i> Gestione Contenuti</h2>
+      <p>Seleziona una news da modificare e personalizza i contenuti per i diversi canali social</p>
+    </div>
 
-    <!-- News Section -->
-    <section class="news-section">
-      <div class="section-header">
-        <h2 class="section-title">Crea i tuoi Mockup Social</h2>
-        <p class="section-subtitle">Seleziona una news e personalizza i contenuti per ogni piattaforma</p>
-      </div>
+    <div class="news-tabs">
+      <button onclick="showNews(1, event)" class="active">
+        <i class="fas fa-file-alt"></i> News 1
+      </button>
+      <button onclick="showNews(2, event)">
+        <i class="fas fa-file-alt"></i> News 2
+      </button>
+      <button onclick="showNews(3, event)">
+        <i class="fas fa-file-alt"></i> News 3
+      </button>
+      <button onclick="showNews(4, event)">
+        <i class="fas fa-file-alt"></i> News 4
+      </button>
+      <button onclick="showNews(5, event)">
+        <i class="fas fa-file-alt"></i> News 5
+      </button>
+    </div>
 
-      <!-- News Tabs -->
-      <div class="news-tabs">
-        <button class="news-tab active" onclick="showNews(1, event)">News 1</button>
-        <button class="news-tab" onclick="showNews(2, event)">News 2</button>
-        <button class="news-tab" onclick="showNews(3, event)">News 3</button>
-        <button class="news-tab" onclick="showNews(4, event)">News 4</button>
-        <button class="news-tab" onclick="showNews(5, event)">News 5</button>
-      </div>
-
-      <!-- Tab Contents -->
-      <!-- NEWS 1 -->
-      <div class="tab-content active" id="news1">
+    <!-- NEWS 1 -->
+    <div class="tab-content active" id="news1">
+      <div class="social-section-wrapper">
         <div class="social-tabs">
-          <button class="social-tab active" onclick="showSocial(1, 'facebook', event)">
+          <button onclick="showSocial(1, 'facebook', event)" class="active">
             <i class="fab fa-facebook-f"></i> Facebook
           </button>
-          <button class="social-tab" onclick="showSocial(1, 'linkedin', event)">
+          <button onclick="showSocial(1, 'linkedin', event)">
             <i class="fab fa-linkedin-in"></i> LinkedIn
           </button>
-          <button class="social-tab" onclick="showSocial(1, 'x', event)">
-            <i class="fab fa-x-twitter"></i> X
+          <button onclick="showSocial(1, 'x', event)">
+            <i class="fab fa-x-twitter"></i> X (Twitter)
           </button>
-          <button class="social-tab" onclick="showSocial(1, 'instagram', event)">
+          <button onclick="showSocial(1, 'instagram', event)">
             <i class="fab fa-instagram"></i> Instagram
           </button>
         </div>
 
-        <div class="mockup-preview">
-          <div id="news1-facebook" class="social-section active">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoFB.png" alt="Facebook Header" /></div>
+        <div id="news1-facebook" class="social-section active">
+          <div class="mockup-preview">
+            <div class="mockup-container">
+              <div class="platform-header facebook">
+                <i class="fab fa-facebook-f platform-icon"></i>
+                <span class="platform-name">Facebook</span>
+              </div>
+              <div class="profile-section">
+                <div class="profile-avatar">P</div>
+                <div class="profile-info">
+                  <h3>Poste Italiane <i class="fas fa-check-circle" style="color: #1877f2;"></i></h3>
+                  <span>1 ora • <i class="fas fa-globe-americas"></i></span>
+                </div>
+              </div>
               <div class="mockup-text" id="text-news1-facebook"></div>
-              <img class="mockup-image" id="img-news1-facebook" alt="" />
-              <div class="mockup-footer"><img src="BassoFB.png" alt="Facebook Footer" /></div>
+              <img class="mockup-image" id="img-news1-facebook" />
+              <div class="engagement-bar">
+                <span><i class="fas fa-thumbs-up" style="color: #1877f2;"></i> 55 Mi piace</span>
+                <span>16 Commenti • 3 Condivisioni</span>
+              </div>
             </div>
           </div>
-          <div id="news1-linkedin" class="social-section">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoLI.png" alt="LinkedIn Header" /></div>
+        </div>
+
+        <div id="news1-linkedin" class="social-section">
+          <div class="mockup-preview">
+            <div class="mockup-container">
+              <div class="platform-header linkedin">
+                <i class="fab fa-linkedin-in platform-icon"></i>
+                <span class="platform-name">LinkedIn</span>
+              </div>
+              <div class="profile-section">
+                <div class="profile-avatar">P</div>
+                <div class="profile-info">
+                  <h3>Poste Italiane</h3>
+                  <span>1 ora</span>
+                </div>
+              </div>
               <div class="mockup-text" id="text-news1-linkedin"></div>
-              <img class="mockup-image" id="img-news1-linkedin" alt="" />
-              <div class="mockup-footer"><img src="BassoLI.png" alt="LinkedIn Footer" /></div>
+              <img class="mockup-image" id="img-news1-linkedin" />
+              <div class="engagement-bar">
+                <span><i class="fas fa-thumbs-up" style="color: #0077b5;"></i> 176</span>
+                <span>11 commenti • 19 diffusioni</span>
+              </div>
             </div>
           </div>
-          <div id="news1-x" class="social-section">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoX.png" alt="X Header" /></div>
+        </div>
+
+        <div id="news1-x" class="social-section">
+          <div class="mockup-preview">
+            <div class="mockup-container">
+              <div class="platform-header x">
+                <i class="fab fa-x-twitter platform-icon"></i>
+                <span class="platform-name">X (Twitter)</span>
+              </div>
+              <div class="profile-section">
+                <div class="profile-avatar">P</div>
+                <div class="profile-info">
+                  <h3>Poste Italiane <i class="fas fa-check-circle" style="color: #1d9bf0;"></i></h3>
+                  <span>@PosteItaliane • 1h</span>
+                </div>
+              </div>
               <div class="mockup-text" id="text-news1-x"></div>
-              <img class="mockup-image" id="img-news1-x" alt="" />
-              <div class="mockup-footer"><img src="BassoX.png" alt="X Footer" /></div>
+              <img class="mockup-image" id="img-news1-x" />
+              <div class="engagement-bar">
+                <span>28 <i class="fas fa-comment"></i></span>
+                <span>72 <i class="fas fa-retweet"></i></span>
+                <span>266 <i class="fas fa-heart"></i></span>
+              </div>
             </div>
           </div>
-          <div id="news1-instagram" class="social-section">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoIG.png" alt="Instagram Header" /></div>
-              <img class="mockup-image" id="img-news1-instagram" alt="" />
+        </div>
+
+        <div id="news1-instagram" class="social-section">
+          <div class="mockup-preview">
+            <div class="mockup-container">
+              <div class="platform-header instagram">
+                <i class="fab fa-instagram platform-icon"></i>
+                <span class="platform-name">Instagram</span>
+              </div>
+              <div class="profile-section">
+                <div class="profile-avatar">P</div>
+                <div class="profile-info">
+                  <h3>Poste Italiane <i class="fas fa-check-circle" style="color: #e1306c;"></i></h3>
+                  <span>1 ora</span>
+                </div>
+              </div>
+              <img class="mockup-image" id="img-news1-instagram" />
               <div class="mockup-text" id="text-news1-instagram"></div>
-              <div class="mockup-footer"><img src="BassoIG.png" alt="Instagram Footer" /></div>
+              <div class="engagement-bar">
+                <span><i class="fas fa-heart" style="color: #e1306c;"></i> Piace a 118 persone</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="controls-section">
-          <div class="section-header">
-            <h3 class="section-title">Personalizza il contenuto</h3>
-            <p class="section-subtitle">Inserisci il testo e carica un'immagine per il tuo post</p>
-          </div>
-          
+          <h3 class="controls-title">
+            <i class="fas fa-edit"></i>
+            Personalizza il contenuto
+          </h3>
           <div class="form-group">
             <label class="form-label" for="textInput-news1">Testo del post</label>
-            <textarea class="form-textarea" id="textInput-news1" placeholder="Scrivi il testo del post... Usa # per gli hashtag e @ per le menzioni"></textarea>
+            <textarea id="textInput-news1" class="form-control" rows="4" placeholder="Scrivi il testo del post..."></textarea>
           </div>
-
           <div class="form-group">
             <label class="form-label">Immagine del post</label>
             <div class="file-input-wrapper">
-              <input type="file" class="file-input" id="imageInput-news1" accept="image/*">
-              <label for="imageInput-news1" class="file-input-label">
-                <i class="fas fa-upload"></i> Carica immagine
-              </label>
+              <input type="file" id="imageInput-news1" class="file-input" accept="image/*">
+              <div class="file-input-display">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>Clicca per caricare un'immagine</span>
+              </div>
             </div>
           </div>
-
-          <div class="button-group">
-            <button class="btn btn-success" onclick="saveNews(1)">
-              <i class="fas fa-save"></i> Salva modifiche
+          <div class="controls-buttons">
+            <button class="btn" onclick="saveNews(1)">
+              <i class="fas fa-save"></i>
+              Salva modifiche
             </button>
             <button class="btn btn-secondary" onclick="resetNews(1)">
-              <i class="fas fa-undo"></i> Cancella contenuto
+              <i class="fas fa-undo"></i>
+              Cancella contenuto
             </button>
+          </div>
+          <div class="success-message" id="success-news1">
+            <i class="fas fa-check-circle"></i>
+            <span>Contenuto salvato con successo!</span>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- NEWS 2 -->
-      <div class="tab-content" id="news2">
+    <!-- NEWS 2 -->
+    <div class="tab-content" id="news2">
+      <div class="social-section-wrapper">
         <div class="social-tabs">
-          <button class="social-tab active" onclick="showSocial(2, 'facebook', event)">
+          <button onclick="showSocial(2, 'facebook', event)" class="active">
             <i class="fab fa-facebook-f"></i> Facebook
           </button>
-          <button class="social-tab" onclick="showSocial(2, 'linkedin', event)">
+          <button onclick="showSocial(2, 'linkedin', event)">
             <i class="fab fa-linkedin-in"></i> LinkedIn
           </button>
-          <button class="social-tab" onclick="showSocial(2, 'x', event)">
-            <i class="fab fa-x-twitter"></i> X
+          <button onclick="showSocial(2, 'x', event)">
+            <i class="fab fa-x-twitter"></i> X (Twitter)
           </button>
-          <button class="social-tab" onclick="showSocial(2, 'instagram', event)">
+          <button onclick="showSocial(2, 'instagram', event)">
             <i class="fab fa-instagram"></i> Instagram
           </button>
         </div>
 
-        <div class="mockup-preview">
-          <div id="news2-facebook" class="social-section active">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoFB.png" alt="Facebook Header" /></div>
+        <div id="news2-facebook" class="social-section active">
+          <div class="mockup-preview">
+            <div class="mockup-container">
+              <div class="platform-header facebook">
+                <i class="fab fa-facebook-f platform-icon"></i>
+                <span class="platform-name">Facebook</span>
+              </div>
+              <div class="profile-section">
+                <div class="profile-avatar">P</div>
+                <div class="profile-info">
+                  <h3>Poste Italiane <i class="fas fa-check-circle" style="color: #1877f2;"></i></h3>
+                  <span>1 ora • <i class="fas fa-globe-americas"></i></span>
+                </div>
+              </div>
               <div class="mockup-text" id="text-news2-facebook"></div>
-              <img class="mockup-image" id="img-news2-facebook" alt="" />
-              <div class="mockup-footer"><img src="BassoFB.png" alt="Facebook Footer" /></div>
+              <img class="mockup-image" id="img-news2-facebook" />
+              <div class="engagement-bar">
+                <span><i class="fas fa-thumbs-up" style="color: #1877f2;"></i> 55 Mi piace</span>
+                <span>16 Commenti • 3 Condivisioni</span>
+              </div>
             </div>
           </div>
-          <div id="news2-linkedin" class="social-section">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoLI.png" alt="LinkedIn Header" /></div>
+        </div>
+
+        <div id="news2-linkedin" class="social-section">
+          <div class="mockup-preview">
+            <div class="mockup-container">
+              <div class="platform-header linkedin">
+                <i class="fab fa-linkedin-in platform-icon"></i>
+                <span class="platform-name">LinkedIn</span>
+              </div>
+              <div class="profile-section">
+                <div class="profile-avatar">P</div>
+                <div class="profile-info">
+                  <h3>Poste Italiane</h3>
+                  <span>1 ora</span>
+                </div>
+              </div>
               <div class="mockup-text" id="text-news2-linkedin"></div>
-              <img class="mockup-image" id="img-news2-linkedin" alt="" />
-              <div class="mockup-footer"><img src="BassoLI.png" alt="LinkedIn Footer" /></div>
+              <img class="mockup-image" id="img-news2-linkedin" />
+              <div class="engagement-bar">
+                <span><i class="fas fa-thumbs-up" style="color: #0077b5;"></i> 176</span>
+                <span>11 commenti • 19 diffusioni</span>
+              </div>
             </div>
           </div>
-          <div id="news2-x" class="social-section">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoX.png" alt="X Header" /></div>
+        </div>
+
+        <div id="news2-x" class="social-section">
+          <div class="mockup-preview">
+            <div class="mockup-container">
+              <div class="platform-header x">
+                <i class="fab fa-x-twitter platform-icon"></i>
+                <span class="platform-name">X (Twitter)</span>
+              </div>
+              <div class="profile-section">
+                <div class="profile-avatar">P</div>
+                <div class="profile-info">
+                  <h3>Poste Italiane <i class="fas fa-check-circle" style="color: #1d9bf0;"></i></h3>
+                  <span>@PosteItaliane • 1h</span>
+                </div>
+              </div>
               <div class="mockup-text" id="text-news2-x"></div>
-              <img class="mockup-image" id="img-news2-x" alt="" />
-              <div class="mockup-footer"><img src="BassoX.png" alt="X Footer" /></div>
+              <img class="mockup-image" id="img-news2-x" />
+              <div class="engagement-bar">
+                <span>28 <i class="fas fa-comment"></i></span>
+                <span>72 <i class="fas fa-retweet"></i></span>
+                <span>266 <i class="fas fa-heart"></i></span>
+              </div>
             </div>
           </div>
-          <div id="news2-instagram" class="social-section">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoIG.png" alt="Instagram Header" /></div>
-              <img class="mockup-image" id="img-news2-instagram" alt="" />
+        </div>
+
+        <div id="news2-instagram" class="social-section">
+          <div class="mockup-preview">
+            <div class="mockup-container">
+              <div class="platform-header instagram">
+                <i class="fab fa-instagram platform-icon"></i>
+                <span class="platform-name">Instagram</span>
+              </div>
+              <div class="profile-section">
+                <div class="profile-avatar">P</div>
+                <div class="profile-info">
+                  <h3>Poste Italiane <i class="fas fa-check-circle" style="color: #e1306c;"></i></h3>
+                  <span>1 ora</span>
+                </div>
+              </div>
+              <img class="mockup-image" id="img-news2-instagram" />
               <div class="mockup-text" id="text-news2-instagram"></div>
-              <div class="mockup-footer"><img src="BassoIG.png" alt="Instagram Footer" /></div>
+              <div class="engagement-bar">
+                <span><i class="fas fa-heart" style="color: #e1306c;"></i> Piace a 118 persone</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="controls-section">
-          <div class="section-header">
-            <h3 class="section-title">Personalizza il contenuto</h3>
-            <p class="section-subtitle">Inserisci il testo e carica un'immagine per il tuo post</p>
-          </div>
-          
+          <h3 class="controls-title">
+            <i class="fas fa-edit"></i>
+            Personalizza il contenuto
+          </h3>
           <div class="form-group">
             <label class="form-label" for="textInput-news2">Testo del post</label>
-            <textarea class="form-textarea" id="textInput-news2" placeholder="Scrivi il testo del post... Usa # per gli hashtag e @ per le menzioni"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Immagine del post</label>
-            <div class="file-input-wrapper">
-              <input type="file" class="file-input" id="imageInput-news2" accept="image/*">
-              <label for="imageInput-news2" class="file-input-label">
-                <i class="fas fa-upload"></i> Carica immagine
-              </label>
-            </div>
-          </div>
-
-          <div class="button-group">
-            <button class="btn btn-success" onclick="saveNews(2)">
-              <i class="fas fa-save"></i> Salva modifiche
-            </button>
-            <button class="btn btn-secondary" onclick="resetNews(2)">
-              <i class="fas fa-undo"></i> Cancella contenuto
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- NEWS 3 -->
-      <div class="tab-content" id="news3">
-        <div class="social-tabs">
-          <button class="social-tab active" onclick="showSocial(3, 'facebook', event)">
-            <i class="fab fa-facebook-f"></i> Facebook
-          </button>
-          <button class="social-tab" onclick="showSocial(3, 'linkedin', event)">
-            <i class="fab fa-linkedin-in"></i> LinkedIn
-          </button>
-          <button class="social-tab" onclick="showSocial(3, 'x', event)">
-            <i class="fab fa-x-twitter"></i> X
-          </button>
-          <button class="social-tab" onclick="showSocial(3, 'instagram', event)">
-            <i class="fab fa-instagram"></i> Instagram
-          </button>
-        </div>
-
-        <div class="mockup-preview">
-          <div id="news3-facebook" class="social-section active">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoFB.png" alt="Facebook Header" /></div>
-              <div class="mockup-text" id="text-news3-facebook"></div>
-              <img class="mockup-image" id="img-news3-facebook" alt="" />
-              <div class="mockup-footer"><img src="BassoFB.png" alt="Facebook Footer" /></div>
-            </div>
-          </div>
-          <div id="news3-linkedin" class="social-section">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoLI.png" alt="LinkedIn Header" /></div>
-              <div class="mockup-text" id="text-news3-linkedin"></div>
-              <img class="mockup-image" id="img-news3-linkedin" alt="" />
-              <div class="mockup-footer"><img src="BassoLI.png" alt="LinkedIn Footer" /></div>
-            </div>
-          </div>
-          <div id="news3-x" class="social-section">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoX.png" alt="X Header" /></div>
-              <div class="mockup-text" id="text-news3-x"></div>
-              <img class="mockup-image" id="img-news3-x" alt="" />
-              <div class="mockup-footer"><img src="BassoX.png" alt="X Footer" /></div>
-            </div>
-          </div>
-          <div id="news3-instagram" class="social-section">
-            <div class="mockup-container hover-lift">
-              <div class="mockup-header"><img src="AltoIG.png" alt="Instagram Header" /></div>
-              <img class="mockup-image" id="img-news3-instagram" alt="" />
-              <div class="mockup-text" id="text-news3-instagram"></div>
-              <div class="mockup-footer"><img src="BassoIG.png" alt="Instagram Footer" /></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="controls-section">
-          <div class="section-header">
-            <h3 class="section-title">Personalizza il contenuto</h3>
-            <p class="section-subtitle">Inserisci il testo e carica un'immagine per il tuo post</p>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="textInput-news3">Testo del post</label>
-            <textarea class="form-textarea" id="textInput-news3" placeholder="Scrivi il testo del post... Usa # per gli hashtag e @ per le menzioni"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Immagine del post</label>
-            <div class="file-input-wrapper">
-              <input type="file" class="file-input" id="imageInput-news3" accept="image/*">
-              <label for="imageInput-news3" class="file-input-label">
-                <i class="fas fa-upload"></i> Carica immagine
-              </label>
-            </div>
-          </div>
-
-          <div class="button-group">
-            <button class="btn btn-success" onclick="saveNews(3)">
-              <i class="fas fa-save"></i> Salva modifiche
-            </button>
-            <button class="btn btn-secondary" onclick="resetNews(3)">
-              <i class="fas fa-undo"></i> Cancella contenuto
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- NEWS 4 -->
-      <div class="tab-content" id="news4">
-        <div class="social-tabs">
-          <button class="social-tab active" onclick="showSocial(4, 'facebook', event)">
-            <i class="fab fa-facebook-f"></i> Facebook
-          </button>
-          <button class="social-tab" onclick="showSocial(4, 'linkedin', event)">
-            <i class="fab fa-linkedin-in"></i> LinkedIn
-          </button>
-          <button class="social-tab" onclick="showSocial(4, 'x', event)">
-            <i class="fab fa-x-twitter"></i> X
-          </button>
+            <textarea id="textInput-news2" class="form-control" rows="4" placeholder="Scrivi il testo del post..."></textarea>
