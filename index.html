@@ -1,1104 +1,385 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Social Mockup - Poste Italiane</title>
-  <link rel="icon" type="image/ico" href="favicon.ico" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-      min-height: 100vh;
-      padding: 20px;
-      color: #333;
-    }
-
-    .main-container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-      padding: 30px 0;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      border-left: 6px solid #FFD700;
-    }
-
-    .header h1 {
-      color: #003366;
-      font-size: 2.5em;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .header p {
-      color: #666;
-      font-size: 1.1em;
-      font-weight: 400;
-    }
-
-    .global-controls {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      background: linear-gradient(135deg, #003366 0%, #004080 100%);
-      color: white;
-      border: none;
-      padding: 14px 28px;
-      border-radius: 50px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0,51,102,0.2);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,51,102,0.3);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn-warning {
-      background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
-      box-shadow: 0 4px 15px rgba(255,107,107,0.2);
-    }
-
-    .btn-warning:hover {
-      box-shadow: 0 6px 20px rgba(255,107,107,0.3);
-    }
-
-    .btn-success {
-      background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
-      color: #003366;
-      box-shadow: 0 4px 15px rgba(255,215,0,0.2);
-    }
-
-    .btn-success:hover {
-      box-shadow: 0 6px 20px rgba(255,215,0,0.3);
-    }
-
-    .content-wrapper {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-      overflow: hidden;
-      border: 1px solid #e9ecef;
-    }
-
-    .news-navigation {
-      background: linear-gradient(135deg, #003366 0%, #004080 100%);
-      padding: 20px;
-      border-bottom: 4px solid #FFD700;
-    }
-
-    .news-navigation h2 {
-      color: white;
-      font-size: 1.4em;
-      margin-bottom: 20px;
-      text-align: center;
-      font-weight: 600;
-    }
-
-    .news-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .news-tabs button {
-      background: rgba(255,255,255,0.1);
-      color: white;
-      border: 2px solid rgba(255,255,255,0.3);
-      padding: 12px 24px;
-      border-radius: 25px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .news-tabs button:hover {
-      background: rgba(255,255,255,0.2);
-      border-color: #FFD700;
-      transform: translateY(-1px);
-    }
-
-    .news-tabs button.active {
-      background: #FFD700;
-      color: #003366;
-      border-color: #FFD700;
-      box-shadow: 0 4px 15px rgba(255,215,0,0.3);
-    }
-
-    .tab-content {
-      display: none;
-      padding: 30px;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .section-title {
-      color: #003366;
-      font-size: 1.3em;
-      font-weight: 700;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 3px solid #FFD700;
-      display: inline-block;
-    }
-
-    .social-navigation {
-      margin-bottom: 30px;
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 12px;
-      border: 1px solid #e9ecef;
-    }
-
-    .social-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-
-    .social-tabs button {
-      background: white;
-      color: #003366;
-      border: 2px solid #e9ecef;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      min-width: 120px;
-    }
-
-    .social-tabs button:hover {
-      border-color: #FFD700;
-      background: #fffdf0;
-      transform: translateY(-1px);
-    }
-
-    .social-tabs button.active {
-      background: #FFD700;
-      border-color: #FFD700;
-      color: #003366;
-      box-shadow: 0 4px 12px rgba(255,215,0,0.2);
-    }
-
-    .mockup-preview {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 40px;
-    }
-
-    .social-section {
-      display: none;
-    }
-
-    .social-section.active {
-      display: block;
-    }
-
-    .mockup-container {
-      background: #fff !important;
-      width: 520px;
-      max-width: 100%;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-      border: 1px solid #e9ecef;
-    }
-
-    .mockup-header img, .mockup-footer img {
-      width: 100%;
-      display: block;
-    }
-
-    .mockup-image {
-      width: 100%;
-      display: none;
-      background: #fff;
-    }
-
-    .mockup-text {
-      padding: 15px 20px;
-      font-size: 15px;
-      white-space: pre-wrap;
-      color: #050505;
-      background: #fff;
-      line-height: 1.5;
-    }
-
-    .mockup-text span.link {
-      color: #1877f2;
-      font-weight: 600;
-    }
-
-    .controls-section {
-      background: #f8f9fa;
-      padding: 30px;
-      border-radius: 16px;
-      border: 1px solid #e9ecef;
-      margin-top: 20px;
-    }
-
-    .controls-section h3 {
-      color: #003366;
-      font-size: 1.2em;
-      margin-bottom: 20px;
-      font-weight: 700;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-group label {
-      display: block;
-      color: #003366;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .form-control {
-      width: 100%;
-      max-width: 520px;
-      padding: 12px 16px;
-      border: 2px solid #e9ecef;
-      border-radius: 12px;
-      font-size: 14px;
-      font-family: inherit;
-      transition: all 0.3s ease;
-      resize: vertical;
-    }
-
-    .form-control:focus {
-      outline: none;
-      border-color: #FFD700;
-      box-shadow: 0 0 0 3px rgba(255,215,0,0.1);
-    }
-
-    .file-input-wrapper {
-      position: relative;
-      display: inline-block;
-      cursor: pointer;
-      background: white;
-      border: 2px dashed #e9ecef;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      transition: all 0.3s ease;
-      width: 100%;
-      max-width: 520px;
-    }
-
-    .file-input-wrapper:hover {
-      border-color: #FFD700;
-      background: #fffdf0;
-    }
-
-    .file-input-wrapper input[type="file"] {
-      position: absolute;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
-
-    .file-input-text {
-      color: #666;
-      font-weight: 500;
-    }
-
-    .controls-buttons {
-      display: flex;
-      gap: 15px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 25px;
-    }
-
-    .loading {
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    .loading::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 20px;
-      height: 20px;
-      border: 2px solid transparent;
-      border-top: 2px solid currentColor;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      transform: translate(-50%, -50%);
-    }
-
-    @keyframes spin {
-      0% { transform: translate(-50%, -50%) rotate(0deg); }
-      100% { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-
-    .success-message {
-      background: #d4edda;
-      color: #155724;
-      padding: 12px 20px;
-      border-radius: 8px;
-      margin-top: 15px;
-      border: 1px solid #c3e6cb;
-      display: none;
-    }
-
-    @media (max-width: 768px) {
-      .header h1 {
-        font-size: 2em;
-      }
-      
-      .mockup-container {
-        width: 100%;
-      }
-      
-      .form-control {
-        max-width: 100%;
-      }
-      
-      .file-input-wrapper {
-        max-width: 100%;
-      }
-      
-      .controls-buttons {
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .btn {
-        min-width: 200px;
-      }
-    }
-
-    .fade-in {
-      animation: fadeIn 0.5s ease-in;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to SVG Converter</title>
+    <style>
+        /* Stili generali ispirati al branding */
+        body {
+            font-family: 'Avenir Next LT Pro', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #1d48b4;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1d48b4;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 18px;
+            color: #666;
+        }
+        .section {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 24px;
+            color: #1d48b4;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: #1d48b4;
+            outline: none;
+        }
+        .button {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #1d48b4;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #163a8f;
+        }
+        .button:active {
+            background-color: #0f2c66;
+        }
+        .button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .button .icon {
+            margin-right: 8px;
+            fill: #fff;
+        }
+        .output {
+            margin-top: 20px;
+        }
+        .output h3 {
+            font-size: 20px;
+            color: #1d48b4;
+            margin-bottom: 10px;
+        }
+        .preview {
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+            overflow-x: auto;
+        }
+        /* Stili responsivi */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .section h2 {
+                font-size: 20px;
+            }
+            .button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="main-container">
-    <div class="header">
-      <h1>Social Mockup Generator</h1>
-      <p>Crea mockup professionali per i social media di Poste Italiane</p>
+    <div class="container">
+        <div class="header">
+            <h1>Converti Excel in Tabelle SVG</h1>
+            <p>Carica un file Excel e genera tabelle grafiche in formato SVG.</p>
+        </div>
+        <div class="section">
+            <h2>Carica File e Seleziona Layout</h2>
+            <div class="form-group">
+                <label for="excel-file">Seleziona file Excel</label>
+                <input type="file" id="excel-file" accept=".xlsx, .xls">
+            </div>
+            <div class="form-group">
+                <label for="layout">Seleziona layout</label>
+                <select id="layout">
+                    <option value="light">Light</option>
+                    <option value="strong">Strong</option>
+                </select>
+            </div>
+            <button class="button" id="generate-btn" disabled>
+                <svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-11h2v4h-2zm0 6h2v2h-2z"/></svg>
+                Genera SVG
+            </button>
+        </div>
+        <div class="section output" id="output" style="display: none;">
+            <h3>Anteprima e Download</h3>
+            <div class="preview" id="preview"></div>
+            <button class="button" id="download-btn" style="display: none;">
+                <svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg>
+                Scarica SVG
+            </button>
+        </div>
     </div>
 
-    <div class="global-controls">
-      <button class="btn btn-warning" onclick="resetAllNews(this)">
-        <span class="btn-text">Cancella tutto</span>
-      </button>
-      <button class="btn btn-success" onclick="downloadAllAsZip(this)">
-        <span class="btn-text">Scarica tutti i mockup (ZIP)</span>
-      </button>
-    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.1.2/svg.min.js"></script>
+    <script>
+        const excelInput = document.getElementById('excel-file');
+        const layoutSelect = document.getElementById('layout');
+        const generateBtn = document.getElementById('generate-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const outputSection = document.getElementById('output');
+        const previewDiv = document.getElementById('preview');
+        let svgFiles = [];
 
-    <div class="content-wrapper">
-      <div class="news-navigation">
-        <h2>Seleziona la News da modificare</h2>
-        <div class="news-tabs">
-          <button onclick="showNews(1, event)" class="active">News 1</button>
-          <button onclick="showNews(2, event)">News 2</button>
-          <button onclick="showNews(3, event)">News 3</button>
-          <button onclick="showNews(4, event)">News 4</button>
-          <button onclick="showNews(5, event)">News 5</button>
-        </div>
-      </div>
-
-      <!-- NEWS 1 -->
-      <div class="tab-content active fade-in" id="news1">
-        <h2 class="section-title">Piattaforma Social</h2>
-        <div class="social-navigation">
-          <div class="social-tabs">
-            <button onclick="showSocial(1, 'facebook', event)" class="active">Facebook</button>
-            <button onclick="showSocial(1, 'linkedin', event)">LinkedIn</button>
-            <button onclick="showSocial(1, 'x', event)">X (Twitter)</button>
-            <button onclick="showSocial(1, 'instagram', event)">Instagram</button>
-          </div>
-        </div>
-
-        <div class="mockup-preview">
-          <div id="news1-facebook" class="social-section active">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoFB.png" /></div>
-              <div class="mockup-text" id="text-news1-facebook"></div>
-              <img class="mockup-image" id="img-news1-facebook" />
-              <div class="mockup-footer"><img src="BassoFB.png" /></div>
-            </div>
-          </div>
-          <div id="news1-linkedin" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoLI.png" /></div>
-              <div class="mockup-text" id="text-news1-linkedin"></div>
-              <img class="mockup-image" id="img-news1-linkedin" />
-              <div class="mockup-footer"><img src="BassoLI.png" /></div>
-            </div>
-          </div>
-          <div id="news1-x" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoX.png" /></div>
-              <div class="mockup-text" id="text-news1-x"></div>
-              <img class="mockup-image" id="img-news1-x" />
-              <div class="mockup-footer"><img src="BassoX.png" /></div>
-            </div>
-          </div>
-          <div id="news1-instagram" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoIG.png" /></div>
-              <img class="mockup-image" id="img-news1-instagram" />
-              <div class="mockup-text" id="text-news1-instagram"></div>
-              <div class="mockup-footer"><img src="BassoIG.png" /></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="controls-section">
-          <h3>Modifica contenuti</h3>
-          <div class="form-group">
-            <label>Testo del post</label>
-            <textarea class="form-control" id="textInput-news1" rows="4" placeholder="Scrivi il testo del post..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>Immagine</label>
-            <div class="file-input-wrapper">
-              <input type="file" id="imageInput-news1" accept="image/*">
-              <div class="file-input-text">📁 Clicca per selezionare un'immagine</div>
-            </div>
-          </div>
-          <div class="controls-buttons">
-            <button class="btn btn-success" onclick="saveNews(1, this)">
-              <span class="btn-text">Salva modifiche</span>
-            </button>
-            <button class="btn btn-warning" onclick="resetNews(1, this)">
-              <span class="btn-text">Cancella contenuti</span>
-            </button>
-          </div>
-          <div class="success-message" id="success-news1">
-            ✅ Contenuti salvati con successo!
-          </div>
-        </div>
-      </div>
-
-      <!-- NEWS 2 -->
-      <div class="tab-content" id="news2">
-        <h2 class="section-title">Piattaforma Social</h2>
-        <div class="social-navigation">
-          <div class="social-tabs">
-            <button onclick="showSocial(2, 'facebook', event)" class="active">Facebook</button>
-            <button onclick="showSocial(2, 'linkedin', event)">LinkedIn</button>
-            <button onclick="showSocial(2, 'x', event)">X (Twitter)</button>
-            <button onclick="showSocial(2, 'instagram', event)">Instagram</button>
-          </div>
-        </div>
-
-        <div class="mockup-preview">
-          <div id="news2-facebook" class="social-section active">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoFB.png" /></div>
-              <div class="mockup-text" id="text-news2-facebook"></div>
-              <img class="mockup-image" id="img-news2-facebook" />
-              <div class="mockup-footer"><img src="BassoFB.png" /></div>
-            </div>
-          </div>
-          <div id="news2-linkedin" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoLI.png" /></div>
-              <div class="mockup-text" id="text-news2-linkedin"></div>
-              <img class="mockup-image" id="img-news2-linkedin" />
-              <div class="mockup-footer"><img src="BassoLI.png" /></div>
-            </div>
-          </div>
-          <div id="news2-x" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoX.png" /></div>
-              <div class="mockup-text" id="text-news2-x"></div>
-              <img class="mockup-image" id="img-news2-x" />
-              <div class="mockup-footer"><img src="BassoX.png" /></div>
-            </div>
-          </div>
-          <div id="news2-instagram" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoIG.png" /></div>
-              <img class="mockup-image" id="img-news2-instagram" />
-              <div class="mockup-text" id="text-news2-instagram"></div>
-              <div class="mockup-footer"><img src="BassoIG.png" /></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="controls-section">
-          <h3>Modifica contenuti</h3>
-          <div class="form-group">
-            <label>Testo del post</label>
-            <textarea class="form-control" id="textInput-news2" rows="4" placeholder="Scrivi il testo del post..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>Immagine</label>
-            <div class="file-input-wrapper">
-              <input type="file" id="imageInput-news2" accept="image/*">
-              <div class="file-input-text">📁 Clicca per selezionare un'immagine</div>
-            </div>
-          </div>
-          <div class="controls-buttons">
-            <button class="btn btn-success" onclick="saveNews(2, this)">
-              <span class="btn-text">Salva modifiche</span>
-            </button>
-            <button class="btn btn-warning" onclick="resetNews(2, this)">
-              <span class="btn-text">Cancella contenuti</span>
-            </button>
-          </div>
-          <div class="success-message" id="success-news2">
-            ✅ Contenuti salvati con successo!
-          </div>
-        </div>
-      </div>
-
-      <!-- NEWS 3 -->
-      <div class="tab-content" id="news3">
-        <h2 class="section-title">Piattaforma Social</h2>
-        <div class="social-navigation">
-          <div class="social-tabs">
-            <button onclick="showSocial(3, 'facebook', event)" class="active">Facebook</button>
-            <button onclick="showSocial(3, 'linkedin', event)">LinkedIn</button>
-            <button onclick="showSocial(3, 'x', event)">X (Twitter)</button>
-            <button onclick="showSocial(3, 'instagram', event)">Instagram</button>
-          </div>
-        </div>
-
-        <div class="mockup-preview">
-          <div id="news3-facebook" class="social-section active">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoFB.png" /></div>
-              <div class="mockup-text" id="text-news3-facebook"></div>
-              <img class="mockup-image" id="img-news3-facebook" />
-              <div class="mockup-footer"><img src="BassoFB.png" /></div>
-            </div>
-          </div>
-          <div id="news3-linkedin" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoLI.png" /></div>
-              <div class="mockup-text" id="text-news3-linkedin"></div>
-              <img class="mockup-image" id="img-news3-linkedin" />
-              <div class="mockup-footer"><img src="BassoLI.png" /></div>
-            </div>
-          </div>
-          <div id="news3-x" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoX.png" /></div>
-              <div class="mockup-text" id="text-news3-x"></div>
-              <img class="mockup-image" id="img-news3-x" />
-              <div class="mockup-footer"><img src="BassoX.png" /></div>
-            </div>
-          </div>
-          <div id="news3-instagram" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoIG.png" /></div>
-              <img class="mockup-image" id="img-news3-instagram" />
-              <div class="mockup-text" id="text-news3-instagram"></div>
-              <div class="mockup-footer"><img src="BassoIG.png" /></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="controls-section">
-          <h3>Modifica contenuti</h3>
-          <div class="form-group">
-            <label>Testo del post</label>
-            <textarea class="form-control" id="textInput-news3" rows="4" placeholder="Scrivi il testo del post..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>Immagine</label>
-            <div class="file-input-wrapper">
-              <input type="file" id="imageInput-news3" accept="image/*">
-              <div class="file-input-text">📁 Clicca per selezionare un'immagine</div>
-            </div>
-          </div>
-          <div class="controls-buttons">
-            <button class="btn btn-success" onclick="saveNews(3, this)">
-              <span class="btn-text">Salva modifiche</span>
-            </button>
-            <button class="btn btn-warning" onclick="resetNews(3, this)">
-              <span class="btn-text">Cancella contenuti</span>
-            </button>
-          </div>
-          <div class="success-message" id="success-news3">
-            ✅ Contenuti salvati con successo!
-          </div>
-        </div>
-      </div>
-
-      <!-- NEWS 4 -->
-      <div class="tab-content" id="news4">
-        <h2 class="section-title">Piattaforma Social</h2>
-        <div class="social-navigation">
-          <div class="social-tabs">
-            <button onclick="showSocial(4, 'facebook', event)" class="active">Facebook</button>
-            <button onclick="showSocial(4, 'linkedin', event)">LinkedIn</button>
-            <button onclick="showSocial(4, 'x', event)">X (Twitter)</button>
-            <button onclick="showSocial(4, 'instagram', event)">Instagram</button>
-          </div>
-        </div>
-
-        <div class="mockup-preview">
-          <div id="news4-facebook" class="social-section active">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoFB.png" /></div>
-              <div class="mockup-text" id="text-news4-facebook"></div>
-              <img class="mockup-image" id="img-news4-facebook" />
-              <div class="mockup-footer"><img src="BassoFB.png" /></div>
-            </div>
-          </div>
-          <div id="news4-linkedin" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoLI.png" /></div>
-              <div class="mockup-text" id="text-news4-linkedin"></div>
-              <img class="mockup-image" id="img-news4-linkedin" />
-              <div class="mockup-footer"><img src="BassoLI.png" /></div>
-            </div>
-          </div>
-          <div id="news4-x" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoX.png" /></div>
-              <div class="mockup-text" id="text-news4-x"></div>
-              <img class="mockup-image" id="img-news4-x" />
-              <div class="mockup-footer"><img src="BassoX.png" /></div>
-            </div>
-          </div>
-          <div id="news4-instagram" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoIG.png" /></div>
-              <img class="mockup-image" id="img-news4-instagram" />
-              <div class="mockup-text" id="text-news4-instagram"></div>
-              <div class="mockup-footer"><img src="BassoIG.png" /></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="controls-section">
-          <h3>Modifica contenuti</h3>
-          <div class="form-group">
-            <label>Testo del post</label>
-            <textarea class="form-control" id="textInput-news4" rows="4" placeholder="Scrivi il testo del post..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>Immagine</label>
-            <div class="file-input-wrapper">
-              <input type="file" id="imageInput-news4" accept="image/*">
-              <div class="file-input-text">📁 Clicca per selezionare un'immagine</div>
-            </div>
-          </div>
-          <div class="controls-buttons">
-            <button class="btn btn-success" onclick="saveNews(4, this)">
-              <span class="btn-text">Salva modifiche</span>
-            </button>
-            <button class="btn btn-warning" onclick="resetNews(4, this)">
-              <span class="btn-text">Cancella contenuti</span>
-            </button>
-          </div>
-          <div class="success-message" id="success-news4">
-            ✅ Contenuti salvati con successo!
-          </div>
-        </div>
-      </div>
-
-      <!-- NEWS 5 -->
-      <div class="tab-content" id="news5">
-        <h2 class="section-title">Piattaforma Social</h2>
-        <div class="social-navigation">
-          <div class="social-tabs">
-            <button onclick="showSocial(5, 'facebook', event)" class="active">Facebook</button>
-            <button onclick="showSocial(5, 'linkedin', event)">LinkedIn</button>
-            <button onclick="showSocial(5, 'x', event)">X (Twitter)</button>
-            <button onclick="showSocial(5, 'instagram', event)">Instagram</button>
-          </div>
-        </div>
-
-        <div class="mockup-preview">
-          <div id="news5-facebook" class="social-section active">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoFB.png" /></div>
-              <div class="mockup-text" id="text-news5-facebook"></div>
-              <img class="mockup-image" id="img-news5-facebook" />
-              <div class="mockup-footer"><img src="BassoFB.png" /></div>
-            </div>
-          </div>
-          <div id="news5-linkedin" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoLI.png" /></div>
-              <div class="mockup-text" id="text-news5-linkedin"></div>
-              <img class="mockup-image" id="img-news5-linkedin" />
-              <div class="mockup-footer"><img src="BassoLI.png" /></div>
-            </div>
-          </div>
-          <div id="news5-x" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoX.png" /></div>
-              <div class="mockup-text" id="text-news5-x"></div>
-              <img class="mockup-image" id="img-news5-x" />
-              <div class="mockup-footer"><img src="BassoX.png" /></div>
-            </div>
-          </div>
-          <div id="news5-instagram" class="social-section">
-            <div class="mockup-container">
-              <div class="mockup-header"><img src="AltoIG.png" /></div>
-              <img class="mockup-image" id="img-news5-instagram" />
-              <div class="mockup-text" id="text-news5-instagram"></div>
-              <div class="mockup-footer"><img src="BassoIG.png" /></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="controls-section">
-          <h3>Modifica contenuti</h3>
-          <div class="form-group">
-            <label>Testo del post</label>
-            <textarea class="form-control" id="textInput-news5" rows="4" placeholder="Scrivi il testo del post..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>Immagine</label>
-            <div class="file-input-wrapper">
-              <input type="file" id="imageInput-news5" accept="image/*">
-              <div class="file-input-text">📁 Clicca per selezionare un'immagine</div>
-            </div>
-          </div>
-          <div class="controls-buttons">
-            <button class="btn btn-success" onclick="saveNews(5, this)">
-              <span class="btn-text">Salva modifiche</span>
-            </button>
-            <button class="btn btn-warning" onclick="resetNews(5, this)">
-              <span class="btn-text">Cancella contenuti</span>
-            </button>
-          </div>
-          <div class="success-message" id="success-news5">
-            ✅ Contenuti salvati con successo!
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-  <script>
-    function showNews(id, event) {
-      document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
-      document.querySelectorAll('.news-tabs button').forEach(btn => btn.classList.remove('active'));
-      const newTab = document.getElementById('news' + id);
-      newTab.classList.add('active');
-      newTab.classList.add('fade-in');
-      event.target.classList.add('active');
-      
-      // Reset social tab selection
-      const firstSocialBtn = newTab.querySelector('.social-tabs button');
-      if (firstSocialBtn && !firstSocialBtn.classList.contains('active')) {
-        firstSocialBtn.click();
-      }
-    }
-
-    function showSocial(newsIndex, platform, event) {
-      document.querySelectorAll(`#news${newsIndex} .social-section`).forEach(div => div.classList.remove('active'));
-      document.querySelectorAll(`#news${newsIndex} .social-tabs button`).forEach(btn => btn.classList.remove('active'));
-      document.getElementById(`news${newsIndex}-${platform}`).classList.add('active');
-      event.target.classList.add('active');
-    }
-
-    function formatText(text) {
-      return text.replace(/(#[\w\d]+|@[\w\d]+|https?:\/\/\S+)/g, m => '<span class="link">' + m + '</span>');
-    }
-
-    function showButtonFeedback(button, message, isSuccess = true) {
-      const originalText = button.querySelector('.btn-text').textContent;
-      button.classList.add('loading');
-      button.querySelector('.btn-text').textContent = message;
-      
-      setTimeout(() => {
-        button.classList.remove('loading');
-        button.querySelector('.btn-text').textContent = isSuccess ? '✅ Fatto!' : originalText;
-        
-        if (isSuccess) {
-          setTimeout(() => {
-            button.querySelector('.btn-text').textContent = originalText;
-          }, 2000);
-        }
-      }, 1000);
-    }
-
-    function showSuccessMessage(newsIndex) {
-      const successMsg = document.getElementById(`success-news${newsIndex}`);
-      successMsg.style.display = 'block';
-      setTimeout(() => {
-        successMsg.style.display = 'none';
-      }, 3000);
-    }
-
-    function saveNews(index, button) {
-      showButtonFeedback(button, 'Salvataggio...');
-      
-      const text = document.getElementById('textInput-news' + index).value;
-      const formatted = formatText(text);
-      const activeTab = document.querySelector('#news' + index + ' .social-section.active').id.split('-')[1];
-
-      document.getElementById('text-news' + index + '-' + activeTab).innerHTML = formatted;
-      if (activeTab === 'facebook') {
-        ['linkedin', 'x', 'instagram'].forEach(net => {
-          document.getElementById('text-news' + index + '-' + net).innerHTML = formatted;
+        // Abilita il pulsante di generazione quando un file è selezionato
+        excelInput.addEventListener('input', () => {
+            generateBtn.disabled = !excelInput.files.length;
         });
-      }
 
-      // Save to localStorage
-      ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
-        localStorage.setItem('text' + index + '-' + net, text);
-      });
-
-      const imgEl = document.getElementById('img-news' + index + '-' + activeTab);
-      if (imgEl.src && imgEl.src.startsWith('data')) {
-        ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
-          localStorage.setItem('img' + index + '-' + net, imgEl.src);
-          const tgt = document.getElementById('img-news' + index + '-' + net);
-          tgt.src = imgEl.src;
-          tgt.style.display = 'block';
-        });
-      }
-
-      showSuccessMessage(index);
-    }
-
-    function resetNews(index, button) {
-      showButtonFeedback(button, 'Cancellazione...', false);
-      
-      setTimeout(() => {
-        ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
-          localStorage.removeItem('text' + index + '-' + net);
-          localStorage.removeItem('img' + index + '-' + net);
-          document.getElementById('text-news' + index + '-' + net).innerHTML = '';
-          const img = document.getElementById('img-news' + index + '-' + net);
-          img.src = '';
-          img.style.display = 'none';
-        });
-        document.getElementById('textInput-news' + index).value = '';
-        document.getElementById('imageInput-news' + index).value = '';
-        
-        button.querySelector('.btn-text').textContent = '🗑️ Cancellato!';
-        setTimeout(() => {
-          button.querySelector('.btn-text').textContent = 'Cancella contenuti';
-        }, 2000);
-      }, 1000);
-    }
-
-    function resetAllNews(button) {
-      showButtonFeedback(button, 'Cancellazione totale...', false);
-      
-      setTimeout(() => {
-        for (let i = 1; i <= 5; i++) {
-          ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
-            localStorage.removeItem('text' + i + '-' + net);
-            localStorage.removeItem('img' + i + '-' + net);
-            document.getElementById('text-news' + i + '-' + net).innerHTML = '';
-            const img = document.getElementById('img-news' + i + '-' + net);
-            img.src = '';
-            img.style.display = 'none';
-          });
-          document.getElementById('textInput-news' + i).value = '';
-          document.getElementById('imageInput-news' + i).value = '';
-        }
-        
-        button.querySelector('.btn-text').textContent = '🗑️ Tutto cancellato!';
-        setTimeout(() => {
-          button.querySelector('.btn-text').textContent = 'Cancella tutto';
-        }, 2000);
-      }, 1000);
-    }
-
-    function downloadAllAsZip(button) {
-      showButtonFeedback(button, 'Generazione ZIP...');
-      
-      const zip = new JSZip();
-      const activeNews = document.querySelector('.tab-content.active');
-      const newsId = activeNews.id;
-
-      const socialSections = activeNews.querySelectorAll('.social-section');
-      let done = 0;
-      const total = socialSections.length;
-
-      if (total === 0) {
-        button.querySelector('.btn-text').textContent = '❌ Nessun contenuto';
-        setTimeout(() => {
-          button.querySelector('.btn-text').textContent = 'Scarica tutti i mockup (ZIP)';
-        }, 2000);
-        return;
-      }
-
-      socialSections.forEach((section, index) => {
-        const wasHidden = !section.classList.contains('active');
-        if (wasHidden) section.classList.add('active');
-
-        const mockup = section.querySelector('.mockup-container');
-        if (mockup) {
-          html2canvas(mockup, {
-            backgroundColor: '#ffffff',
-            scale: 2,
-            useCORS: true
-          }).then(canvas => {
-            canvas.toBlob(blob => {
-              const platforms = ["Facebook", "LinkedIn", "X", "Instagram"];
-              const filename = `${newsId}_${platforms[index]}.jpg`;
-              zip.file(filename, blob);
-              done++;
-              
-              if (done === total) {
-                zip.generateAsync({ type: 'blob' }).then(content => {
-                  saveAs(content, `${newsId}_mockups.zip`);
-                  button.classList.remove('loading');
-                  button.querySelector('.btn-text').textContent = '📦 Download completato!';
-                  setTimeout(() => {
-                    button.querySelector('.btn-text').textContent = 'Scarica tutti i mockup (ZIP)';
-                  }, 3000);
-                });
-              }
-            }, 'image/jpeg', 0.95);
-          });
+        // Formatta i numeri con K/M
+        function formatNumber(num) {
+            if (isNaN(num)) return num;
+            num = parseFloat(num);
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(num % 1000000 === 0 ? 0 : 2) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 2) + 'K';
+            }
+            return num.toString();
         }
 
-        if (wasHidden) section.classList.remove('active');
-      });
-    }
+        // Genera SVG
+        generateBtn.addEventListener('click', async () => {
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-11h2v4h-2zm0 6h2v2h-2z"/></svg> Caricamento in corso...';
 
-    // Initialize on page load
-    window.onload = () => {
-      // Load saved content from localStorage
-      for (let i = 1; i <= 5; i++) {
-        ['facebook', 'linkedin', 'x', 'instagram'].forEach(net => {
-          const t = localStorage.getItem('text' + i + '-' + net);
-          const img = localStorage.getItem('img' + i + '-' + net);
-          if (t) {
-            document.getElementById('text-news' + i + '-' + net).innerHTML = formatText(t);
-            if (net === 'facebook') document.getElementById('textInput-news' + i).value = t;
-          }
-          if (img) {
-            const image = document.getElementById('img-news' + i + '-' + net);
-            image.src = img;
-            image.style.display = 'block';
-          }
-        });
-
-        // Setup file input handlers
-        const input = document.getElementById('imageInput-news' + i);
-        input.addEventListener('change', (function(newsIndex) {
-          return function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
+            const file = excelInput.files[0];
+            const layout = layoutSelect.value;
             const reader = new FileReader();
-            reader.onload = () => {
-              const activeTab = document.querySelector('#news' + newsIndex + ' .social-section.active').id.split('-')[1];
-              const img = document.getElementById('img-news' + newsIndex + '-' + activeTab);
-              img.src = reader.result;
-              img.style.display = 'block';
-              
-              // Update file input display
-              const wrapper = e.target.closest('.file-input-wrapper');
-              wrapper.querySelector('.file-input-text').textContent = `📷 ${file.name}`;
+
+            reader.onload = async (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                // Pulisci anteprima
+                previewDiv.innerHTML = '';
+                svgFiles = [];
+
+                // Parametri SVG
+                const maxWidth = 2048;
+                const maxHeight = 912;
+                const cellPadding = 10;
+                const fontSizeHeader = 18;
+                const fontSizeCell = layout === 'light' ? 18 : 11;
+                const lineHeight = 24;
+                let currentY = 0;
+                let svgIndex = 0;
+
+                // Crea nuovo SVG
+                function createNewSVG() {
+                    const draw = SVG().size(maxWidth, maxHeight);
+                    currentY = 20; // Margine iniziale
+                    return draw;
+                }
+
+                let draw = createNewSVG();
+
+                // Calcola larghezza colonne
+                const colWidths = jsonData[0].map((_, colIndex) => {
+                    let maxWidth = 100; // Larghezza minima
+                    jsonData.forEach(row => {
+                        const cell = row[colIndex] ? formatNumber(row[colIndex]).toString() : '';
+                        const textWidth = cell.length * (fontSizeCell * 0.6); // Stima approssimativa
+                        maxWidth = Math.max(maxWidth, textWidth);
+                    });
+                    return Math.min(maxWidth + cellPadding * 2, 300); // Limite massimo
+                });
+
+                // Disegna tabella
+                function drawTable(startRow, endRow) {
+                    const header = jsonData[0];
+                    let y = currentY;
+
+                    // Intestazione
+                    header.forEach((text, colIndex) => {
+                        const x = colWidths.slice(0, colIndex).reduce((a, b) => a + b, 20);
+                        const width = colWidths[colIndex];
+                        const textElement = draw.text(text.toString().toUpperCase())
+                            .font({
+                                family: 'Avenir Next LT Pro',
+                                size: fontSizeHeader,
+                                weight: 'bold'
+                            })
+                            .fill(layout === 'light' ? '#1d48b4' : '#ffffff')
+                            .move(x + cellPadding, y);
+
+                        if (layout === 'strong') {
+                            draw.rect(width, lineHeight + cellPadding * 2)
+                                .move(x, y - cellPadding)
+                                .fill('#1d48b4');
+                        }
+                        if (layout === 'light') {
+                            draw.line(x, y + lineHeight + cellPadding, x + width, y + lineHeight + cellPadding)
+                                .stroke({ color: '#1d48b4', width: 1 });
+                        }
+                    });
+                    y += lineHeight + cellPadding * 2;
+
+                    // Righe dati
+                    for (let i = startRow; i < endRow; i++) {
+                        const row = jsonData[i];
+                        let rowHeight = lineHeight + cellPadding * 2;
+
+                        row.forEach((cell, colIndex) => {
+                            const x = colWidths.slice(0, colIndex).reduce((a, b) => a + b, 20);
+                            const width = colWidths[colIndex];
+                            const formattedCell = formatNumber(cell || '');
+                            const textElement = draw.text(formattedCell)
+                                .font({
+                                    family: 'Avenir Next LT Pro',
+                                    size: fontSizeCell,
+                                    weight: 'normal'
+                                })
+                                .fill('#4d4c4c')
+                                .move(x + cellPadding, y);
+
+                            if (layout === 'strong') {
+                                if (i % 2 === 0) {
+                                    draw.rect(width, rowHeight)
+                                        .move(x, y - cellPadding)
+                                        .fill('#c9cbd1');
+                                }
+                                draw.line(x, y + rowHeight - cellPadding, x + width, y + rowHeight - cellPadding)
+                                    .stroke({ color: '#1d48b4', width: 1 });
+                                draw.line(x, y - cellPadding, x, y + rowHeight - cellPadding)
+                                    .stroke({ color: '#1d48b4', width: 1 });
+                            } else {
+                                draw.line(x, y + rowHeight - cellPadding, x + width, y + rowHeight - cellPadding)
+                                    .stroke({ color: '#4d4c4c', width: 1 });
+                            }
+                        });
+
+                        y += rowHeight;
+                        currentY = y;
+
+                        // Controlla se è necessario creare un nuovo SVG
+                        if (currentY + lineHeight + cellPadding * 2 > maxHeight && i < jsonData.length - 1) {
+                            const svgData = draw.svg();
+                            svgFiles.push({ index: svgIndex, data: svgData });
+                            const previewSvg = document.createElement('div');
+                            previewSvg.innerHTML = svgData;
+                            previewDiv.appendChild(previewSvg);
+                            svgIndex++;
+                            draw = createNewSVG();
+                            currentY = 20;
+                            y = currentY;
+                            // Ripeti intestazione
+                            header.forEach((text, colIndex) => {
+                                const x = colWidths.slice(0, colIndex).reduce((a, b) => a + b, 20);
+                                const width = colWidths[colIndex];
+                                const textElement = draw.text(text.toString().toUpperCase())
+                                    .font({
+                                        family: 'Avenir Next LT Pro',
+                                        size: fontSizeHeader,
+                                        weight: 'bold'
+                                    })
+                                    .fill(layout === 'light' ? '#1d48b4' : '#ffffff')
+                                    .move(x + cellPadding, y);
+
+                                if (layout === 'strong') {
+                                    draw.rect(width, lineHeight + cellPadding * 2)
+                                        .move(x, y - cellPadding)
+                                        .fill('#1d48b4');
+                                }
+                                if (layout === 'light') {
+                                    draw.line(x, y + lineHeight + cellPadding, x + width, y + lineHeight + cellPadding)
+                                        .stroke({ color: '#1d48b4', width: 1 });
+                                }
+                            });
+                            y += lineHeight + cellPadding * 2;
+                            currentY = y;
+                        }
+                    }
+                }
+
+                // Disegna tutte le righe
+                drawTable(1, jsonData.length);
+
+                // Aggiungi l'ultimo SVG
+                const svgData = draw.svg();
+                svgFiles.push({ index: svgIndex, data: svgData });
+                const previewSvg = document.createElement('div');
+                previewSvg.innerHTML = svgData;
+                previewDiv.appendChild(previewSvg);
+
+                // Mostra output
+                outputSection.style.display = 'block';
+                downloadBtn.style.display = 'inline-flex';
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-11h2v4h-2zm0 6h2v2h-2z"/></svg> Genera SVG';
             };
-            reader.readAsDataURL(file);
-          };
-        })(i));
-      }
 
-      // Initialize first news tab
-      document.querySelector('.news-tabs button').classList.add('active');
-    };
-
-    // Add smooth scrolling and improved UX
-    document.addEventListener('DOMContentLoaded', function() {
-      // Add ripple effect to buttons
-      document.querySelectorAll('.btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-          const ripple = document.createElement('span');
-          const rect = this.getBoundingClientRect();
-          const size = Math.max(rect.width, rect.height);
-          const x = e.clientX - rect.left - size / 2;
-          const y = e.clientY - rect.top - size / 2;
-          
-          ripple.style.width = ripple.style.height = size + 'px';
-          ripple.style.left = x + 'px';
-          ripple.style.top = y + 'px';
-          ripple.classList.add('ripple');
-          
-          this.appendChild(ripple);
-          
-          setTimeout(() => {
-            ripple.remove();
-          }, 600);
+            reader.readAsArrayBuffer(file);
         });
-      });
-    });
 
-    // Add CSS for ripple effect
-    const style = document.createElement('style');
-    style.textContent = `
-      .btn {
-        position: relative;
-        overflow: hidden;
-      }
-      
-      .ripple {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: scale(0);
-        animation: ripple-animation 0.6s linear;
-        pointer-events: none;
-      }
-      
-      @keyframes ripple-animation {
-        to {
-          transform: scale(4);
-          opacity: 0;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-  </script>
+        // Scarica SVG
+        downloadBtn.addEventListener('click', () => {
+            downloadBtn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg> Download in corso...';
+            svgFiles.forEach((file, index) => {
+                const blob = new Blob([file.data], { type: 'image/svg+xml' });
+                const url = document.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `table-${index}.svg`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+            downloadBtn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg> Fatto!';
+            setTimeout(() => {
+                downloadBtn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 16" viewBox="0 0 24 24"><path fill="#fff" d="M19 9h-4V3H9v6H5l7 7 7-7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg> Scarica SVG';
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
