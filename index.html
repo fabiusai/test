@@ -1,385 +1,196 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excel to SVG Converter</title>
-    <style>
-        /* Stili generali ispirati al branding */
-        body {
-            font-family: 'Avenir Next LT Pro', 'Roboto', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto auto;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            color: #1d48b4;
-        }
-        .header h1 {
-            font-size: 32px;
-            font-weight: bold;
-            color: #1d48b4;
-            margin-bottom: 10px;
-        }
-        .header p {
-            font-size: 18px;
-            color: #666;
-        }
-        .section {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .section h2 {
-            font-size: 24px;
-            color: #1d48b4;
-            margin-bottom: 15px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 8px;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: 2px solid #ddd;
-            border-radius: 4px;
-            transition: border-color 0.3s;
-        }
-        .form-group input:focus, .form-group select:focus {
-            border-color: #1d48b4;
-            outline: none;
-        }
-        .button {
-            display: inline-flex;
-            align-items: center;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #fff;
-            background-color: #1d48b4;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .button:hover {
-            background-color: #163a8f;
-        }
-        .button:active {
-            background-color: #0f2c66;
-        }
-        .button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        .button .icon {
-            margin-right: 8px;
-            fill: #fff;
-        }
-        .output {
-            margin-top: 20px;
-        }
-        .output h3 {
-            font-size: 20px;
-            color: #1d48b4;
-            margin-bottom: 10px;
-        }
-        .preview {
-            border: 1px solid #ddd;
-            padding: 10px;
-            background-color: #fff;
-            overflow-x: auto;
-        }
-        /* Stili responsivi */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            .header h1 {
-                font-size: 24px;
-            }
-            .section h2 {
-                font-size: 20px;
-            }
-            .button {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Talkwalker Report Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    /* …tutto il vostro CSS originale, senza modifiche… */
+
+    /* — Aggiunta per titolo SVG “Post per Canale” e “Analisi del Sentiment” */
+    .svg-title {
+      font-family: "Avenir Next LT Pro", sans-serif;
+      font-weight: 300;
+      fill: #1d48b4;
+      text-transform: uppercase;
+      text-anchor: middle;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Converti Excel in Tabelle SVG</h1>
-            <p>Carica un file Excel e genera tabelle grafiche in formato SVG.</p>
-        </div>
-        <div class="section">
-            <h2>Carica File e Seleziona Layout</h2>
-            <div class="form-group">
-                <label for="excel-file">Seleziona file Excel</label>
-                <input type="file" id="excel-file" accept=".xlsx, .xls">
+  <div class="container">
+    <!-- …header, upload-section, metrics, etc… -->
+
+    <div id="results">
+      <div class="analysis-header">
+        <h2 class="analysis-title" id="analysisTitle">Analisi social su [Argomento]</h2>
+        <p class="analysis-subtitle" id="analysisSubtitle">Report riferito al periodo: [Date Range]</p>
+      </div>
+
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-header">Post per Canale</div>
+          <div class="card-body">
+            <div class="chart-container">
+              <div id="channelChart"></div>
             </div>
-            <div class="form-group">
-                <label for="layout">Seleziona layout</label>
-                <select id="layout">
-                    <option value="light">Light</option>
-                    <option value="strong">Strong</option>
-                </select>
-            </div>
-            <button class="button" id="generate-btn" disabled>
-                <svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-11h2v4h-2zm0 6h2v2h-2z"/></svg>
-                Genera SVG
-            </button>
+          </div>
         </div>
-        <div class="section output" id="output" style="display: none;">
-            <h3>Anteprima e Download</h3>
-            <div class="preview" id="preview"></div>
-            <button class="button" id="download-btn" style="display: none;">
-                <svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg>
-                Scarica SVG
-            </button>
+
+        <div class="card">
+          <div class="card-header">Analisi del Sentiment</div>
+          <div class="card-body">
+            <div class="sentiment-container" id="sentimentContainer"></div>
+            <p class="sentiment-note">Fonte dati: Talkwalker – Sentiment calcolato dalla piattaforma in base al «tono» generale del contenuto.</p>
+          </div>
         </div>
+      </div>
+
+      <!-- 1) Qui sotto i due grafici ho spostato i controlli della tabella -->
+      <div class="table-controls" style="margin-bottom:30px;">
+        <div class="rows-selector">
+          <label for="maxRows">Mostra:</label>
+          <select id="maxRows" onchange="updateTable()">
+            <option value="5">5 righe</option>
+            <option value="10" selected>10 righe</option>
+            <option value="15">15 righe</option>
+            <option value="20">20 righe</option>
+            <option value="25">25 righe</option>
+            <option value="all">Tutti i risultati</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" onclick="updateTable()">Aggiorna Tabella</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Post di Maggiore Rilievo</div>
+        <div class="card-body">
+          <div class="table-wrapper">
+            <table class="data-table" id="dataTable">
+              <thead>
+                <tr>
+                  <th class="sortable" onclick="sortTable(0)">Nome Profilo</th>
+                  <th class="sortable" onclick="sortTable(1)">Canale</th>
+                  <th class="sortable" onclick="sortTable(2)">Data e Ora</th>
+                  <th>Contenuto</th>
+                  <th class="sortable" onclick="sortTable(4)">Followers</th>
+                  <th class="sortable" onclick="sortTable(5)">Commenti</th>
+                  <th class="sortable" onclick="sortTable(6)">Like e Reazioni</th>
+                  <th class="sortable" onclick="sortTable(7)">Condivisioni</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- righe popolate da JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Esportazione Dati</div>
+        <div class="card-body">
+          <div class="export-section">
+            <button class="btn" onclick="exportExcel()">📊 Esporta Excel</button>
+            <button class="btn btn-secondary" onclick="exportHTML()">🌐 Esporta HTML</button>
+            <button class="btn" onclick="exportMetricsSVG()">📊 Esporta Metriche SVG</button>
+            <button class="btn" onclick="exportChannelChartSVG()">📊 Esporta Grafico Canali SVG</button>
+            <button class="btn" onclick="exportSentimentChartSVG()">📊 Esporta Grafico Sentiment SVG</button>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.1.2/svg.min.js"></script>
-    <script>
-        const excelInput = document.getElementById('excel-file');
-        const layoutSelect = document.getElementById('layout');
-        const generateBtn = document.getElementById('generate-btn');
-        const downloadBtn = document.getElementById('download-btn');
-        const outputSection = document.getElementById('output');
-        const previewDiv = document.getElementById('preview');
-        let svgFiles = [];
+<script>
+  // …tutto il vostro JavaScript originale fino ad exportChannelChartSVG()…
 
-        // Abilita il pulsante di generazione quando un file è selezionato
-        excelInput.addEventListener('input', () => {
-            generateBtn.disabled = !excelInput.files.length;
-        });
+  function exportChannelChartSVG() {
+    const btn = event.target.closest('button');
+    const original = btn.innerHTML;
+    btn.innerHTML = '⏳ Generazione...'; btn.disabled = true;
 
-        // Formatta i numeri con K/M
-        function formatNumber(num) {
-            if (isNaN(num)) return num;
-            num = parseFloat(num);
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(num % 1000000 === 0 ? 0 : 2) + 'M';
-            } else if (num >= 1000) {
-                return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 2) + 'K';
-            }
-            return num.toString();
-        }
+    setTimeout(() => {
+      try {
+        const svg = document.querySelector('#channelChart svg');
+        if (!svg) throw new Error('Grafico canali non trovato');
 
-        // Genera SVG
-        generateBtn.addEventListener('click', async () => {
-            generateBtn.disabled = true;
-            generateBtn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-11h2v4h-2zm0 6h2v2h-2z"/></svg> Caricamento in corso...';
+        // Costruiamo un nuovo SVG con titolo, content e labels
+        const content = svg.innerHTML;
+        const width = 700, height = 450;
+        const titleY = 30;
+        const translateY = 60;
 
-            const file = excelInput.files[0];
-            const layout = layoutSelect.value;
-            const reader = new FileReader();
+        const output = `
+          <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <style>
+                .svg-title { font-family: 'Avenir Next LT Pro', sans-serif; font-size: 22px; fill: #1d48b4; font-weight: 300; text-transform: uppercase; text-anchor: middle; }
+                .chart-label, .chart-value { font-family: 'Avenir Next LT Pro', sans-serif; text-anchor: middle; }
+              </style>
+            </defs>
+            <text class="svg-title" x="${width/2}" y="${titleY}">POST PER CANALE</text>
+            <g transform="translate(0, ${translateY})">${content}</g>
+          </svg>`;
 
-            reader.onload = async (e) => {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        downloadFile(output,
+          `post-per-canale.svg`,
+          'image/svg+xml'
+        );
+        btn.innerHTML = '✅ Completato';
+      } catch (e) {
+        console.error(e);
+        btn.innerHTML = '❌ Errore';
+      } finally {
+        setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
+      }
+    }, 500);
+  }
 
-                // Pulisci anteprima
-                previewDiv.innerHTML = '';
-                svgFiles = [];
+  function exportSentimentChartSVG() {
+    const btn = event.target.closest('button');
+    const original = btn.innerHTML;
+    btn.innerHTML = '⏳ Generazione...'; btn.disabled = true;
 
-                // Parametri SVG
-                const maxWidth = 2048;
-                const maxHeight = 912;
-                const cellPadding = 10;
-                const fontSizeHeader = 18;
-                const fontSizeCell = layout === 'light' ? 18 : 11;
-                const lineHeight = 24;
-                let currentY = 0;
-                let svgIndex = 0;
+    setTimeout(() => {
+      try {
+        const svg = document.querySelector('#sentimentContainer svg');
+        if (!svg) throw new Error('Grafico sentiment non trovato');
 
-                // Crea nuovo SVG
-                function createNewSVG() {
-                    const draw = SVG().size(maxWidth, maxHeight);
-                    currentY = 20; // Margine iniziale
-                    return draw;
-                }
+        const content = svg.innerHTML;
+        const width = 500, height = 500;
+        const titleY = 30;
+        const translateY = 60;
 
-                let draw = createNewSVG();
+        const output = `
+          <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <style>
+                .svg-title { font-family: 'Avenir Next LT Pro', sans-serif; font-size: 22px; fill: #1d48b4; font-weight: 300; text-transform: uppercase; text-anchor: middle; }
+                .legend-item, .legend-perc, .sentiment-value { font-family: 'Avenir Next LT Pro', sans-serif; }
+              </style>
+            </defs>
+            <text class="svg-title" x="${width/2}" y="${titleY}">ANALISI DEL SENTIMENT</text>
+            <g transform="translate(0, ${translateY})">${content}</g>
+          </svg>`;
 
-                // Calcola larghezza colonne
-                const colWidths = jsonData[0].map((_, colIndex) => {
-                    let maxWidth = 100; // Larghezza minima
-                    jsonData.forEach(row => {
-                        const cell = row[colIndex] ? formatNumber(row[colIndex]).toString() : '';
-                        const textWidth = cell.length * (fontSizeCell * 0.6); // Stima approssimativa
-                        maxWidth = Math.max(maxWidth, textWidth);
-                    });
-                    return Math.min(maxWidth + cellPadding * 2, 300); // Limite massimo
-                });
+        downloadFile(output,
+          `analisi-del-sentiment.svg`,
+          'image/svg+xml'
+        );
+        btn.innerHTML = '✅ Completato';
+      } catch (e) {
+        console.error(e);
+        btn.innerHTML = '❌ Errore';
+      } finally {
+        setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
+      }
+    }, 500);
+  }
 
-                // Disegna tabella
-                function drawTable(startRow, endRow) {
-                    const header = jsonData[0];
-                    let y = currentY;
+  // …resto del vostro JavaScript (exportExcel, generateChannelChart, generateSentimentChart, etc.)…
 
-                    // Intestazione
-                    header.forEach((text, colIndex) => {
-                        const x = colWidths.slice(0, colIndex).reduce((a, b) => a + b, 20);
-                        const width = colWidths[colIndex];
-                        const textElement = draw.text(text.toString().toUpperCase())
-                            .font({
-                                family: 'Avenir Next LT Pro',
-                                size: fontSizeHeader,
-                                weight: 'bold'
-                            })
-                            .fill(layout === 'light' ? '#1d48b4' : '#ffffff')
-                            .move(x + cellPadding, y);
-
-                        if (layout === 'strong') {
-                            draw.rect(width, lineHeight + cellPadding * 2)
-                                .move(x, y - cellPadding)
-                                .fill('#1d48b4');
-                        }
-                        if (layout === 'light') {
-                            draw.line(x, y + lineHeight + cellPadding, x + width, y + lineHeight + cellPadding)
-                                .stroke({ color: '#1d48b4', width: 1 });
-                        }
-                    });
-                    y += lineHeight + cellPadding * 2;
-
-                    // Righe dati
-                    for (let i = startRow; i < endRow; i++) {
-                        const row = jsonData[i];
-                        let rowHeight = lineHeight + cellPadding * 2;
-
-                        row.forEach((cell, colIndex) => {
-                            const x = colWidths.slice(0, colIndex).reduce((a, b) => a + b, 20);
-                            const width = colWidths[colIndex];
-                            const formattedCell = formatNumber(cell || '');
-                            const textElement = draw.text(formattedCell)
-                                .font({
-                                    family: 'Avenir Next LT Pro',
-                                    size: fontSizeCell,
-                                    weight: 'normal'
-                                })
-                                .fill('#4d4c4c')
-                                .move(x + cellPadding, y);
-
-                            if (layout === 'strong') {
-                                if (i % 2 === 0) {
-                                    draw.rect(width, rowHeight)
-                                        .move(x, y - cellPadding)
-                                        .fill('#c9cbd1');
-                                }
-                                draw.line(x, y + rowHeight - cellPadding, x + width, y + rowHeight - cellPadding)
-                                    .stroke({ color: '#1d48b4', width: 1 });
-                                draw.line(x, y - cellPadding, x, y + rowHeight - cellPadding)
-                                    .stroke({ color: '#1d48b4', width: 1 });
-                            } else {
-                                draw.line(x, y + rowHeight - cellPadding, x + width, y + rowHeight - cellPadding)
-                                    .stroke({ color: '#4d4c4c', width: 1 });
-                            }
-                        });
-
-                        y += rowHeight;
-                        currentY = y;
-
-                        // Controlla se è necessario creare un nuovo SVG
-                        if (currentY + lineHeight + cellPadding * 2 > maxHeight && i < jsonData.length - 1) {
-                            const svgData = draw.svg();
-                            svgFiles.push({ index: svgIndex, data: svgData });
-                            const previewSvg = document.createElement('div');
-                            previewSvg.innerHTML = svgData;
-                            previewDiv.appendChild(previewSvg);
-                            svgIndex++;
-                            draw = createNewSVG();
-                            currentY = 20;
-                            y = currentY;
-                            // Ripeti intestazione
-                            header.forEach((text, colIndex) => {
-                                const x = colWidths.slice(0, colIndex).reduce((a, b) => a + b, 20);
-                                const width = colWidths[colIndex];
-                                const textElement = draw.text(text.toString().toUpperCase())
-                                    .font({
-                                        family: 'Avenir Next LT Pro',
-                                        size: fontSizeHeader,
-                                        weight: 'bold'
-                                    })
-                                    .fill(layout === 'light' ? '#1d48b4' : '#ffffff')
-                                    .move(x + cellPadding, y);
-
-                                if (layout === 'strong') {
-                                    draw.rect(width, lineHeight + cellPadding * 2)
-                                        .move(x, y - cellPadding)
-                                        .fill('#1d48b4');
-                                }
-                                if (layout === 'light') {
-                                    draw.line(x, y + lineHeight + cellPadding, x + width, y + lineHeight + cellPadding)
-                                        .stroke({ color: '#1d48b4', width: 1 });
-                                }
-                            });
-                            y += lineHeight + cellPadding * 2;
-                            currentY = y;
-                        }
-                    }
-                }
-
-                // Disegna tutte le righe
-                drawTable(1, jsonData.length);
-
-                // Aggiungi l'ultimo SVG
-                const svgData = draw.svg();
-                svgFiles.push({ index: svgIndex, data: svgData });
-                const previewSvg = document.createElement('div');
-                previewSvg.innerHTML = svgData;
-                previewDiv.appendChild(previewSvg);
-
-                // Mostra output
-                outputSection.style.display = 'block';
-                downloadBtn.style.display = 'inline-flex';
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-11h2v4h-2zm0 6h2v2h-2z"/></svg> Genera SVG';
-            };
-
-            reader.readAsArrayBuffer(file);
-        });
-
-        // Scarica SVG
-        downloadBtn.addEventListener('click', () => {
-            downloadBtn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg> Download in corso...';
-            svgFiles.forEach((file, index) => {
-                const blob = new Blob([file.data], { type: 'image/svg+xml' });
-                const url = document.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `table-${index}.svg`;
-                a.click();
-                URL.revokeObjectURL(url);
-            });
-            downloadBtn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg> Fatto!';
-            setTimeout(() => {
-                downloadBtn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 16" viewBox="0 0 24 24"><path fill="#fff" d="M19 9h-4V3H9v6H5l7 7 7-7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg> Scarica SVG';
-            }, 2000);
-        });
-    </script>
+</script>
 </body>
 </html>
