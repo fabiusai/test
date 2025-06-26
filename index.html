@@ -522,44 +522,50 @@
             });
         });
 
-        // --- GESTIONE DATI EXCEL (CORRETTO) ---
+        // --- GESTIONE DATI EXCEL (ULTIMA VERSIONE CORRETTA) ---
         exportBtn.addEventListener('click', () => {
-            // 1. Dati per il foglio "Pianificazione"
-            const pianificazioneData = appData.assenze.map(assenza => ({
-                Data: assenza.data ? new Date(assenza.data + 'T12:00:00') : null, 
-                Giorno: assenza.data ? getDayOfWeek(assenza.data) : '',
-                Tipologia: assenza.tipo ? tipiAssenza[assenza.tipo] : '',
-                Fruito: assenza.fruito ? 'Si' : 'No'
-            }));
-            const pianificazioneSheet = XLSX.utils.json_to_sheet(pianificazioneData);
+            try {
+                // 1. Dati per il foglio "Pianificazione"
+                const pianificazioneData = appData.assenze.map(assenza => ({
+                    Data: assenza.data ? new Date(assenza.data) : null, 
+                    Giorno: assenza.data ? getDayOfWeek(assenza.data) : '',
+                    Tipologia: assenza.tipo ? tipiAssenza[assenza.tipo] : '',
+                    Fruito: assenza.fruito ? 'Si' : 'No'
+                }));
+                // MODIFICA CHIAVE: Aggiunta opzione { cellDates: true } per un handling corretto delle date
+                const pianificazioneSheet = XLSX.utils.json_to_sheet(pianificazioneData, { cellDates: true });
 
-            // MODIFICA CRITICA: Esegui il ciclo di formattazione solo se ci sono dati
-            if (appData.assenze.length > 0) {
-                const range = XLSX.utils.decode_range(pianificazioneSheet['!ref']);
-                for (let i = range.s.r + 1; i <= range.e.r; ++i) { // +1 per saltare l'header
-                    const cell_address = { c: 0, r: i }; // Colonna 0 (A)
-                    const cell_ref = XLSX.utils.encode_cell(cell_address);
-                    if (pianificazioneSheet[cell_ref] && pianificazioneSheet[cell_ref].v) {
-                        pianificazioneSheet[cell_ref].t = 'd';
-                        pianificazioneSheet[cell_ref].z = 'dd/mm/yyyy';
+                // Applica il formato data gg/mm/aaaa alla colonna 'A'
+                if (appData.assenze.length > 0) {
+                    const range = XLSX.utils.decode_range(pianificazioneSheet['!ref']);
+                    for (let i = range.s.r + 1; i <= range.e.r; ++i) {
+                        const cell_ref = XLSX.utils.encode_cell({ c: 0, r: i });
+                        if (pianificazioneSheet[cell_ref]) {
+                            pianificazioneSheet[cell_ref].z = 'dd/mm/yyyy';
+                        }
                     }
                 }
+
+                // 2. Dati per il foglio "Spettanze"
+                const spettanzeData = Object.entries(appData.spettanze).map(([key, value]) => ({
+                    'Tipologia di Spettanza': tipiAssenza[key],
+                    'Giorni': value
+                }));
+                const spettanzeSheet = XLSX.utils.json_to_sheet(spettanzeData);
+                
+                // 3. Creazione del Workbook
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, pianificazioneSheet, "Pianificazione");
+                XLSX.utils.book_append_sheet(wb, spettanzeSheet, "Spettanze");
+
+                // 4. Download del file
+                XLSX.writeFile(wb, "consuntivazione_assenze.xlsx");
+
+            } catch(error) {
+                // MODIFICA CHIAVE: Aggiunto un blocco try-catch per mostrare errori all'utente
+                console.error("Errore durante l'esportazione:", error);
+                alert("Si è verificato un errore durante la creazione del file Excel. Controlla la console per maggiori dettagli.");
             }
-
-            // 2. Dati per il foglio "Spettanze"
-            const spettanzeData = Object.entries(appData.spettanze).map(([key, value]) => ({
-                'Tipologia di Spettanza': tipiAssenza[key],
-                'Giorni': value
-            }));
-            const spettanzeSheet = XLSX.utils.json_to_sheet(spettanzeData);
-            
-            // 3. Creazione del Workbook
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, pianificazioneSheet, "Pianificazione");
-            XLSX.utils.book_append_sheet(wb, spettanzeSheet, "Spettanze");
-
-            // 4. Download del file
-            XLSX.writeFile(wb, "consuntivazione_assenze.xlsx");
         });
 
         importBtn.addEventListener('click', () => importFileInput.click());
@@ -602,6 +608,7 @@
                         let dataValue = '';
                         if (row.Data instanceof Date) {
                             const date = row.Data;
+                            // Correzione fuso orario per evitare che la data scali indietro di un giorno
                             date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
                             dataValue = date.toISOString().split('T')[0];
                         }
@@ -631,10 +638,10 @@
         // --- FUNZIONI DI UTILITÀ ---
         function getDayOfWeek(dateString) {
             if (!dateString) return '';
-            const date = new Date(dateString);
-            const userTimezoneOffset = date.getTimezoneOffset() * 60000;
-            const correctedDate = new Date(date.getTime() + userTimezoneOffset);
-            const dayName = correctedDate.toLocaleDateString('it-IT', { weekday: 'long' });
+            // Correzione per gestire correttamente il giorno della settimana senza problemi di fuso orario
+            const [year, month, day] = dateString.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            const dayName = date.toLocaleDateString('it-IT', { weekday: 'long' });
             return dayName.charAt(0).toUpperCase() + dayName.slice(1);
         }
 
