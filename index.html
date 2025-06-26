@@ -522,7 +522,7 @@
             });
         });
 
-        // --- GESTIONE DATI EXCEL (CON FORMATO DATA) ---
+        // --- GESTIONE DATI EXCEL (CORRETTO) ---
         exportBtn.addEventListener('click', () => {
             // 1. Dati per il foglio "Pianificazione"
             const pianificazioneData = appData.assenze.map(assenza => ({
@@ -533,14 +533,16 @@
             }));
             const pianificazioneSheet = XLSX.utils.json_to_sheet(pianificazioneData);
 
-            // Applica il formato data gg/mm/aaaa alla colonna 'A'
-            const range = XLSX.utils.decode_range(pianificazioneSheet['!ref']);
-            for (let i = range.s.r + 1; i <= range.e.r; ++i) { // +1 per saltare l'header
-                const cell_address = { c: 0, r: i }; // Colonna 0 (A)
-                const cell_ref = XLSX.utils.encode_cell(cell_address);
-                if (pianificazioneSheet[cell_ref] && pianificazioneSheet[cell_ref].v) {
-                    pianificazioneSheet[cell_ref].t = 'd';
-                    pianificazioneSheet[cell_ref].z = 'dd/mm/yyyy';
+            // MODIFICA CRITICA: Esegui il ciclo di formattazione solo se ci sono dati
+            if (appData.assenze.length > 0) {
+                const range = XLSX.utils.decode_range(pianificazioneSheet['!ref']);
+                for (let i = range.s.r + 1; i <= range.e.r; ++i) { // +1 per saltare l'header
+                    const cell_address = { c: 0, r: i }; // Colonna 0 (A)
+                    const cell_ref = XLSX.utils.encode_cell(cell_address);
+                    if (pianificazioneSheet[cell_ref] && pianificazioneSheet[cell_ref].v) {
+                        pianificazioneSheet[cell_ref].t = 'd';
+                        pianificazioneSheet[cell_ref].z = 'dd/mm/yyyy';
+                    }
                 }
             }
 
@@ -599,12 +601,11 @@
                     const newAssenze = pianificazioneJson.map((row, index) => {
                         let dataValue = '';
                         if (row.Data instanceof Date) {
-                            // Previene problemi di fuso orario che spostano la data indietro di un giorno
                             const date = row.Data;
                             date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
                             dataValue = date.toISOString().split('T')[0];
                         }
-
+                        
                         return {
                             id: Date.now() + index,
                             data: dataValue,
