@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rielaboratore Excel/CSV</title>
+    <title>Rielaboratore Excel/CSV (Diagnosi)</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
@@ -15,28 +15,13 @@
         section { margin-bottom: 30px; }
         .hidden { display: none; }
         .button { background-color: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; vertical-align: middle; display: inline-block; }
-        .button:hover { background-color: #2980b9; }
-        .button.secondary { background-color: #2ecc71; }
-        .button.secondary:hover { background-color: #27ae60; }
-        .button.tertiary { background-color: #e67e22; }
-        .button.tertiary:hover { background-color: #d35400; }
-        .column-list { list-style: none; padding: 0; }
-        .column-item { display: flex; align-items: center; padding: 12px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 8px; background-color: #fafafa; }
-        .column-item input[type="checkbox"] { margin-right: 15px; transform: scale(1.4); }
-        .column-item .names { flex-grow: 1; display: flex; align-items: center; flex-wrap: wrap; }
-        .column-item .original-name { font-weight: bold; color: #555; width: 100%; }
-        .column-item .arrow { width: 100%; margin: 5px 0; }
-        .column-item input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; width: 100%; }
-        .drag-handle { cursor: move; margin-right: 15px; color: #95a5a6; font-size: 20px; }
-        #sheet-selector { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        #sheet-selector-box { background-color: white; padding: 30px; border-radius: 8px; text-align: center; max-width: 90%; }
         #file-info { font-style: italic; color: #7f8c8d; display: inline-block; margin-left: 15px; vertical-align: middle; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Rielaboratore di Fogli di Calcolo</h1>
+        <h1>Rielaboratore (Diagnosi)</h1>
         
         <section id="sezione-caricamento">
             <h2>1. Carica File</h2>
@@ -44,268 +29,67 @@
             <input type="file" id="file-input" onchange="handleFile(event)" accept=".xlsx, .xls, .csv" style="display: none;">
             <p id="file-info">Nessun file selezionato.</p>
         </section>
-
-        <section id="sezione-colonne" class="hidden">
-            <h2>2. Gestisci Colonne</h2>
-            <p>Seleziona le colonne da mantenere, rinominale e riordinale trascinandole.</p>
-            <ul id="lista-colonne" class="column-list"></ul>
-        </section>
-
-        <section id="sezione-azioni" class="hidden">
-            <h2>3. Azioni</h2>
-            <button id="export-excel" class="button">1. Esporta in Excel</button>
-            <button id="save-rules" class="button secondary">2. Salva Set di Regole</button>
-            <label for="load-rules-input" class="button tertiary">3. Carica Set di Regole</label>
-            <input type="file" id="load-rules-input" onchange="loadRules(event)" accept=".json" style="display: none;">
-        </section>
-    </div>
-
-    <div id="sheet-selector">
-        <div id="sheet-selector-box">
-            <h3>Seleziona il foglio da elaborare:</h3>
-            <div id="sheet-buttons"></div>
-            <button id="cancel-sheet-selection" class="button tertiary" style="margin-top: 20px;">Annulla</button>
-        </div>
+        
+        <!-- Resto dell'interfaccia (nascosta all'inizio) -->
     </div>
 
     <script>
-        // Definizioni degli elementi DOM
-        const fileInfo = document.getElementById('file-info');
-        const fileInput = document.getElementById('file-input');
-        const sezioneColonne = document.getElementById('sezione-colonne');
-        const sezioneAzioni = document.getElementById('sezione-azioni');
-        const listaColonne = document.getElementById('lista-colonne');
-        const exportExcelBtn = document.getElementById('export-excel');
-        const saveRulesBtn = document.getElementById('save-rules');
-        const loadRulesInput = document.getElementById('load-rules-input');
-        const sheetSelector = document.getElementById('sheet-selector');
-        const sheetButtons = document.getElementById('sheet-buttons');
-        const cancelSheetBtn = document.getElementById('cancel-sheet-selection');
-
-        // Stato dell'applicazione
-        let originalData = [];
-        let originalHeaders = [];
-        let currentWorkbook = null;
-        let sortableInstance = null;
-        
-        // --- FUNZIONI DI GESTIONE FILE (con la correzione) ---
         function handleFile(event) {
             const file = event.target.files[0];
-            if (!file) return;
+            if (!file) {
+                alert("DEBUG: Nessun file selezionato.");
+                return;
+            }
 
-            resetApp();
-            fileInfo.textContent = `Caricamento di: ${file.name}...`;
+            // --- ALERT DI DIAGNOSI #1 ---
+            // Informazioni sul file scelto dall'utente.
+            let fileInfoText = `Nome: ${file.name}\n`;
+            fileInfoText += `Dimensione: ${file.size} bytes\n`;
+            fileInfoText += `Tipo MIME: ${file.type}\n`; // Questo è molto importante!
+            alert("--- DIAGNOSI #1: INFO FILE ---\n\n" + fileInfoText);
+
             const reader = new FileReader();
             
             reader.onload = (e) => {
-                try {
-                    const data = e.target.result;
-                    currentWorkbook = XLSX.read(data, { type: 'array' }); // Usa 'array' per ArrayBuffer
+                const data = e.target.result;
 
-                    if (currentWorkbook.SheetNames.length > 1) {
-                        showSheetSelector(currentWorkbook.SheetNames);
-                    } else if (currentWorkbook.SheetNames.length === 1) {
-                        processSheet(currentWorkbook.SheetNames[0]);
-                    } else {
-                        alert("Il file non contiene fogli di lavoro validi.");
-                        fileInfo.textContent = "Errore: nessun foglio trovato.";
-                    }
+                // --- ALERT DI DIAGNOSI #2 ---
+                // Informazioni sui dati letti dal browser.
+                let bufferInfoText = `Tipo dati letti: ${Object.prototype.toString.call(data)}\n`;
+                if (data instanceof ArrayBuffer) {
+                    bufferInfoText += `Lunghezza buffer: ${data.byteLength} bytes\n`;
+                    bufferInfoText += `Dimensione corrisponde? ${data.byteLength === file.size ? 'Sì' : 'NO!'}`;
+                } else {
+                    bufferInfoText += "ERRORE: I dati NON sono un ArrayBuffer!";
+                }
+                alert("--- DIAGNOSI #2: INFO DATI LETTI ---\n\n" + bufferInfoText);
+                
+                try {
+                    // Tentativo di elaborazione
+                    alert("--- DIAGNOSI #3: TENTATIVO ELABORAZIONE ---\n\nSto per passare i dati alla libreria SheetJS...");
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    alert("SUCCESSO! Il file è stato letto correttamente dalla libreria.");
+                    // Se arriva qui, procede con l'elaborazione normale
+                    // ... (codice per mostrare i fogli, ecc.)
+
                 } catch (err) {
-                    console.error("Errore lettura file:", err);
-                    alert("Impossibile leggere il file. Assicurati che sia un Excel o CSV valido.");
-                    fileInfo.textContent = "Errore nel caricamento.";
+                    // --- ALERT DI DIAGNOSI #4 (ERRORE) ---
+                    // Se la riga XLSX.read fallisce, questo ci dirà l'errore esatto.
+                    let errorInfo = `Messaggio di errore:\n${err.message}\n\n`;
+                    errorInfo += `Stack trace:\n${err.stack}`;
+                    alert("--- DIAGNOSI #4: ERRORE LIBRERIA ---\n\n" + errorInfo);
                 }
             };
             
             reader.onerror = (e) => {
-                alert("Si è verificato un errore di sistema durante la lettura del file.");
+                alert("ERRORE FATALE: Il FileReader non è riuscito a leggere il file. Errore del browser.");
                 console.error("FileReader Error:", e);
             };
 
-            reader.readAsArrayBuffer(file); // Usa readAsArrayBuffer
+            reader.readAsArrayBuffer(file);
         }
 
-        function loadRules(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            if (originalData.length === 0) {
-                alert("Carica prima un file Excel/CSV per poter applicare le regole.");
-                loadRulesInput.value = '';
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    applyRulesToUI(JSON.parse(e.target.result));
-                } catch (err) {
-                    alert("Il file di regole non è un JSON valido.");
-                }
-            };
-            reader.readAsText(file);
-            loadRulesInput.value = '';
-        }
-
-        // --- GESTIONE EVENTI (collegati dall'HTML e qui) ---
-        exportExcelBtn.addEventListener('click', exportToExcel);
-        saveRulesBtn.addEventListener('click', saveRules);
-        cancelSheetBtn.addEventListener('click', () => { sheetSelector.style.display = 'none'; });
-        sheetSelector.addEventListener('click', (event) => {
-            if (event.target === sheetSelector) {
-                sheetSelector.style.display = 'none';
-            }
-        });
-        
-        // --- FUNZIONI PRINCIPALI DELL'APP ---
-        function resetApp() {
-            originalData = [];
-            originalHeaders = [];
-            currentWorkbook = null;
-            listaColonne.innerHTML = '';
-            sezioneColonne.classList.add('hidden');
-            sezioneAzioni.classList.add('hidden');
-            fileInfo.textContent = 'Nessun file selezionato.';
-            fileInput.value = '';
-            if (sortableInstance) sortableInstance.destroy();
-        }
-
-        function showSheetSelector(sheetNames) {
-            sheetButtons.innerHTML = '';
-            sheetNames.forEach(name => {
-                const button = document.createElement('button');
-                button.textContent = name;
-                button.className = 'button';
-                button.onclick = () => {
-                    sheetSelector.style.display = 'none';
-                    processSheet(name);
-                };
-                sheetButtons.appendChild(button);
-            });
-            sheetSelector.style.display = 'flex';
-        }
-
-        function processSheet(sheetName) {
-            const worksheet = currentWorkbook.Sheets[sheetName];
-            originalData = XLSX.utils.sheet_to_json(worksheet, {
-                // Aggiungiamo un'opzione per gestire intestazioni vuote se necessario
-                header: 1, // Legge i dati come array di array
-                defval: '' // Imposta un valore di default per le celle vuote
-            });
-            
-            if (originalData.length === 0) {
-                alert("Il foglio selezionato è completamente vuoto.");
-                return;
-            }
-
-            // Trasforma i dati da array di array a array di oggetti
-            const headers = originalData[0];
-            const dataRows = originalData.slice(1);
-            
-            originalData = dataRows.map(row => {
-                const obj = {};
-                headers.forEach((header, i) => {
-                    obj[header] = row[i];
-                });
-                return obj;
-            });
-            
-            originalHeaders = headers;
-            
-            if (originalHeaders.length === 0) {
-                alert("Il foglio selezionato non ha un'intestazione valida.");
-                return;
-            }
-
-            fileInfo.textContent = `File: ${fileInput.files[0].name} | Foglio: ${sheetName} | Righe: ${originalData.length}`;
-            populateColumnList(originalHeaders);
-            sezioneColonne.classList.remove('hidden');
-            sezioneAzioni.classList.remove('hidden');
-        }
-
-        function populateColumnList(headers) {
-            listaColonne.innerHTML = '';
-            headers.forEach(header => {
-                const li = document.createElement('li');
-                li.className = 'column-item';
-                li.dataset.originalName = header;
-                li.innerHTML = `
-                    <span class="drag-handle">☰</span>
-                    <input type="checkbox" checked>
-                    <div class="names">
-                        <span class="original-name">${header}</span>
-                        <span class="arrow">→</span>
-                        <input type="text" value="${header}" placeholder="Nuovo nome colonna">
-                    </div>`;
-                listaColonne.appendChild(li);
-            });
-            sortableInstance = new Sortable(listaColonne, { animation: 150, handle: '.drag-handle' });
-        }
-
-        function getRulesFromUI() {
-            const rules = [];
-            listaColonne.querySelectorAll('li.column-item').forEach(item => {
-                rules.push({
-                    original: item.dataset.originalName,
-                    isKept: item.querySelector('input[type="checkbox"]').checked,
-                    newName: item.querySelector('input[type="text"]').value || item.dataset.originalName
-                });
-            });
-            return rules;
-        }
-
-        function exportToExcel() {
-            const activeRules = getRulesFromUI().filter(rule => rule.isKept);
-            if (activeRules.length === 0) {
-                alert("Nessuna colonna selezionata.");
-                return;
-            }
-            const processedData = originalData.map(row => {
-                const newRow = {};
-                activeRules.forEach(rule => { newRow[rule.newName] = row[rule.original]; });
-                return newRow;
-            });
-            const newWorksheet = XLSX.utils.json_to_sheet(processedData);
-            const newWorkbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Rielaborato');
-            const originalFileName = fileInput.files[0].name.split('.').slice(0, -1).join('.');
-            XLSX.writeFile(newWorkbook, `${originalFileName}_rielaborato.xlsx`);
-        }
-
-        function saveRules() {
-            const rules = getRulesFromUI();
-            const blob = new Blob([JSON.stringify(rules, null, 2)], { type: 'application/json' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'regole_rielaborazione.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
-        }
-
-        function applyRulesToUI(rules) {
-            const currentHeaders = new Set(originalHeaders);
-            const ruleHeaders = new Set(rules.map(r => r.original));
-            if (JSON.stringify([...currentHeaders].sort()) !== JSON.stringify([...ruleHeaders].sort())) {
-                if (!confirm("Attenzione: le colonne nel file di regole non corrispondono a quelle del file caricato. Applicare comunque?")) {
-                    return;
-                }
-            }
-            const uiItemsMap = new Map();
-            listaColonne.querySelectorAll('li.column-item').forEach(item => {
-                uiItemsMap.set(item.dataset.originalName, item);
-            });
-            const orderedItems = [];
-            rules.forEach(rule => {
-                const item = uiItemsMap.get(rule.original);
-                if (item) {
-                    item.querySelector('input[type="checkbox"]').checked = rule.isKept;
-                    item.querySelector('input[type="text"]').value = rule.newName;
-                    orderedItems.push(item);
-                }
-            });
-            listaColonne.innerHTML = '';
-            orderedItems.forEach(item => listaColonne.appendChild(item));
-        }
+        // Le altre funzioni non sono necessarie per questa diagnosi.
     </script>
 </body>
 </html>
