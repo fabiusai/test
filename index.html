@@ -3,651 +3,426 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consuntivazione Ferie e Assenze</title>
-    <!-- Inclusione della libreria SheetJS per la gestione dei file Excel -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <title>Rielaboratore Excel/CSV</title>
+    
+    <!-- Libreria per leggere/scrivere file Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Libreria per il drag-and-drop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
     <style>
-        /* --- Stile Generale --- */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
             background-color: #f4f7f9;
             color: #333;
             margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
         }
-
         .container {
-            max-width: 1100px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 900px;
             background-color: #fff;
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        /* --- Stile Titoli Migliorato --- */
-        h1 {
-            color: white;
-            background: linear-gradient(to right, #007bff, #0056b3);
-            padding: 20px;
-            margin: -30px -30px 30px -30px; /* Esce dal padding del container */
-            border-radius: 12px 12px 0 0;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        h2 {
-            color: #1a2533;
-            border: none;
-            border-left: 5px solid #007bff;
-            padding-left: 15px;
-            margin-top: 40px;
-            margin-bottom: 25px;
-            font-size: 1.8rem;
-        }
-
-        /* --- Sezioni --- */
-        .section {
-            margin-bottom: 35px;
-        }
-
-        /* --- Sezione Spettanze --- */
-        .spettanze-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-        }
-
-        .spettanza-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .spettanza-item label {
-            font-weight: bold;
-            color: #555;
-            margin-bottom: 8px;
-        }
-
-        .spettanza-item input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1.1rem;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .spettanza-total {
-            margin-top: 25px;
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #0056b3;
-        }
-        
-        /* --- Sezione Consuntivazione (Leggibilità Aumentata) --- */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px; /* Aumentato gap */
-        }
-
-        .summary-box {
-            background-color: #f9f9f9;
-            padding: 20px; /* Aumentato padding */
             border-radius: 8px;
-            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        
-        .summary-box h3 {
+        h1, h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
             margin-top: 0;
-            margin-bottom: 15px;
-            color: #333;
-            font-size: 1.25rem; /* Aumentata dimensione */
         }
-
-        .summary-box ul {
-            list-style-type: none;
-            padding: 0;
+        section {
+            margin-bottom: 30px;
         }
-
-        .summary-box li {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0; /* Aumentato padding */
-            border-bottom: 1px dashed #ddd;
-            font-size: 1.1rem; /* Aumentata dimensione */
-        }
-        
-        .summary-box li:last-child {
-            border-bottom: none;
-        }
-
-        .summary-box .total {
-            font-weight: bold;
-            margin-top: 15px;
-            color: #0056b3;
-            border-top: 2px solid #aaa;
-            padding-top: 10px;
-            font-size: 1.2rem; /* Aumentata dimensione */
-        }
-        
-        .negative {
-            color: #d93025;
-            font-weight: bold;
-        }
-
-        /* --- Tabella Pianificazione --- */
-        .table-container {
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 0.95rem;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-            vertical-align: middle;
-        }
-
-        th {
-            background-color: #f2f2f2;
-            cursor: pointer;
-        }
-        
-        th:hover {
-            background-color: #e8e8e8;
-        }
-
-        td input[type="date"], td select {
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
-            min-width: 130px;
-        }
-        
-        td input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-        }
-        
-        .col-center {
-            width: 1%;
-            text-align: center;
-        }
-
-        .delete-btn {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .delete-btn:hover {
-            background-color: #c0392b;
-        }
-
-        /* --- Pulsanti --- */
-        .btn {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            margin-right: 10px;
-            transition: background-color 0.2s;
-        }
-        
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        
-        .btn-secondary {
-            background-color: #6c757d;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-
-        .data-management {
-            margin-top: 20px;
-        }
-        
-        #import-file-input {
+        .hidden {
             display: none;
         }
-
-        /* --- Responsive --- */
-        @media (max-width: 768px) {
-            h1 { font-size: 1.5rem; }
-            h2 { font-size: 1.5rem; }
-            .summary-grid { grid-template-columns: 1fr; }
-            .spettanze-grid { grid-template-columns: 1fr 1fr; }
+        .button, input[type="file"]::file-selector-button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button:hover, input[type="file"]::file-selector-button:hover {
+            background-color: #2980b9;
+        }
+        .button.secondary {
+            background-color: #2ecc71;
+        }
+        .button.secondary:hover {
+            background-color: #27ae60;
+        }
+        .button.tertiary {
+            background-color: #e67e22;
+        }
+        .button.tertiary:hover {
+            background-color: #d35400;
+        }
+        .column-list {
+            list-style: none;
+            padding: 0;
+        }
+        .column-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            background-color: #fafafa;
+        }
+        .column-item:hover {
+            background-color: #f0f0f0;
+        }
+        .column-item input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.4);
+        }
+        .column-item .names {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+        }
+        .column-item .original-name {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #555;
+            min-width: 200px;
+        }
+        .column-item .arrow {
+            margin: 0 10px;
+        }
+        .column-item input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            flex-grow: 1;
+        }
+        .drag-handle {
+            cursor: move;
+            margin-right: 15px;
+            color: #95a5a6;
+            font-size: 20px;
+        }
+        #sheet-selector {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #sheet-selector-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        #sheet-selector-box button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        #file-info {
+            font-style: italic;
+            color: #7f8c8d;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Consuntivazione Ferie e Assenze</h1>
-
-        <!-- SEZIONE SPETTANZE -->
-        <div class="section">
-            <h2>Spettanza Giorni di Assenza</h2>
-            <div class="spettanze-grid">
-                <div class="spettanza-item">
-                    <label for="spettanza-ferie">Ferie</label>
-                    <input type="number" id="spettanza-ferie" value="25">
-                </div>
-                <div class="spettanza-item">
-                    <label for="spettanza-festivita">Festività soppresse</label>
-                    <input type="number" id="spettanza-festivita" value="4">
-                </div>
-                <div class="spettanza-item">
-                    <label for="spettanza-pir">PIR</label>
-                    <input type="number" id="spettanza-pir" value="2">
-                </div>
-                <div class="spettanza-item">
-                    <label for="spettanza-smonetizzazione">Smonetizzazione</label>
-                    <input type="number" id="spettanza-smonetizzazione" value="1">
-                </div>
-            </div>
-            <div class="spettanza-total">
-                Totale giorni disponibili: <span id="total-spettanza">32</span>
-            </div>
-        </div>
-
-        <!-- SEZIONE CONSUNTIVAZIONE -->
-        <div class="section">
-            <h2>Consuntivazione</h2>
-            <div class="summary-grid">
-                <div class="summary-box">
-                    <h3>Giorni di assenza pianificati</h3>
-                    <ul id="summary-pianificati"></ul>
-                    <div id="summary-residui"></div>
-                </div>
-                <div class="summary-box">
-                    <h3>Giorni di assenza fruiti</h3>
-                    <ul id="summary-fruiti"></ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- SEZIONE PIANIFICAZIONE -->
-        <div class="section">
-            <h2>Pianificazione e Fruizione Giorni di Assenza</h2>
-            <button id="add-row-btn" class="btn">+ Aggiungi Giorno di Assenza</button>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th data-sort="data">Data</th>
-                            <th>Giorno</th>
-                            <th data-sort="tipo">Tipologia</th>
-                            <th class="col-center">Fruito</th>
-                            <th class="col-center">Azione</th>
-                        </tr>
-                    </thead>
-                    <tbody id="absence-table-body"></tbody>
-                </table>
-            </div>
-        </div>
+        <h1>Rielaboratore di Fogli di Calcolo</h1>
         
-        <!-- SEZIONE GESTIONE DATI -->
-        <div class="section">
-            <h2>Gestione Dati</h2>
-            <div class="data-management">
-                <button id="export-excel-btn" class="btn btn-secondary">Esporta Excel</button>
-                <button id="import-excel-btn" class="btn btn-secondary">Importa Excel</button>
-                <input type="file" id="import-file-input" accept=".xlsx, .xls">
-            </div>
-        </div>
+        <!-- SEZIONE 1: CARICAMENTO FILE -->
+        <section id="sezione-caricamento">
+            <h2>1. Carica File</h2>
+            <input type="file" id="file-input" accept=".xlsx, .xls, .csv">
+            <p id="file-info">Nessun file selezionato.</p>
+        </section>
 
+        <!-- SEZIONE 2: GESTIONE COLONNE (inizialmente nascosta) -->
+        <section id="sezione-colonne" class="hidden">
+            <h2>2. Gestisci Colonne</h2>
+            <p>Seleziona le colonne da mantenere, rinominale e riordinale trascinandole.</p>
+            <ul id="lista-colonne" class="column-list"></ul>
+        </section>
+
+        <!-- SEZIONE 3: AZIONI (inizialmente nascosta) -->
+        <section id="sezione-azioni" class="hidden">
+            <h2>3. Azioni</h2>
+            <button id="export-excel" class="button">1. Esporta in Excel</button>
+            <button id="save-rules" class="button secondary">2. Salva Set di Regole</button>
+            <button id="load-rules-button" class="button tertiary">3. Carica Set di Regole</button>
+            <input type="file" id="load-rules-input" accept=".json" class="hidden">
+        </section>
+    </div>
+
+    <!-- Modale per la selezione del foglio (inizialmente nascosta) -->
+    <div id="sheet-selector" class="hidden">
+        <div id="sheet-selector-box">
+            <h3>Seleziona il foglio da elaborare:</h3>
+            <div id="sheet-buttons"></div>
+        </div>
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- STATO DELL'APPLICAZIONE ---
-        let appData = {
-            spettanze: {
-                ferie: 25,
-                festivita: 4,
-                pir: 2,
-                smonetizzazione: 1
-            },
-            assenze: [] // { id, data, tipo, fruito }
-        };
+        // Stato dell'applicazione
+        let originalData = [];
+        let originalHeaders = [];
+        let currentWorkbook = null;
+        let sortableInstance = null;
+        const fileInfo = document.getElementById('file-info');
 
-        const tipiAssenza = {
-            ferie: 'Ferie',
-            festivita: 'Festività soppresse',
-            pir: 'PIR',
-            smonetizzazione: 'Smonetizzazione'
-        };
-        const tipiAssenzaReverse = Object.fromEntries(Object.entries(tipiAssenza).map(([key, value]) => [value, key]));
-        
-        let sortState = { key: 'data', ascending: true };
+        // Elementi DOM
+        const fileInput = document.getElementById('file-input');
+        const sezioneColonne = document.getElementById('sezione-colonne');
+        const sezioneAzioni = document.getElementById('sezione-azioni');
+        const listaColonne = document.getElementById('lista-colonne');
+        const exportExcelBtn = document.getElementById('export-excel');
+        const saveRulesBtn = document.getElementById('save-rules');
+        const loadRulesBtn = document.getElementById('load-rules-button');
+        const loadRulesInput = document.getElementById('load-rules-input');
+        const sheetSelector = document.getElementById('sheet-selector');
+        const sheetButtons = document.getElementById('sheet-buttons');
 
-        // --- RIFERIMENTI AL DOM ---
-        const spettanzeInputs = {
-            ferie: document.getElementById('spettanza-ferie'),
-            festivita: document.getElementById('spettanza-festivita'),
-            pir: document.getElementById('spettanza-pir'),
-            smonetizzazione: document.getElementById('spettanza-smonetizzazione'),
-        };
-        const totalSpettanzaEl = document.getElementById('total-spettanza');
-        const summaryPianificatiEl = document.getElementById('summary-pianificati');
-        const summaryResiduiEl = document.getElementById('summary-residui');
-        const summaryFruitiEl = document.getElementById('summary-fruiti');
-        const addRowBtn = document.getElementById('add-row-btn');
-        const tableBody = document.getElementById('absence-table-body');
-        const tableHeaders = document.querySelectorAll('th[data-sort]');
-        const exportBtn = document.getElementById('export-excel-btn');
-        const importBtn = document.getElementById('import-excel-btn');
-        const importFileInput = document.getElementById('import-file-input');
-        
+        // --- GESTIONE EVENTI ---
+
+        fileInput.addEventListener('change', handleFile);
+        exportExcelBtn.addEventListener('click', exportToExcel);
+        saveRulesBtn.addEventListener('click', saveRules);
+        loadRulesBtn.addEventListener('click', () => loadRulesInput.click());
+        loadRulesInput.addEventListener('change', loadRules);
+
         // --- FUNZIONI PRINCIPALI ---
-        function initializeApp() {
-            const savedData = localStorage.getItem('consuntivazioneApp');
-            if (savedData) {
-                appData = JSON.parse(savedData);
+
+        function resetApp() {
+            originalData = [];
+            originalHeaders = [];
+            currentWorkbook = null;
+            listaColonne.innerHTML = '';
+            sezioneColonne.classList.add('hidden');
+            sezioneAzioni.classList.add('hidden');
+            if (sortableInstance) {
+                sortableInstance.destroy();
             }
-            renderAll();
         }
 
-        function saveData() {
-            localStorage.setItem('consuntivazioneApp', JSON.stringify(appData));
-        }
-
-        function renderAll() {
-            renderSpettanze();
-            sortData();
-            renderTable();
-            renderSummary();
-            saveData();
-        }
-
-        function renderSpettanze() {
-            for (const key in spettanzeInputs) {
-                spettanzeInputs[key].value = appData.spettanze[key];
-            }
-            const total = Object.values(appData.spettanze).reduce((sum, val) => sum + Number(val || 0), 0);
-            totalSpettanzaEl.textContent = total;
-        }
-        
-        function renderSummary() {
-            const pianificati = {}, fruiti = {};
-            for (const key in tipiAssenza) {
-                pianificati[key] = 0;
-                fruiti[key] = 0;
-            }
-
-            appData.assenze.forEach(assenza => {
-                if (assenza.tipo) {
-                    pianificati[assenza.tipo]++;
-                    if (assenza.fruito) fruiti[assenza.tipo]++;
-                }
-            });
-
-            const totalPianificati = Object.values(pianificati).reduce((a, b) => a + b, 0);
-            const totalFruiti = Object.values(fruiti).reduce((a, b) => a + b, 0);
-
-            let pianificatiHTML = '<ul>';
-            let residuiHTML = '<ul>';
-            for (const key in tipiAssenza) {
-                const residuo = appData.spettanze[key] - pianificati[key];
-                const residuoClass = residuo < 0 ? 'class="negative"' : '';
-                pianificatiHTML += `<li><span>${tipiAssenza[key]}</span> <span>${pianificati[key]}</span></li>`;
-                residuiHTML += `<li><span>Residuo ${tipiAssenza[key]}</span> <span ${residuoClass}>${residuo}</span></li>`;
-            }
-            const totalResiduo = Object.values(appData.spettanze).reduce((a, b) => a + Number(b), 0) - totalPianificati;
-            const totalResiduoClass = totalResiduo < 0 ? 'class="negative"' : '';
-            
-            pianificatiHTML += `<li class="total"><span>Totale Pianificati</span> <span>${totalPianificati}</span></li></ul>`;
-            residuiHTML += `<li class="total"><span>Totale Residuo</span> <span ${totalResiduoClass}>${totalResiduo}</span></li></ul>`;
-            summaryPianificatiEl.innerHTML = pianificatiHTML;
-            summaryResiduiEl.innerHTML = residuiHTML;
-
-            let fruitiHTML = '<ul>';
-            for (const key in tipiAssenza) {
-                fruitiHTML += `<li><span>${tipiAssenza[key]}</span> <span>${fruiti[key]}</span></li>`;
-            }
-            fruitiHTML += `<li class="total"><span>Totale Fruiti</span> <span>${totalFruiti}</span></li></ul>`;
-            summaryFruitiEl.innerHTML = fruitiHTML;
-        }
-
-        function renderTable() {
-            tableBody.innerHTML = '';
-            appData.assenze.forEach(assenza => {
-                const row = document.createElement('tr');
-                row.dataset.id = assenza.id;
-                const dayOfWeek = assenza.data ? getDayOfWeek(assenza.data) : '';
-                row.innerHTML = `
-                    <td><input type="date" class="date-input" value="${assenza.data || ''}"></td>
-                    <td>${dayOfWeek}</td>
-                    <td>
-                        <select class="type-select">
-                            <option value="">Seleziona tipo...</option>
-                            ${Object.keys(tipiAssenza).map(key => `<option value="${key}" ${assenza.tipo === key ? 'selected' : ''}>${tipiAssenza[key]}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td class="col-center"><input type="checkbox" class="fruito-check" ${assenza.fruito ? 'checked' : ''}></td>
-                    <td class="col-center"><button class="delete-btn">Elimina</button></td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-        
-        function sortData() {
-            appData.assenze.sort((a, b) => {
-                const valA = a[sortState.key] || '';
-                const valB = b[sortState.key] || '';
-                let comparison = 0;
-                if (valA > valB) comparison = 1;
-                else if (valA < valB) comparison = -1;
-                return sortState.ascending ? comparison : comparison * -1;
-            });
-        }
-
-        // --- GESTORI DI EVENTI ---
-        Object.values(spettanzeInputs).forEach(input => {
-            input.addEventListener('input', (e) => {
-                const key = e.target.id.replace('spettanza-', '');
-                appData.spettanze[key] = parseInt(e.target.value, 10) || 0;
-                renderAll();
-            });
-        });
-
-        addRowBtn.addEventListener('click', () => {
-            appData.assenze.push({ id: Date.now(), data: '', tipo: 'ferie', fruito: false });
-            renderAll();
-        });
-
-        tableBody.addEventListener('change', (e) => {
-            const row = e.target.closest('tr');
-            if (!row) return;
-            const id = Number(row.dataset.id);
-            const assenza = appData.assenze.find(a => a.id === id);
-            
-            if (e.target.classList.contains('date-input')) {
-                const newDate = e.target.value;
-                if (newDate && appData.assenze.some(a => a.data === newDate && a.id !== id)) {
-                    alert('Questa data è già stata inserita. Selezionane un\'altra.');
-                    e.target.value = assenza.data; 
-                    return; 
-                }
-                assenza.data = newDate;
-            } else if (e.target.classList.contains('type-select')) {
-                assenza.tipo = e.target.value;
-            } else if (e.target.classList.contains('fruito-check')) {
-                assenza.fruito = e.target.checked;
-            }
-            renderAll();
-        });
-        
-        tableBody.addEventListener('click', (e) => {
-             if (e.target.classList.contains('delete-btn')) {
-                const row = e.target.closest('tr');
-                const id = Number(row.dataset.id);
-                appData.assenze = appData.assenze.filter(a => a.id !== id);
-                renderAll();
-            }
-        });
-        
-        tableHeaders.forEach(header => {
-            header.addEventListener('click', () => {
-                const key = header.dataset.sort;
-                if(!key) return;
-                if (sortState.key === key) sortState.ascending = !sortState.ascending;
-                else {
-                    sortState.key = key;
-                    sortState.ascending = true;
-                }
-                renderAll();
-            });
-        });
-
-        // --- GESTIONE DATI EXCEL (ULTIMA VERSIONE CORRETTA) ---
-        exportBtn.addEventListener('click', () => {
-            try {
-                // 1. Dati per il foglio "Pianificazione"
-                const pianificazioneData = appData.assenze.map(assenza => ({
-                    Data: assenza.data ? new Date(assenza.data) : null, 
-                    Giorno: assenza.data ? getDayOfWeek(assenza.data) : '',
-                    Tipologia: assenza.tipo ? tipiAssenza[assenza.tipo] : '',
-                    Fruito: assenza.fruito ? 'Si' : 'No'
-                }));
-                // MODIFICA CHIAVE: Aggiunta opzione { cellDates: true } per un handling corretto delle date
-                const pianificazioneSheet = XLSX.utils.json_to_sheet(pianificazioneData, { cellDates: true });
-
-                // Applica il formato data gg/mm/aaaa alla colonna 'A'
-                if (appData.assenze.length > 0) {
-                    const range = XLSX.utils.decode_range(pianificazioneSheet['!ref']);
-                    for (let i = range.s.r + 1; i <= range.e.r; ++i) {
-                        const cell_ref = XLSX.utils.encode_cell({ c: 0, r: i });
-                        if (pianificazioneSheet[cell_ref]) {
-                            pianificazioneSheet[cell_ref].z = 'dd/mm/yyyy';
-                        }
-                    }
-                }
-
-                // 2. Dati per il foglio "Spettanze"
-                const spettanzeData = Object.entries(appData.spettanze).map(([key, value]) => ({
-                    'Tipologia di Spettanza': tipiAssenza[key],
-                    'Giorni': value
-                }));
-                const spettanzeSheet = XLSX.utils.json_to_sheet(spettanzeData);
-                
-                // 3. Creazione del Workbook
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, pianificazioneSheet, "Pianificazione");
-                XLSX.utils.book_append_sheet(wb, spettanzeSheet, "Spettanze");
-
-                // 4. Download del file
-                XLSX.writeFile(wb, "consuntivazione_assenze.xlsx");
-
-            } catch(error) {
-                // MODIFICA CHIAVE: Aggiunto un blocco try-catch per mostrare errori all'utente
-                console.error("Errore durante l'esportazione:", error);
-                alert("Si è verificato un errore durante la creazione del file Excel. Controlla la console per maggiori dettagli.");
-            }
-        });
-
-        importBtn.addEventListener('click', () => importFileInput.click());
-
-        importFileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
+        function handleFile(event) {
+            const file = event.target.files[0];
             if (!file) return;
 
+            resetApp();
+            fileInfo.textContent = `Caricamento di: ${file.name}...`;
+
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = (e) => {
+                const data = e.target.result;
                 try {
-                    const data = event.target.result;
-                    const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
-
-                    if (!workbook.SheetNames.includes("Pianificazione") || !workbook.SheetNames.includes("Spettanze")) {
-                        throw new Error("Il file Excel deve contenere i fogli 'Pianificazione' e 'Spettanze'.");
+                    currentWorkbook = XLSX.read(data, { type: 'binary' });
+                    if (currentWorkbook.SheetNames.length > 1) {
+                        // Se ci sono più fogli, chiedi all'utente quale scegliere
+                        showSheetSelector(currentWorkbook.SheetNames);
+                    } else {
+                        // Altrimenti, processa il primo e unico foglio
+                        processSheet(currentWorkbook.SheetNames[0]);
                     }
-                    
-                    if (!confirm("Trovati dati validi. Vuoi sostituire tutti i dati attuali con quelli del file?")) {
-                         importFileInput.value = '';
-                         return;
-                    }
-
-                    const spettanzeSheet = workbook.Sheets["Spettanze"];
-                    const spettanzeJson = XLSX.utils.sheet_to_json(spettanzeSheet);
-                    
-                    const newSpettanze = {};
-                    spettanzeJson.forEach(row => {
-                        const tipoKey = tipiAssenzaReverse[row['Tipologia di Spettanza']];
-                        if (tipoKey) {
-                            newSpettanze[tipoKey] = Number(row['Giorni']);
-                        }
-                    });
-                    appData.spettanze = newSpettanze;
-
-                    const pianificazioneSheet = workbook.Sheets["Pianificazione"];
-                    const pianificazioneJson = XLSX.utils.sheet_to_json(pianificazioneSheet);
-
-                    const newAssenze = pianificazioneJson.map((row, index) => {
-                        let dataValue = '';
-                        if (row.Data instanceof Date) {
-                            const date = row.Data;
-                            // Correzione fuso orario per evitare che la data scali indietro di un giorno
-                            date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-                            dataValue = date.toISOString().split('T')[0];
-                        }
-                        
-                        return {
-                            id: Date.now() + index,
-                            data: dataValue,
-                            tipo: tipiAssenzaReverse[row.Tipologia] || '',
-                            fruito: String(row.Fruito).toLowerCase() === 'si'
-                        }
-                    });
-                    appData.assenze = newAssenze;
-
-                    renderAll();
-                    alert('Dati importati con successo!');
-
                 } catch (error) {
-                    console.error("Errore durante l'importazione:", error);
-                    alert("Errore nell'importazione: " + error.message);
-                } finally {
-                    importFileInput.value = '';
+                    console.error("Errore nella lettura del file:", error);
+                    alert("Impossibile leggere il file. Assicurati che sia un file Excel o CSV valido.");
+                    fileInfo.textContent = "Errore nel caricamento.";
                 }
             };
             reader.readAsBinaryString(file);
-        });
-
-        // --- FUNZIONI DI UTILITÀ ---
-        function getDayOfWeek(dateString) {
-            if (!dateString) return '';
-            // Correzione per gestire correttamente il giorno della settimana senza problemi di fuso orario
-            const [year, month, day] = dateString.split('-').map(Number);
-            const date = new Date(year, month - 1, day);
-            const dayName = date.toLocaleDateString('it-IT', { weekday: 'long' });
-            return dayName.charAt(0).toUpperCase() + dayName.slice(1);
         }
 
-        // --- AVVIO APPLICAZIONE ---
-        initializeApp();
-    });
+        function showSheetSelector(sheetNames) {
+            sheetButtons.innerHTML = '';
+            sheetNames.forEach(name => {
+                const button = document.createElement('button');
+                button.textContent = name;
+                button.className = 'button';
+                button.onclick = () => {
+                    sheetSelector.classList.add('hidden');
+                    processSheet(name);
+                };
+                sheetButtons.appendChild(button);
+            });
+            sheetSelector.classList.remove('hidden');
+        }
+
+        function processSheet(sheetName) {
+            const worksheet = currentWorkbook.Sheets[sheetName];
+            // sheet_to_json converte il foglio in un array di oggetti
+            originalData = XLSX.utils.sheet_to_json(worksheet);
+            
+            if (originalData.length === 0) {
+                alert("Il foglio selezionato è vuoto o non ha un'intestazione valida.");
+                fileInfo.textContent = `File caricato: ${fileInput.files[0].name}, ma il foglio "${sheetName}" è vuoto.`;
+                return;
+            }
+
+            originalHeaders = Object.keys(originalData[0]);
+            fileInfo.textContent = `File caricato: ${fileInput.files[0].name} | Foglio: ${sheetName} | Righe: ${originalData.length}`;
+            populateColumnList(originalHeaders);
+            sezioneColonne.classList.remove('hidden');
+            sezioneAzioni.classList.remove('hidden');
+        }
+
+        function populateColumnList(headers) {
+            listaColonne.innerHTML = '';
+            headers.forEach(header => {
+                const listItem = document.createElement('li');
+                listItem.className = 'column-item';
+                // Usiamo un data-attribute per memorizzare il nome originale
+                listItem.dataset.originalName = header;
+
+                listItem.innerHTML = `
+                    <span class="drag-handle">☰</span>
+                    <input type="checkbox" checked>
+                    <div class="names">
+                        <span class="original-name">${header}</span>
+                        <span class="arrow">→</span>
+                        <input type="text" value="${header}" placeholder="Nuovo nome colonna">
+                    </div>
+                `;
+                listaColonne.appendChild(listItem);
+            });
+
+            // Inizializza il drag-and-drop
+            sortableInstance = new Sortable(listaColonne, {
+                animation: 150,
+                handle: '.drag-handle'
+            });
+        }
+
+        // --- FUNZIONI DI ESPORTAZIONE E GESTIONE REGOLE ---
+
+        function getRulesFromUI() {
+            const rules = [];
+            const items = listaColonne.querySelectorAll('li.column-item');
+            items.forEach(item => {
+                const originalName = item.dataset.originalName;
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                const newNameInput = item.querySelector('input[type="text"]');
+                rules.push({
+                    original: originalName,
+                    isKept: checkbox.checked,
+                    newName: newNameInput.value || originalName
+                });
+            });
+            return rules;
+        }
+
+        function exportToExcel() {
+            const rules = getRulesFromUI();
+            const activeRules = rules.filter(rule => rule.isKept);
+            
+            if (activeRules.length === 0) {
+                alert("Nessuna colonna selezionata per l'esportazione.");
+                return;
+            }
+
+            // Mappiamo i dati originali in base alle regole
+            const processedData = originalData.map(row => {
+                const newRow = {};
+                activeRules.forEach(rule => {
+                    newRow[rule.newName] = row[rule.original];
+                });
+                return newRow;
+            });
+
+            const newWorksheet = XLSX.utils.json_to_sheet(processedData);
+            const newWorkbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Rielaborato');
+
+            // Genera il nome del file e scarica
+            const originalFileName = fileInput.files[0].name.split('.').slice(0, -1).join('.');
+            XLSX.writeFile(newWorkbook, `${originalFileName}_rielaborato.xlsx`);
+        }
+
+        function saveRules() {
+            const rules = getRulesFromUI();
+            const blob = new Blob([JSON.stringify(rules, null, 2)], { type: 'application/json' });
+            
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'regole_rielaborazione.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function loadRules(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (originalData.length === 0) {
+                alert("Per favore, carica prima un file Excel/CSV prima di applicare un set di regole.");
+                loadRulesInput.value = ''; // Resetta l'input
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const rules = JSON.parse(e.target.result);
+                    applyRulesToUI(rules);
+                } catch (error) {
+                    console.error("Errore nel parsing delle regole:", error);
+                    alert("Il file di regole non è un JSON valido.");
+                }
+            };
+            reader.readAsText(file);
+            loadRulesInput.value = ''; // Resetta l'input
+        }
+
+        function applyRulesToUI(rules) {
+            // Verifica che le regole siano compatibili con le colonne attuali
+            const currentHeaders = new Set(originalHeaders);
+            const ruleHeaders = new Set(rules.map(r => r.original));
+            
+            if (ruleHeaders.size !== currentHeaders.size || !Array.from(ruleHeaders).every(h => currentHeaders.has(h))) {
+                if (!confirm("Attenzione: le colonne nel file di regole non corrispondono perfettamente a quelle del file caricato. Vuoi provare ad applicarle comunque?")) {
+                    return;
+                }
+            }
+
+            // Crea una mappa per un accesso rapido agli elementi della UI
+            const uiItemsMap = new Map();
+            listaColonne.querySelectorAll('li.column-item').forEach(item => {
+                uiItemsMap.set(item.dataset.originalName, item);
+            });
+
+            // Applica le regole e riordina gli elementi
+            const orderedItems = [];
+            rules.forEach(rule => {
+                const item = uiItemsMap.get(rule.original);
+                if (item) {
+                    item.querySelector('input[type="checkbox"]').checked = rule.isKept;
+                    item.querySelector('input[type="text"]').value = rule.newName;
+                    orderedItems.push(item);
+                }
+            });
+
+            // Riordina il DOM
+            listaColonne.innerHTML = '';
+            orderedItems.forEach(item => listaColonne.appendChild(item));
+        }
+
     </script>
+
 </body>
 </html>
