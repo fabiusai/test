@@ -67,7 +67,6 @@
     </div>
 
     <script>
-        // Definizioni elementi e stato globale
         const fileInfo = document.getElementById('file-info');
         const fileInput = document.getElementById('file-input');
         const sezioneColonne = document.getElementById('sezione-colonne');
@@ -78,27 +77,29 @@
         const cancelSheetBtn = document.getElementById('cancel-sheet-selection');
 
         let originalData = [], originalHeaders = [], currentWorkbook = null, sortableInstance = null;
+        // MODIFICA 1: Aggiunta una variabile globale per il nome del file
+        let currentFileName = '';
         
-        // GESTIONE EVENTI
         cancelSheetBtn.addEventListener('click', () => { sheetSelector.style.display = 'none'; });
         sheetSelector.addEventListener('click', (event) => {
             if (event.target === sheetSelector) sheetSelector.style.display = 'none';
         });
 
-        // FUNZIONI PRINCIPALI
         function handleFile(event) {
             const file = event.target.files[0];
             if (!file) return;
 
+            // MODIFICA 2: Salviamo subito il nome del file
+            currentFileName = file.name;
+
             resetApp();
-            fileInfo.textContent = `Caricamento di: ${file.name}...`;
+            fileInfo.textContent = `Caricamento di: ${currentFileName}...`;
             const reader = new FileReader();
             
             reader.onload = (e) => {
                 const data = e.target.result;
                 fileInfo.textContent = `File letto in memoria. Elaborazione in corso...`;
 
-                // Eseguiamo l'elaborazione pesante in un timeout per non bloccare il browser
                 setTimeout(() => {
                     try {
                         currentWorkbook = XLSX.read(data, { type: 'array' });
@@ -111,10 +112,10 @@
                         }
                     } catch (err) {
                         console.error("Errore lettura file:", err);
-                        alert(`Impossibile elaborare il file "${file.name}". Potrebbe essere corrotto, protetto da password o in un formato non supportato.`);
+                        alert(`Impossibile elaborare il file "${currentFileName}". Potrebbe essere corrotto, protetto da password o in un formato non supportato.`);
                         resetApp();
                     }
-                }, 50); // 50ms di attesa per permettere all'UI di aggiornarsi
+                }, 50);
             };
             
             reader.onerror = () => {
@@ -124,6 +125,76 @@
             reader.readAsArrayBuffer(file);
         }
 
+        function loadRules(event) { /* ... codice invariato ... */ }
+
+        function resetApp() {
+            originalData = []; originalHeaders = []; currentWorkbook = null; currentFileName = '';
+            listaColonne.innerHTML = '';
+            sezioneColonne.classList.add('hidden');
+            sezioneAzioni.classList.add('hidden');
+            fileInfo.textContent = 'Nessun file selezionato.';
+            fileInput.value = '';
+            if (sortableInstance) sortableInstance.destroy();
+        }
+
+        function showSheetSelector(sheetNames) { /* ... codice invariato ... */ }
+
+        function processSheet(sheetName) {
+            try {
+                const worksheet = currentWorkbook.Sheets[sheetName];
+                const dataAsJson = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                
+                if (dataAsJson.length === 0) throw new Error("Il foglio è completamente vuoto.");
+                
+                originalHeaders = dataAsJson[0].map(h => h ? h.toString() : "");
+                const dataRows = dataAsJson.slice(1);
+                
+                originalData = dataRows.map(row => {
+                    const obj = {};
+                    originalHeaders.forEach((header, i) => { obj[header] = row[i]; });
+                    return obj;
+                });
+                
+                // MODIFICA 3: Usiamo la variabile globale invece dell'input file
+                fileInfo.textContent = `File: ${currentFileName} | Foglio: ${sheetName} | Righe: ${originalData.length}`;
+                
+                populateColumnList(originalHeaders);
+                sezioneColonne.classList.remove('hidden');
+                sezioneAzioni.classList.remove('hidden');
+            } catch (err) {
+                alert("Errore durante l'elaborazione del foglio: " + err.message);
+                resetApp();
+            }
+        }
+
+        function populateColumnList(headers) { /* ... codice invariato ... */ }
+
+        function getRulesFromUI() { /* ... codice invariato ... */ }
+
+        function exportToExcel() {
+            const activeRules = getRulesFromUI().filter(rule => rule.isKept);
+            if (activeRules.length === 0) {
+                alert("Nessuna colonna selezionata.");
+                return;
+            }
+            const processedData = originalData.map(row => {
+                const newRow = {};
+                activeRules.forEach(rule => { newRow[rule.newName] = row[rule.original]; });
+                return newRow;
+            });
+            const newWorksheet = XLSX.utils.json_to_sheet(processedData);
+            const newWorkbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Rielaborato');
+            
+            // Usa la variabile globale anche qui per il nome del file esportato
+            const originalFileName = currentFileName.split('.').slice(0, -1).join('.');
+            XLSX.writeFile(newWorkbook, `${originalFileName}_rielaborato.xlsx`);
+        }
+
+        function saveRules() { /* ... codice invariato ... */ }
+        function applyRulesToUI(rules) { /* ... codice invariato ... */ }
+
+        // Ho rimesso qui il resto delle funzioni per completezza
         function loadRules(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -144,16 +215,6 @@
             event.target.value = '';
         }
 
-        function resetApp() {
-            originalData = []; originalHeaders = []; currentWorkbook = null;
-            listaColonne.innerHTML = '';
-            sezioneColonne.classList.add('hidden');
-            sezioneAzioni.classList.add('hidden');
-            fileInfo.textContent = 'Nessun file selezionato.';
-            fileInput.value = '';
-            if (sortableInstance) sortableInstance.destroy();
-        }
-
         function showSheetSelector(sheetNames) {
             sheetButtons.innerHTML = '';
             sheetNames.forEach(name => {
@@ -167,35 +228,6 @@
                 sheetButtons.appendChild(button);
             });
             sheetSelector.style.display = 'flex';
-        }
-
-        function processSheet(sheetName) {
-            try {
-                // Usiamo un metodo più robusto per convertire il foglio in JSON
-                const worksheet = currentWorkbook.Sheets[sheetName];
-                const dataAsJson = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-                
-                if (dataAsJson.length === 0) throw new Error("Il foglio è completamente vuoto.");
-                
-                originalHeaders = dataAsJson[0].map(h => h ? h.toString() : "");
-                const dataRows = dataAsJson.slice(1);
-                
-                originalData = dataRows.map(row => {
-                    const obj = {};
-                    originalHeaders.forEach((header, i) => {
-                        obj[header] = row[i];
-                    });
-                    return obj;
-                });
-                
-                fileInfo.textContent = `File: ${fileInput.files[0].name} | Foglio: ${sheetName} | Righe: ${originalData.length}`;
-                populateColumnList(originalHeaders);
-                sezioneColonne.classList.remove('hidden');
-                sezioneAzioni.classList.remove('hidden');
-            } catch (err) {
-                alert("Errore durante l'elaborazione del foglio: " + err.message);
-                resetApp();
-            }
         }
 
         function populateColumnList(headers) {
@@ -221,25 +253,7 @@
             });
             return rules;
         }
-
-        function exportToExcel() {
-            const activeRules = getRulesFromUI().filter(rule => rule.isKept);
-            if (activeRules.length === 0) {
-                alert("Nessuna colonna selezionata.");
-                return;
-            }
-            const processedData = originalData.map(row => {
-                const newRow = {};
-                activeRules.forEach(rule => { newRow[rule.newName] = row[rule.original]; });
-                return newRow;
-            });
-            const newWorksheet = XLSX.utils.json_to_sheet(processedData);
-            const newWorkbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Rielaborato');
-            const originalFileName = fileInput.files[0].name.split('.').slice(0, -1).join('.');
-            XLSX.writeFile(newWorkbook, `${originalFileName}_rielaborato.xlsx`);
-        }
-
+        
         function saveRules() {
             const rules = getRulesFromUI();
             const blob = new Blob([JSON.stringify(rules, null, 2)], { type: 'application/json' });
@@ -253,8 +267,30 @@
         }
 
         function applyRulesToUI(rules) {
-            // ... (implementazione invariata)
+            const currentHeaders = new Set(originalHeaders);
+            const ruleHeaders = new Set(rules.map(r => r.original));
+            if (JSON.stringify([...currentHeaders].sort()) !== JSON.stringify([...ruleHeaders].sort())) {
+                if (!confirm("Attenzione: le colonne nel file di regole non corrispondono a quelle del file caricato. Applicare comunque?")) {
+                    return;
+                }
+            }
+            const uiItemsMap = new Map();
+            listaColonne.querySelectorAll('li.column-item').forEach(item => {
+                uiItemsMap.set(item.dataset.originalName, item);
+            });
+            const orderedItems = [];
+            rules.forEach(rule => {
+                const item = uiItemsMap.get(rule.original);
+                if (item) {
+                    item.querySelector('input[type="checkbox"]').checked = rule.isKept;
+                    item.querySelector('input[type="text"]').value = rule.newName;
+                    orderedItems.push(item);
+                }
+            });
+            listaColonne.innerHTML = '';
+            orderedItems.forEach(item => listaColonne.appendChild(item));
         }
+
     </script>
 </body>
 </html>
