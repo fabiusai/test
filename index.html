@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">https://github.com/fabiusai/test/edit/main/index.html
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rielaboratore Excel/CSV</title>
     
@@ -22,6 +22,11 @@
         .button.tertiary:hover { background-color: #d35400; }
         .column-list { list-style: none; padding: 0; }
         .column-item { display: flex; align-items: center; padding: 12px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 8px; background-color: #fafafa; }
+        .column-item input[type="checkbox"] { margin-right: 15px; transform: scale(1.4); }
+        .column-item .names { flex-grow: 1; display: flex; align-items: center; flex-wrap: wrap; }
+        .column-item .original-name { font-weight: bold; color: #555; width: 100%; }
+        .column-item .arrow { width: 100%; margin: 5px 0; }
+        .column-item input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; width: 100%; }
         .drag-handle { cursor: move; margin-right: 15px; color: #95a5a6; font-size: 20px; }
         #sheet-selector { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
         #sheet-selector-box { background-color: white; padding: 30px; border-radius: 8px; text-align: center; max-width: 90%; }
@@ -36,12 +41,10 @@
         <section id="sezione-caricamento">
             <h2>1. Carica File</h2>
             <label for="file-input" class="button">Scegli File</label>
-            <!-- MODIFICA CHIAVE: L'evento `onchange` è ora direttamente nell'HTML. Questo è il metodo più robusto. -->
             <input type="file" id="file-input" onchange="handleFile(event)" accept=".xlsx, .xls, .csv" style="display: none;">
             <p id="file-info">Nessun file selezionato.</p>
         </section>
 
-        <!-- Il resto del'HTML rimane invariato -->
         <section id="sezione-colonne" class="hidden">
             <h2>2. Gestisci Colonne</h2>
             <p>Seleziona le colonne da mantenere, rinominale e riordinale trascinandole.</p>
@@ -85,10 +88,8 @@
         let currentWorkbook = null;
         let sortableInstance = null;
         
+        // --- FUNZIONI DI GESTIONE FILE (con la correzione) ---
         function handleFile(event) {
-            // Se vedi questo alert, il collegamento funziona!
-            alert("FUNZIONE 'handleFile' AVVIATA!");
-
             const file = event.target.files[0];
             if (!file) return;
 
@@ -98,7 +99,9 @@
             
             reader.onload = (e) => {
                 try {
-                    currentWorkbook = XLSX.read(e.target.result, { type: 'binary' });
+                    const data = e.target.result;
+                    currentWorkbook = XLSX.read(data, { type: 'array' }); // Usa 'array' per ArrayBuffer
+
                     if (currentWorkbook.SheetNames.length > 1) {
                         showSheetSelector(currentWorkbook.SheetNames);
                     } else if (currentWorkbook.SheetNames.length === 1) {
@@ -108,12 +111,18 @@
                         fileInfo.textContent = "Errore: nessun foglio trovato.";
                     }
                 } catch (err) {
+                    console.error("Errore lettura file:", err);
                     alert("Impossibile leggere il file. Assicurati che sia un Excel o CSV valido.");
                     fileInfo.textContent = "Errore nel caricamento.";
                 }
             };
             
-            reader.readAsBinaryString(file);
+            reader.onerror = (e) => {
+                alert("Si è verificato un errore di sistema durante la lettura del file.");
+                console.error("FileReader Error:", e);
+            };
+
+            reader.readAsArrayBuffer(file); // Usa readAsArrayBuffer
         }
 
         function loadRules(event) {
@@ -136,7 +145,7 @@
             loadRulesInput.value = '';
         }
 
-        // --- MODIFICA CHIAVE: Rimossi gli addEventListener perché gli eventi sono gestiti dall'HTML ---
+        // --- GESTIONE EVENTI (collegati dall'HTML e qui) ---
         exportExcelBtn.addEventListener('click', exportToExcel);
         saveRulesBtn.addEventListener('click', saveRules);
         cancelSheetBtn.addEventListener('click', () => { sheetSelector.style.display = 'none'; });
@@ -146,7 +155,7 @@
             }
         });
         
-        // Il resto dello script rimane uguale
+        // --- FUNZIONI PRINCIPALI DELL'APP ---
         function resetApp() {
             originalData = [];
             originalHeaders = [];
@@ -176,14 +185,36 @@
 
         function processSheet(sheetName) {
             const worksheet = currentWorkbook.Sheets[sheetName];
-            originalData = XLSX.utils.sheet_to_json(worksheet);
+            originalData = XLSX.utils.sheet_to_json(worksheet, {
+                // Aggiungiamo un'opzione per gestire intestazioni vuote se necessario
+                header: 1, // Legge i dati come array di array
+                defval: '' // Imposta un valore di default per le celle vuote
+            });
             
             if (originalData.length === 0) {
-                alert("Il foglio selezionato è vuoto o non ha un'intestazione valida.");
-                fileInfo.textContent = `File: ${fileInput.files[0].name}, ma il foglio "${sheetName}" è vuoto.`;
+                alert("Il foglio selezionato è completamente vuoto.");
                 return;
             }
-            originalHeaders = Object.keys(originalData[0]);
+
+            // Trasforma i dati da array di array a array di oggetti
+            const headers = originalData[0];
+            const dataRows = originalData.slice(1);
+            
+            originalData = dataRows.map(row => {
+                const obj = {};
+                headers.forEach((header, i) => {
+                    obj[header] = row[i];
+                });
+                return obj;
+            });
+            
+            originalHeaders = headers;
+            
+            if (originalHeaders.length === 0) {
+                alert("Il foglio selezionato non ha un'intestazione valida.");
+                return;
+            }
+
             fileInfo.textContent = `File: ${fileInput.files[0].name} | Foglio: ${sheetName} | Righe: ${originalData.length}`;
             populateColumnList(originalHeaders);
             sezioneColonne.classList.remove('hidden');
@@ -196,7 +227,14 @@
                 const li = document.createElement('li');
                 li.className = 'column-item';
                 li.dataset.originalName = header;
-                li.innerHTML = `<span class="drag-handle">☰</span><input type="checkbox" checked><div class="names" style="flex-wrap: wrap;"><span style="width: 100%; font-weight: bold; color: #555;">${header}</span><span class="arrow" style="width:100%">→</span><input type="text" value="${header}" placeholder="Nuovo nome colonna" style="width: 100%;"></div>`;
+                li.innerHTML = `
+                    <span class="drag-handle">☰</span>
+                    <input type="checkbox" checked>
+                    <div class="names">
+                        <span class="original-name">${header}</span>
+                        <span class="arrow">→</span>
+                        <input type="text" value="${header}" placeholder="Nuovo nome colonna">
+                    </div>`;
                 listaColonne.appendChild(li);
             });
             sortableInstance = new Sortable(listaColonne, { animation: 150, handle: '.drag-handle' });
@@ -245,7 +283,28 @@
         }
 
         function applyRulesToUI(rules) {
-            // ... (codice invariato)
+            const currentHeaders = new Set(originalHeaders);
+            const ruleHeaders = new Set(rules.map(r => r.original));
+            if (JSON.stringify([...currentHeaders].sort()) !== JSON.stringify([...ruleHeaders].sort())) {
+                if (!confirm("Attenzione: le colonne nel file di regole non corrispondono a quelle del file caricato. Applicare comunque?")) {
+                    return;
+                }
+            }
+            const uiItemsMap = new Map();
+            listaColonne.querySelectorAll('li.column-item').forEach(item => {
+                uiItemsMap.set(item.dataset.originalName, item);
+            });
+            const orderedItems = [];
+            rules.forEach(rule => {
+                const item = uiItemsMap.get(rule.original);
+                if (item) {
+                    item.querySelector('input[type="checkbox"]').checked = rule.isKept;
+                    item.querySelector('input[type="text"]').value = rule.newName;
+                    orderedItems.push(item);
+                }
+            });
+            listaColonne.innerHTML = '';
+            orderedItems.forEach(item => listaColonne.appendChild(item));
         }
     </script>
 </body>
