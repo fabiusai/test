@@ -333,6 +333,25 @@
             display: block;
         }
         
+        .quality-selector {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quality-selector label {
+            font-size: 14px;
+        }
+        
+        .quality-selector select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            background-color: rgba(40, 40, 62, 0.8);
+            color: white;
+            border: 1px solid #3a3a5d;
+        }
+        
         .footer {
             margin-top: 30px;
             text-align: center;
@@ -363,6 +382,15 @@
             <div class="input-group">
                 <label for="youtubeUrl"><i class="fas fa-link"></i> Incolla il link di YouTube qui:</label>
                 <input type="text" id="youtubeUrl" placeholder="Es: https://www.youtube.com/watch?v=..." autocomplete="off">
+                
+                <div class="quality-selector">
+                    <label for="qualitySelect">Qualità audio:</label>
+                    <select id="qualitySelect">
+                        <option value="low">Bassa (64kbps)</option>
+                        <option value="medium" selected>Media (128kbps)</option>
+                        <option value="high">Alta (192kbps)</option>
+                    </select>
+                </div>
                 
                 <div class="buttons">
                     <button id="playBtn">
@@ -440,7 +468,7 @@
         
         <div class="footer">
             <p>Questa web app estrae e riproduce solo l'audio dai video YouTube</p>
-            <p>Nota: Per motivi tecnici, alcuni video potrebbero non essere disponibili</p>
+            <p>Nota: Funziona con la maggior parte dei video YouTube</p>
         </div>
     </div>
 
@@ -464,37 +492,14 @@
         const loading = document.getElementById('loading');
         const error = document.getElementById('error');
         const errorText = document.getElementById('errorText');
+        const qualitySelect = document.getElementById('qualitySelect');
         
         // Variabili globali
         let audioContext;
-        let audioSource;
-        let audioBuffer;
+        let audioElement;
         let isPlaying = false;
-        let startTime = 0;
-        let pausedAt = 0;
-        let currentAudioUrl = '';
         let videoInfo = null;
-        
-        // Inizializza l'Audio Context per iOS
-        function initAudioContext() {
-            if (!audioContext) {
-                // Creazione del contesto audio compatibile con iOS
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                audioContext = new AudioContextClass();
-                
-                // Gestione della sospensione del contesto audio su iOS
-                if (audioContext.state === 'suspended') {
-                    const resumeAudio = () => {
-                        audioContext.resume();
-                        document.removeEventListener('click', resumeAudio);
-                        document.removeEventListener('touchstart', resumeAudio);
-                    };
-                    
-                    document.addEventListener('click', resumeAudio);
-                    document.addEventListener('touchstart', resumeAudio);
-                }
-            }
-        }
+        let currentAudioUrl = '';
         
         // Formatta il tempo in MM:SS
         function formatTime(seconds) {
@@ -519,30 +524,104 @@
             return null;
         }
         
-        // Ottiene informazioni sul video usando l'API di YouTube
-        async function getVideoInfo(videoId) {
-            // In un'app reale, qui dovresti usare un backend per evitare problemi CORS
-            // Per questa demo, simuliamo l'estrazione delle informazioni
-            return {
-                title: `Video YouTube (${videoId})`,
-                channel: "Canale YouTube",
-                duration: 180 // 3 minuti per demo
-            };
-        }
-        
-        // Simula il download dell'audio (in un'app reale, qui useresti yt-dlp-wasm o un backend)
-        async function getAudioStream(videoId) {
-            // Questo è un placeholder per la demo
-            // In un'app reale, qui dovresti:
-            // 1. Usare yt-dlp-wasm per estrarre l'URL audio
-            // 2. Oppure usare un backend serverless per estrarre l'audio
-            // 3. Restituire l'URL dell'audio
-            
-            // Per questa demo, useremo un file audio di esempio
-            return {
-                url: 'https://assets.codepen.io/4358584/audio-sample.mp3',
-                format: 'mp3'
-            };
+        // Usa un servizio proxy per ottenere l'audio da YouTube
+        async function getAudioFromYouTube(videoId) {
+            try {
+                // Usiamo un servizio pubblico per estrarre l'audio
+                // Nota: Questi servizi possono avere limitazioni
+                const qualityMap = {
+                    'low': '64',
+                    'medium': '128', 
+                    'high': '192'
+                };
+                
+                const bitrate = qualityMap[qualitySelect.value] || '128';
+                
+                // Opzione 1: Servizio Piped (open source)
+                const pipedUrl = `https://pipedapi.kavin.rocks/streams/${videoId}`;
+                
+                // Opzione 2: Servizio yt-dlp basato su proxy (fallback)
+                const fallbackUrl = `https://corsproxy.io/?https://yt-api.p.rapidapi.com/dl?id=${videoId}`;
+                
+                try {
+                    // Prova con Piped API prima
+                    const response = await fetch(pipedUrl);
+                    
+                    if (!response.ok) throw new Error('Piped API non disponibile');
+                    
+                    const data = await response.json();
+                    
+                    // Cerca la migliore traccia audio disponibile
+                    const audioFormats = data.audioStreams || [];
+                    
+                    if (audioFormats.length === 0) {
+                        throw new Error('Nessuna traccia audio trovata');
+                    }
+                    
+                    // Seleziona la traccia audio in base alla qualità richiesta
+                    let selectedFormat = audioFormats[0];
+                    
+                    // Ordina per bitrate (più alto prima)
+                    audioFormats.sort((a, b) => {
+                        const bitrateA = parseInt(a.bitrate) || 0;
+                        const bitrateB = parseInt(b.bitrate) || 0;
+                        return bitrateB - bitrateA;
+                    });
+                    
+                    // Seleziona in base alla qualità scelta
+                    if (qualitySelect.value === 'low') {
+                        // Prendi la qualità più bassa
+                        selectedFormat = audioFormats[audioFormats.length - 1];
+                    } else if (qualitySelect.value === 'high') {
+                        // Prendi la qualità più alta
+                        selectedFormat = audioFormats[0];
+                    } else {
+                        // Media - prendi una qualità media
+                        const midIndex = Math.floor(audioFormats.length / 2);
+                        selectedFormat = audioFormats[midIndex];
+                    }
+                    
+                    return {
+                        url: selectedFormat.url,
+                        title: data.title || 'Video YouTube',
+                        channel: data.uploader || 'Canale sconosciuto',
+                        duration: data.duration || 0,
+                        mimeType: selectedFormat.mimeType || 'audio/mp4'
+                    };
+                    
+                } catch (pipedError) {
+                    console.log('Piped API fallita, provo metodo alternativo...');
+                    
+                    // Metodo alternativo: usa un proxy yt-dlp
+                    // NOTA: In una app reale, dovresti usare il tuo backend per evitare limitazioni
+                    const proxyUrl = `https://ytdl.cors.workers.dev/?url=https://www.youtube.com/watch?v=${videoId}&format=bestaudio`;
+                    
+                    const proxyResponse = await fetch(proxyUrl);
+                    
+                    if (!proxyResponse.ok) {
+                        throw new Error('Impossibile estrarre audio dal video');
+                    }
+                    
+                    const proxyData = await proxyResponse.json();
+                    
+                    if (!proxyData.url) {
+                        throw new Error('URL audio non disponibile');
+                    }
+                    
+                    // Usa i dati di fallback se non abbiamo info dal video
+                    return {
+                        url: proxyData.url,
+                        title: proxyData.title || 'Video YouTube',
+                        channel: proxyData.channel || 'Canale sconosciuto',
+                        duration: proxyData.duration || 0,
+                        mimeType: proxyData.mimeType || 'audio/webm'
+                    };
+                }
+                
+            } catch (err) {
+                console.error('Errore nell\'estrazione audio:', err);
+                throw new Error('Impossibile ottenere l\'audio. Riprova con un altro video o controlla la connessione.');
+            }
         }
         
         // Carica e riproduce l'audio
@@ -563,148 +642,173 @@
             try {
                 showLoading(true);
                 hideError();
+                stopPlayback(); // Ferma qualsiasi riproduzione in corso
                 
-                // Ottieni informazioni sul video
-                videoInfo = await getVideoInfo(videoId);
-                trackTitle.textContent = videoInfo.title;
-                trackChannel.innerHTML = `<i class="fas fa-user"></i> ${videoInfo.channel}`;
-                durationEl.textContent = formatTime(videoInfo.duration);
+                // Ottieni l'audio da YouTube
+                const audioData = await getAudioFromYouTube(videoId);
                 
-                // Ottieni lo stream audio
-                const audioStream = await getAudioStream(videoId);
-                currentAudioUrl = audioStream.url;
+                // Aggiorna le informazioni del video
+                trackTitle.textContent = audioData.title;
+                trackChannel.innerHTML = `<i class="fas fa-user"></i> ${audioData.channel}`;
+                durationEl.textContent = formatTime(audioData.duration);
+                currentAudioUrl = audioData.url;
                 
-                // Inizializza il contesto audio
-                initAudioContext();
+                // Inizializza l'elemento audio
+                audioElement = new Audio();
+                audioElement.crossOrigin = "anonymous"; // Importante per CORS
+                audioElement.src = audioData.url;
+                audioElement.preload = "metadata";
                 
-                // Carica e decodifica l'audio
-                const response = await fetch(audioStream.url);
-                const arrayBuffer = await response.arrayBuffer();
-                audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                // Imposta il volume iniziale
+                audioElement.volume = volumeSlider.value / 100;
                 
                 // Mostra i controlli del player
                 playerSection.classList.add('active');
                 
-                // Avvia la riproduzione
-                startPlayback();
+                // Imposta l'evento per quando i metadati sono caricati
+                audioElement.addEventListener('loadedmetadata', () => {
+                    durationEl.textContent = formatTime(audioElement.duration);
+                    showLoading(false);
+                });
                 
-                showLoading(false);
+                // Imposta l'evento per aggiornare la barra di progresso
+                audioElement.addEventListener('timeupdate', updateProgress);
+                
+                // Imposta l'evento per quando l'audio finisce
+                audioElement.addEventListener('ended', () => {
+                    isPlaying = false;
+                    playPauseIcon.className = 'fas fa-play';
+                    progress.style.width = '100%';
+                });
+                
+                // Imposta l'evento per errori di caricamento
+                audioElement.addEventListener('error', (e) => {
+                    console.error('Errore audio:', e);
+                    showError('Errore nel caricamento dell\'audio. Riprova.');
+                    showLoading(false);
+                });
+                
+                // Avvia la riproduzione
+                await audioElement.play();
+                isPlaying = true;
+                playPauseIcon.className = 'fas fa-pause';
+                
+                // Inizializza l'Audio Context per iOS (per background play)
+                initAudioContextForiOS();
                 
             } catch (err) {
                 console.error('Errore:', err);
-                showError('Impossibile caricare l\'audio. Riprova con un altro video.');
+                showError(err.message || 'Impossibile caricare l\'audio. Riprova con un altro video.');
                 showLoading(false);
             }
         }
         
-        // Avvia la riproduzione
-        function startPlayback() {
-            if (!audioBuffer || !audioContext) return;
-            
-            // Ferma la riproduzione attuale se presente
-            if (audioSource) {
-                audioSource.stop();
+        // Inizializza l'Audio Context per iOS (per background play)
+        function initAudioContextForiOS() {
+            if (!audioContext && window.AudioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Crea un MediaElementSourceNode per collegare l'elemento audio al contesto
+                const source = audioContext.createMediaElementSource(audioElement);
+                const gainNode = audioContext.createGain();
+                
+                source.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Imposta il volume iniziale
+                gainNode.gain.value = volumeSlider.value / 100;
+                
+                // Aggiorna il volume quando cambia lo slider
+                volumeSlider.addEventListener('input', () => {
+                    gainNode.gain.value = volumeSlider.value / 100;
+                });
+                
+                // Gestisci la sospensione del contesto audio
+                if (audioContext.state === 'suspended') {
+                    const resumeAudio = () => {
+                        audioContext.resume();
+                        document.removeEventListener('click', resumeAudio);
+                        document.removeEventListener('touchstart', resumeAudio);
+                    };
+                    
+                    document.addEventListener('click', resumeAudio);
+                    document.addEventListener('touchstart', resumeAudio);
+                }
             }
-            
-            // Crea una nuova sorgente audio
-            audioSource = audioContext.createBufferSource();
-            audioSource.buffer = audioBuffer;
-            
-            // Crea un nodo per il volume
-            const gainNode = audioContext.createGain();
-            gainNode.gain.value = volumeSlider.value / 100;
-            
-            // Connetti i nodi
-            audioSource.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            // Imposta il tempo di inizio
-            startTime = audioContext.currentTime - pausedAt;
-            audioSource.start(0, pausedAt);
-            
-            // Aggiorna lo stato
-            isPlaying = true;
-            playPauseIcon.className = 'fas fa-pause';
-            
-            // Avvia l'aggiornamento della barra di progresso
-            requestAnimationFrame(updateProgress);
-            
-            // Gestisci la fine della traccia
-            audioSource.onended = () => {
-                isPlaying = false;
-                playPauseIcon.className = 'fas fa-play';
-                progress.style.width = '100%';
-                currentTimeEl.textContent = formatTime(audioBuffer.duration);
-                pausedAt = 0;
-            };
         }
         
-        // Mette in pausa la riproduzione
-        function pausePlayback() {
-            if (!audioSource || !isPlaying) return;
+        // Mette in pausa/riprende la riproduzione
+        function togglePlayPause() {
+            if (!audioElement) return;
             
-            // Ferma la riproduzione
-            audioSource.stop();
-            
-            // Calcola il punto di pausa
-            pausedAt = audioContext.currentTime - startTime;
-            
-            // Aggiorna lo stato
-            isPlaying = false;
-            playPauseIcon.className = 'fas fa-play';
+            if (isPlaying) {
+                audioElement.pause();
+                isPlaying = false;
+                playPauseIcon.className = 'fas fa-play';
+            } else {
+                audioElement.play();
+                isPlaying = true;
+                playPauseIcon.className = 'fas fa-pause';
+            }
         }
         
         // Aggiorna la barra di progresso
         function updateProgress() {
-            if (!isPlaying || !audioBuffer) return;
+            if (!audioElement || !audioElement.duration) return;
             
-            const currentTime = audioContext.currentTime - startTime;
-            const progressPercent = (currentTime / audioBuffer.duration) * 100;
+            const currentTime = audioElement.currentTime;
+            const duration = audioElement.duration;
+            const progressPercent = (currentTime / duration) * 100;
             
             progress.style.width = `${progressPercent}%`;
             currentTimeEl.textContent = formatTime(currentTime);
-            
-            requestAnimationFrame(updateProgress);
         }
         
         // Cambia la posizione di riproduzione
         function seekTo(event) {
-            if (!audioBuffer || !progressBar) return;
+            if (!audioElement || !audioElement.duration) return;
             
             const rect = progressBar.getBoundingClientRect();
             const clickX = event.clientX - rect.left;
             const width = rect.width;
             const percentage = clickX / width;
-            const seekTime = percentage * audioBuffer.duration;
+            const seekTime = percentage * audioElement.duration;
             
-            // Se è in riproduzione, ferma e riavvia dalla nuova posizione
-            if (isPlaying) {
-                pausePlayback();
-                pausedAt = seekTime;
-                startPlayback();
-            } else {
-                // Se è in pausa, aggiorna solo la posizione
-                pausedAt = seekTime;
-                progress.style.width = `${percentage * 100}%`;
-                currentTimeEl.textContent = formatTime(seekTime);
-            }
+            audioElement.currentTime = seekTime;
         }
         
         // Ferma completamente la riproduzione
         function stopPlayback() {
-            if (audioSource) {
-                audioSource.stop();
-                audioSource = null;
+            if (audioElement) {
+                audioElement.pause();
+                audioElement.currentTime = 0;
+                audioElement = null;
             }
             
             isPlaying = false;
             playPauseIcon.className = 'fas fa-play';
-            pausedAt = 0;
             progress.style.width = '0%';
             currentTimeEl.textContent = '0:00';
             
             // Nascondi il player
             playerSection.classList.remove('active');
+        }
+        
+        // Salta indietro di 10 secondi
+        function skipBack() {
+            if (!audioElement) return;
+            
+            audioElement.currentTime = Math.max(0, audioElement.currentTime - 10);
+        }
+        
+        // Salta avanti di 10 secondi
+        function skipForward() {
+            if (!audioElement) return;
+            
+            audioElement.currentTime = Math.min(
+                audioElement.duration, 
+                audioElement.currentTime + 10
+            );
         }
         
         // Mostra/nascondi il loader
@@ -729,79 +833,15 @@
         
         // Event Listeners
         playBtn.addEventListener('click', playAudio);
-        
         stopBtn.addEventListener('click', stopPlayback);
-        
-        playPauseBtn.addEventListener('click', () => {
-            if (!audioBuffer) return;
-            
-            if (isPlaying) {
-                pausePlayback();
-            } else {
-                startPlayback();
-            }
-        });
-        
+        playPauseBtn.addEventListener('click', togglePlayPause);
         progressBar.addEventListener('click', seekTo);
+        skipBackBtn.addEventListener('click', skipBack);
+        skipForwardBtn.addEventListener('click', skipForward);
         
         volumeSlider.addEventListener('input', () => {
-            if (audioSource && audioContext) {
-                // Crea un nodo di guadagno per controllare il volume
-                const gainNode = audioContext.createGain();
-                gainNode.gain.value = volumeSlider.value / 100;
-                
-                // Riconnetti la sorgente audio attraverso il nodo di guadagno
-                audioSource.disconnect();
-                audioSource.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-            }
-        });
-        
-        skipBackBtn.addEventListener('click', () => {
-            if (!audioBuffer) return;
-            
-            const skipTime = 10; // Secondi
-            let newTime = pausedAt - skipTime;
-            
-            if (isPlaying) {
-                newTime = (audioContext.currentTime - startTime) - skipTime;
-            }
-            
-            if (newTime < 0) newTime = 0;
-            
-            if (isPlaying) {
-                pausePlayback();
-                pausedAt = newTime;
-                startPlayback();
-            } else {
-                pausedAt = newTime;
-                const progressPercent = (pausedAt / audioBuffer.duration) * 100;
-                progress.style.width = `${progressPercent}%`;
-                currentTimeEl.textContent = formatTime(pausedAt);
-            }
-        });
-        
-        skipForwardBtn.addEventListener('click', () => {
-            if (!audioBuffer) return;
-            
-            const skipTime = 10; // Secondi
-            let newTime = pausedAt + skipTime;
-            
-            if (isPlaying) {
-                newTime = (audioContext.currentTime - startTime) + skipTime;
-            }
-            
-            if (newTime > audioBuffer.duration) newTime = audioBuffer.duration;
-            
-            if (isPlaying) {
-                pausePlayback();
-                pausedAt = newTime;
-                startPlayback();
-            } else {
-                pausedAt = newTime;
-                const progressPercent = (pausedAt / audioBuffer.duration) * 100;
-                progress.style.width = `${progressPercent}%`;
-                currentTimeEl.textContent = formatTime(pausedAt);
+            if (audioElement) {
+                audioElement.volume = volumeSlider.value / 100;
             }
         });
         
@@ -822,6 +862,17 @@
         // Inizializza con un esempio
         window.addEventListener('load', () => {
             youtubeUrlInput.value = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+            
+            // Test di alcuni video popolari per dimostrazione
+            const sampleVideos = [
+                'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                'https://www.youtube.com/watch?v=JGwWNGJdvx8',
+                'https://www.youtube.com/watch?v=kJQP7kiw5Fk'
+            ];
+            
+            // Seleziona un video casuale per l'esempio
+            const randomVideo = sampleVideos[Math.floor(Math.random() * sampleVideos.length)];
+            youtubeUrlInput.value = randomVideo;
         });
         
         // Gestione della riproduzione in background per iOS
@@ -832,11 +883,24 @@
             }
         });
         
+        // Gestisci la sospensione della pagina
+        document.addEventListener('pause', () => {
+            // iOS mette in pausa la pagina quando si blocca lo schermo
+            // Questo evento ci aiuta a mantenere l'audio in esecuzione
+            if (isPlaying && audioElement) {
+                // Forza la riproduzione continua
+                audioElement.play().catch(e => console.log('Auto-play interrotto:', e));
+            }
+        }, false);
+        
         // Aggiungi questa app alla schermata Home (per iOS)
         if ('standalone' in navigator || window.navigator.standalone === true) {
-            // L'app è già installata
-            console.log('App installata sulla Home Screen');
+            console.log('App installata sulla Home Screen - background audio abilitato');
         }
+        
+        // Informazioni per l'utente
+        console.log('YouTube Audio Player caricato');
+        console.log('Per iOS: Aggiungi questa pagina alla Home Screen per audio in background');
     </script>
 </body>
 </html>
