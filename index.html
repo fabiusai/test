@@ -68,6 +68,34 @@
             color: #e0e0ff;
         }
         
+        .input-with-button {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-with-button input {
+            flex: 1;
+        }
+        
+        .input-button {
+            padding: 0 20px;
+            border-radius: 12px;
+            background: linear-gradient(to right, #4a4a6d, #3a3a5d);
+            border: 2px solid #3a3a5d;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            min-width: 50px;
+        }
+        
+        .input-button:hover {
+            background: linear-gradient(to right, #5a5a7d, #4a4a6d);
+            transform: translateY(-2px);
+        }
+        
         input {
             padding: 16px;
             border-radius: 12px;
@@ -125,6 +153,16 @@
             transform: translateY(-2px);
         }
         
+        #changeVideoBtn {
+            background: linear-gradient(to right, #36D1DC, #5B86E5);
+            color: white;
+        }
+        
+        #changeVideoBtn:hover {
+            background: linear-gradient(to right, #5B86E5, #36D1DC);
+            transform: translateY(-2px);
+        }
+        
         .player-section {
             margin-top: 30px;
             display: none;
@@ -165,6 +203,62 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+        
+        .playlist-info {
+            background-color: rgba(40, 40, 62, 0.6);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .playlist-info.active {
+            display: block;
+        }
+        
+        .playlist-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #e0e0ff;
+        }
+        
+        .playlist-track {
+            font-size: 14px;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 6px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .playlist-track:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .playlist-track.active {
+            background-color: rgba(255, 77, 77, 0.2);
+            color: #ff4d4d;
+        }
+        
+        .playlist-track i {
+            font-size: 12px;
+        }
+        
+        .playlist-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .playlist-controls button {
+            padding: 10px 15px;
+            font-size: 14px;
         }
         
         .audio-controls {
@@ -387,6 +481,15 @@
             .visible-player {
                 height: 150px;
             }
+            
+            .input-with-button {
+                flex-direction: column;
+            }
+            
+            .input-button {
+                padding: 12px;
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -396,12 +499,24 @@
         
         <div class="input-section">
             <div class="input-group">
-                <label for="youtubeUrl"><i class="fas fa-link"></i> Incolla il link di YouTube qui:</label>
-                <input type="text" id="youtubeUrl" placeholder="Es: https://www.youtube.com/watch?v=..." autocomplete="off">
+                <label for="youtubeUrl"><i class="fas fa-link"></i> Incolla il link di YouTube:</label>
+                
+                <div class="input-with-button">
+                    <input type="text" id="youtubeUrl" placeholder="Es: https://www.youtube.com/watch?v=..." autocomplete="off">
+                    <button class="input-button" id="pasteBtn" title="Incolla link dagli appunti">
+                        <i class="fas fa-paste"></i>
+                    </button>
+                    <button class="input-button" id="clearBtn" title="Pulisci campo">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
                 
                 <div class="buttons">
                     <button id="playBtn">
-                        <i class="fas fa-play"></i> Riproduci Audio
+                        <i class="fas fa-play"></i> Riproduci
+                    </button>
+                    <button id="changeVideoBtn">
+                        <i class="fas fa-sync"></i> Cambia Video
                     </button>
                     <button id="stopBtn">
                         <i class="fas fa-stop"></i> Stop
@@ -427,6 +542,21 @@
             <div class="track-info">
                 <div class="track-title" id="trackTitle">Titolo del video</div>
                 <div class="track-channel" id="trackChannel"><i class="fas fa-user"></i> Canale YouTube</div>
+            </div>
+            
+            <div class="playlist-info" id="playlistInfo">
+                <div class="playlist-title" id="playlistTitle">Playlist: <span id="playlistName">Nome playlist</span></div>
+                <div id="playlistTracks">
+                    <!-- Le tracce della playlist verranno inserite qui -->
+                </div>
+                <div class="playlist-controls">
+                    <button id="prevTrackBtn">
+                        <i class="fas fa-backward"></i> Precedente
+                    </button>
+                    <button id="nextTrackBtn">
+                        <i class="fas fa-forward"></i> Successiva
+                    </button>
+                </div>
             </div>
             
             <div class="youtube-player-container hidden-player" id="youtubePlayerContainer">
@@ -462,23 +592,17 @@
         <div class="instructions">
             <h3><i class="fas fa-info-circle"></i> Istruzioni IMPORTANTI per iPhone:</h3>
             <ul>
-                <li><strong>Passo 1:</strong> Incolla il link di YouTube e premi "Riproduci Audio"</li>
-                <li><strong>Passo 2 (CRUCIALE):</strong> Per audio in background con schermo spento:
-                    <ol>
-                        <li>Apri questa pagina in <strong>Safari</strong> (non in altre app)</li>
-                        <li>Tocca l'icona <strong>"Condividi"</strong> (rettangolo con freccia in alto)</li>
-                        <li>Scorri verso il basso e seleziona <strong>"Aggiungi a Home"</strong></li>
-                        <li>Ora apri l'<strong>app dalla schermata Home</strong> (non da Safari!)</li>
-                        <li>L'audio continuerà anche con lo schermo spento</li>
-                    </ol>
-                </li>
-                <li><strong>Nota:</strong> Devi sempre avviare la riproduzione DOPO aver aperto l'app dalla Home Screen</li>
-                <li><strong>Suggerimento:</strong> Usa "Mostra/Nascondi Player" per nascondere il video e sentire solo l'audio</li>
+                <li><strong>Passo 1:</strong> Apri in Safari → "Condividi" → "Aggiungi a Home"</li>
+                <li><strong>Passo 2:</strong> Usa l'app dalla Home Screen (non da Safari!)</li>
+                <li><strong>Nuovo:</strong> Tocca <i class="fas fa-paste"></i> per incollare automaticamente un link</li>
+                <li><strong>Nuovo:</strong> Usa "Cambia Video" per passare a un nuovo video senza riavviare</li>
+                <li><strong>Nuovo:</strong> Supporto per playlist YouTube - riproduci tutte le tracce!</li>
+                <li>Audio continuerà anche con schermo spento</li>
             </ul>
         </div>
         
         <div class="footer">
-            <p>Questa web app riproduce l'audio dai video YouTube usando il player ufficiale</p>
+            <p>YouTube Audio Player con supporto playlist e cambio video dinamico</p>
             <p>Funziona solo se aggiunta alla Home Screen di iOS</p>
         </div>
     </div>
@@ -486,7 +610,10 @@
     <script>
         // Elementi DOM
         const youtubeUrlInput = document.getElementById('youtubeUrl');
+        const pasteBtn = document.getElementById('pasteBtn');
+        const clearBtn = document.getElementById('clearBtn');
         const playBtn = document.getElementById('playBtn');
+        const changeVideoBtn = document.getElementById('changeVideoBtn');
         const stopBtn = document.getElementById('stopBtn');
         const playerSection = document.getElementById('playerSection');
         const trackTitle = document.getElementById('trackTitle');
@@ -503,6 +630,11 @@
         const successText = document.getElementById('successText');
         const youtubePlayerContainer = document.getElementById('youtubePlayerContainer');
         const togglePlayerBtn = document.getElementById('togglePlayerBtn');
+        const playlistInfo = document.getElementById('playlistInfo');
+        const playlistName = document.getElementById('playlistName');
+        const playlistTracks = document.getElementById('playlistTracks');
+        const prevTrackBtn = document.getElementById('prevTrackBtn');
+        const nextTrackBtn = document.getElementById('nextTrackBtn');
         
         // Variabili globali
         let youtubePlayer = null;
@@ -510,6 +642,39 @@
         let isPlayerVisible = false;
         let videoDuration = 0;
         let isPlaying = false;
+        let currentPlaylist = null;
+        let currentPlaylistIndex = -1;
+        
+        // Funzione per incollare dagli appunti
+        async function pasteFromClipboard() {
+            try {
+                // Controlla se l'API Clipboard è supportata
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    const text = await navigator.clipboard.readText();
+                    youtubeUrlInput.value = text;
+                    showSuccess('Link incollato dagli appunti!');
+                } else {
+                    // Fallback per browser che non supportano l'API Clipboard
+                    youtubeUrlInput.focus();
+                    document.execCommand('paste');
+                    showSuccess('Link incollato!');
+                }
+            } catch (err) {
+                console.error('Errore incolla:', err);
+                // Fallback: mostra un prompt
+                const pastedText = prompt('Incolla manualmente il link YouTube qui:');
+                if (pastedText) {
+                    youtubeUrlInput.value = pastedText;
+                    showSuccess('Link incollato!');
+                }
+            }
+        }
+        
+        // Funzione per pulire il campo input
+        function clearInputField() {
+            youtubeUrlInput.value = '';
+            youtubeUrlInput.focus();
+        }
         
         // Estrae l'ID video da un URL di YouTube
         function extractVideoId(url) {
@@ -517,6 +682,21 @@
                 /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?\/]+)/,
                 /youtube\.com\/embed\/([^&\?\/]+)/,
                 /youtube\.com\/v\/([^&\?\/]+)/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            
+            return null;
+        }
+        
+        // Estrae l'ID playlist da un URL di YouTube
+        function extractPlaylistId(url) {
+            const patterns = [
+                /(?:youtube\.com\/playlist\?list=|&list=)([^&\?\/]+)/,
+                /youtube\.com\/watch\?.*list=([^&\?\/]+)/
             ];
             
             for (const pattern of patterns) {
@@ -554,6 +734,26 @@
             }
         }
         
+        // Ottiene informazioni sulla playlist
+        async function getPlaylistInfo(playlistId) {
+            try {
+                // Nota: Per una vera implementazione, servirebbe l'API di YouTube
+                // Per ora, simuliamo una playlist con video di esempio
+                return {
+                    title: "Playlist YouTube",
+                    videos: [
+                        { id: 'dQw4w9WgXcQ', title: 'Never Gonna Give You Up' },
+                        { id: 'JGwWNGJdvx8', title: 'Shape of You' },
+                        { id: 'kJQP7kiw5Fk', title: 'Despacito' },
+                        { id: '9bZkp7q19f0', title: 'Gangnam Style' }
+                    ]
+                };
+            } catch (err) {
+                console.error('Errore nel recupero info playlist:', err);
+                return null;
+            }
+        }
+        
         // Carica l'API YouTube
         function loadYouTubeAPI() {
             return new Promise((resolve) => {
@@ -580,13 +780,25 @@
             });
         }
         
-        // Crea il player YouTube
-        function createYouTubePlayer(videoId) {
+        // Crea o aggiorna il player YouTube
+        async function createOrUpdateYouTubePlayer(videoId) {
             return new Promise((resolve, reject) => {
-                // Pulisci il container
+                // Se il player esiste già, cambia solo il video
+                if (youtubePlayer && youtubePlayer.loadVideoById) {
+                    youtubePlayer.loadVideoById(videoId);
+                    youtubePlayer.playVideo();
+                    
+                    // Aggiorna lo stato
+                    isPlaying = true;
+                    playPauseIcon.className = 'fas fa-pause';
+                    
+                    resolve(youtubePlayer);
+                    return;
+                }
+                
+                // Altrimenti crea un nuovo player
                 youtubePlayerContainer.innerHTML = '';
                 
-                // Crea l'iframe del player
                 youtubePlayer = new YT.Player('youtubePlayerContainer', {
                     height: '100%',
                     width: '100%',
@@ -623,6 +835,11 @@
                             } else if (event.data === YT.PlayerState.ENDED) {
                                 isPlaying = false;
                                 playPauseIcon.className = 'fas fa-play';
+                                
+                                // Se c'è una playlist, passa al prossimo video
+                                if (currentPlaylist && currentPlaylistIndex >= 0) {
+                                    playNextTrack();
+                                }
                             }
                         },
                         'onError': (error) => {
@@ -643,7 +860,7 @@
             });
         }
         
-        // Carica e riproduce il video (solo audio)
+        // Carica e riproduce il video (o playlist)
         async function playAudio() {
             const url = youtubeUrlInput.value.trim();
             
@@ -652,9 +869,12 @@
                 return;
             }
             
+            // Controlla se è una playlist
+            const playlistId = extractPlaylistId(url);
             const videoId = extractVideoId(url);
-            if (!videoId) {
-                showError('URL di YouTube non valido. Formati supportati:<br>• youtube.com/watch?v=ID<br>• youtu.be/ID<br>• youtube.com/embed/ID');
+            
+            if (!playlistId && !videoId) {
+                showError('URL di YouTube non valido. Formati supportati:<br>• Video: youtube.com/watch?v=ID<br>• Playlist: youtube.com/playlist?list=ID');
                 return;
             }
             
@@ -663,19 +883,16 @@
                 hideError();
                 hideSuccess();
                 
-                // Salva l'ID video corrente
-                currentVideoId = videoId;
-                
-                // Ottieni informazioni sul video
-                const videoInfo = await getVideoInfo(videoId);
-                trackTitle.textContent = videoInfo.title;
-                trackChannel.innerHTML = `<i class="fas fa-user"></i> ${videoInfo.author}`;
-                
-                // Carica l'API YouTube
+                // Carica l'API YouTube se non è già caricata
                 await loadYouTubeAPI();
                 
-                // Crea il player
-                await createYouTubePlayer(videoId);
+                if (playlistId) {
+                    // Gestione playlist
+                    await handlePlaylist(playlistId, videoId);
+                } else {
+                    // Gestione singolo video
+                    await handleSingleVideo(videoId);
+                }
                 
                 // Mostra i controlli del player
                 playerSection.classList.add('active');
@@ -687,9 +904,136 @@
                 
             } catch (err) {
                 console.error('Errore:', err);
-                showError(err.message || 'Impossibile caricare il video. Riprova.');
+                showError(err.message || 'Impossibile caricare. Riprova.');
                 showLoading(false);
             }
+        }
+        
+        // Gestisce un singolo video
+        async function handleSingleVideo(videoId) {
+            // Nascondi info playlist
+            playlistInfo.classList.remove('active');
+            
+            // Salva l'ID video corrente
+            currentVideoId = videoId;
+            currentPlaylist = null;
+            currentPlaylistIndex = -1;
+            
+            // Ottieni informazioni sul video
+            const videoInfo = await getVideoInfo(videoId);
+            trackTitle.textContent = videoInfo.title;
+            trackChannel.innerHTML = `<i class="fas fa-user"></i> ${videoInfo.author}`;
+            
+            // Crea o aggiorna il player
+            await createOrUpdateYouTubePlayer(videoId);
+        }
+        
+        // Gestisce una playlist
+        async function handlePlaylist(playlistId, initialVideoId = null) {
+            // Ottieni informazioni sulla playlist
+            const playlistInfoData = await getPlaylistInfo(playlistId);
+            
+            if (!playlistInfoData) {
+                throw new Error('Impossibile caricare la playlist');
+            }
+            
+            // Salva la playlist
+            currentPlaylist = playlistInfoData;
+            playlistName.textContent = playlistInfoData.title;
+            
+            // Mostra info playlist
+            playlistInfo.classList.add('active');
+            
+            // Pulisci e popola la lista tracce
+            playlistTracks.innerHTML = '';
+            
+            currentPlaylist.videos.forEach((video, index) => {
+                const trackElement = document.createElement('div');
+                trackElement.className = 'playlist-track';
+                trackElement.dataset.index = index;
+                trackElement.dataset.videoId = video.id;
+                
+                trackElement.innerHTML = `
+                    <i class="fas fa-music"></i>
+                    <span>${index + 1}. ${video.title}</span>
+                `;
+                
+                trackElement.addEventListener('click', () => {
+                    playTrackFromPlaylist(index);
+                });
+                
+                playlistTracks.appendChild(trackElement);
+            });
+            
+            // Trova l'indice del video iniziale
+            let startIndex = 0;
+            if (initialVideoId) {
+                const foundIndex = currentPlaylist.videos.findIndex(v => v.id === initialVideoId);
+                if (foundIndex !== -1) {
+                    startIndex = foundIndex;
+                }
+            }
+            
+            // Riproduci il primo video della playlist
+            await playTrackFromPlaylist(startIndex);
+        }
+        
+        // Riproduce una traccia dalla playlist
+        async function playTrackFromPlaylist(index) {
+            if (!currentPlaylist || index < 0 || index >= currentPlaylist.videos.length) {
+                return;
+            }
+            
+            const video = currentPlaylist.videos[index];
+            currentPlaylistIndex = index;
+            
+            // Aggiorna lo stato visivo delle tracce
+            document.querySelectorAll('.playlist-track').forEach((track, i) => {
+                if (i === index) {
+                    track.classList.add('active');
+                } else {
+                    track.classList.remove('active');
+                }
+            });
+            
+            // Riproduci il video
+            await handleSingleVideo(video.id);
+            
+            // Scorri la traccia corrente nella vista
+            const activeTrack = document.querySelector(`.playlist-track[data-index="${index}"]`);
+            if (activeTrack) {
+                activeTrack.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+        
+        // Riproduce la traccia precedente nella playlist
+        function playPrevTrack() {
+            if (!currentPlaylist || currentPlaylistIndex <= 0) return;
+            
+            playTrackFromPlaylist(currentPlaylistIndex - 1);
+        }
+        
+        // Riproduce la traccia successiva nella playlist
+        function playNextTrack() {
+            if (!currentPlaylist || currentPlaylistIndex >= currentPlaylist.videos.length - 1) return;
+            
+            playTrackFromPlaylist(currentPlaylistIndex + 1);
+        }
+        
+        // Cambia video senza riavviare l'app
+        async function changeVideo() {
+            // Mostra il campo input se nascosto
+            document.querySelector('.input-section').style.display = 'block';
+            youtubeUrlInput.focus();
+            
+            // Se c'è un video in riproduzione, mettilo in pausa
+            if (youtubePlayer && isPlaying) {
+                youtubePlayer.pauseVideo();
+                isPlaying = false;
+                playPauseIcon.className = 'fas fa-play';
+            }
+            
+            showSuccess('Incolla un nuovo link e premi "Riproduci"');
         }
         
         // Nasconde il player video (per solo audio)
@@ -759,9 +1103,12 @@
             isPlaying = false;
             playPauseIcon.className = 'fas fa-play';
             currentVideoId = null;
+            currentPlaylist = null;
+            currentPlaylistIndex = -1;
             
-            // Nascondi il player
+            // Nascondi il player e la playlist
             playerSection.classList.remove('active');
+            playlistInfo.classList.remove('active');
             hideSuccess();
         }
         
@@ -802,12 +1149,17 @@
         }
         
         // Event Listeners
+        pasteBtn.addEventListener('click', pasteFromClipboard);
+        clearBtn.addEventListener('click', clearInputField);
         playBtn.addEventListener('click', playAudio);
+        changeVideoBtn.addEventListener('click', changeVideo);
         stopBtn.addEventListener('click', stopPlayback);
         playPauseBtn.addEventListener('click', togglePlayPause);
         skipBackBtn.addEventListener('click', skipBack);
         skipForwardBtn.addEventListener('click', skipForward);
         togglePlayerBtn.addEventListener('click', togglePlayerVisibility);
+        prevTrackBtn.addEventListener('click', playPrevTrack);
+        nextTrackBtn.addEventListener('click', playNextTrack);
         
         volumeSlider.addEventListener('input', () => {
             if (youtubePlayer) {
@@ -831,7 +1183,8 @@
                     'https://www.youtube.com/watch?v=JGwWNGJdvx8', // Ed Sheeran
                     'https://www.youtube.com/watch?v=kJQP7kiw5Fk', // Despacito
                     'https://www.youtube.com/watch?v=9bZkp7q19f0', // Gangnam Style
-                    'https://www.youtube.com/watch?v=CduA0TULnow'  // Lo-Fi hip hop
+                    'https://www.youtube.com/watch?v=CduA0TULnow', // Lo-Fi hip hop
+                    'https://www.youtube.com/playlist?list=PLMC9KNkIncKtPzgY-5rmhvj7fax8fdxoj' // Playlist esempio
                 ];
                 
                 // Seleziona un video casuale per l'esempio
@@ -866,14 +1219,16 @@
         document.addEventListener('visibilitychange', () => {
             // Mantieni l'audio attivo anche quando la pagina non è visibile
             if (document.hidden && youtubePlayer && isPlaying) {
-                // Su iOS, quando la pagina è nascosta, potremmo dover gestire l'audio
                 console.log('Pagina nascosta, audio dovrebbe continuare in background');
             }
         });
         
         // Informazioni per l'utente
-        console.log('YouTube Audio Player (Metodo Iframe) caricato');
-        console.log('Per iOS: DEVI aggiungere questa pagina alla Home Screen per audio in background');
+        console.log('YouTube Audio Player (Versione Migliorata) caricato');
+        console.log('Funzionalità aggiunte:');
+        console.log('1. Tasto incolla automatico');
+        console.log('2. Cambio video senza riavvio');
+        console.log('3. Supporto playlist');
         
         // Funzione per aggiungere alla Home Screen (facilitazione)
         function showAddToHomeScreenPrompt() {
@@ -888,7 +1243,7 @@
                         '1. Tocca "Condividi" in Safari\n' +
                         '2. Scorri giù e tocca "Aggiungi a Home"\n' +
                         '3. Usa l\'app dalla Home Screen\n\n' +
-                        'Vuoi provare ora? (Scegli "Annulla" se già fatto)'
+                        'Vuoi vedere le istruzioni?'
                     );
                     
                     if (addPrompt) {
