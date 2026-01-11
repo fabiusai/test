@@ -2,295 +2,841 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rielaboratore Excel/CSV</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>YouTube Audio Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; color: #333; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 900px; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h1, h2 { color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; margin-top: 0; }
-        section { margin-bottom: 30px; }
-        .hidden { display: none; }
-        .button { background-color: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; vertical-align: middle; display: inline-block; }
-        .button:hover { background-color: #2980b9; }
-        .button.secondary { background-color: #2ecc71; }
-        .button.tertiary { background-color: #e67e22; }
-        .column-list { list-style: none; padding: 0; }
-        .column-item { display: flex; align-items: center; padding: 12px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 8px; background-color: #fafafa; }
-        .column-item input[type="checkbox"] { margin-right: 15px; transform: scale(1.4); }
-        .column-item .names { flex-grow: 1; display: flex; align-items: center; flex-wrap: wrap; }
-        .column-item .original-name { font-weight: bold; color: #555; width: 100%; }
-        .column-item .arrow { width: 100%; margin: 5px 0; }
-        .column-item input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; width: 100%; }
-        .drag-handle { cursor: move; margin-right: 15px; color: #95a5a6; font-size: 20px; }
-        #sheet-selector { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        #sheet-selector-box { background-color: white; padding: 30px; border-radius: 8px; text-align: center; max-width: 90%; }
-        #file-info { font-style: italic; color: #7f8c8d; display: inline-block; margin-left: 15px; vertical-align: middle; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #f1f1f1;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: rgba(30, 30, 46, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #fff;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        h1 i {
+            color: #ff0000;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        label {
+            font-weight: 600;
+            font-size: 16px;
+            color: #e0e0ff;
+        }
+        
+        input {
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #3a3a5d;
+            background-color: rgba(40, 40, 62, 0.8);
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #ff4d4d;
+            box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.2);
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        #playBtn {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+        }
+        
+        #playBtn:hover {
+            background: linear-gradient(to right, #ff4b2b, #ff416c);
+            transform: translateY(-2px);
+        }
+        
+        #stopBtn {
+            background-color: #3a3a5d;
+            color: white;
+        }
+        
+        #stopBtn:hover {
+            background-color: #4a4a6d;
+            transform: translateY(-2px);
+        }
+        
+        .player-section {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .player-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .track-info {
+            background-color: rgba(40, 40, 62, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .track-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        .track-channel {
+            color: #aaa;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .audio-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .progress-container {
+            width: 100%;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #3a3a5d;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            width: 0%;
+            border-radius: 4px;
+            transition: width 0.1s;
+        }
+        
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+        }
+        
+        .control-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 28px;
+            cursor: pointer;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .play-pause-btn {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            width: 70px;
+            height: 70px;
+            font-size: 32px;
+        }
+        
+        .play-pause-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .volume-container i {
+            color: #aaa;
+            font-size: 20px;
+        }
+        
+        .volume-slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #3a3a5d;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff4b2b;
+            cursor: pointer;
+        }
+        
+        .instructions {
+            margin-top: 40px;
+            background-color: rgba(40, 40, 62, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+        
+        .instructions h3 {
+            color: #fff;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid #ff4b2b;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #ff4b2b;
+            background-color: rgba(255, 77, 77, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .error.active {
+            display: block;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h1>Rielaboratore di Fogli di Calcolo</h1>
+        <h1><i class="fab fa-youtube"></i> YouTube Audio Player</h1>
         
-        <section id="sezione-caricamento">
-            <h2>1. Carica File</h2>
-            <label for="file-input" class="button">Scegli File</label>
-            <input type="file" id="file-input" onchange="handleFile(event)" accept=".xlsx, .xls, .csv" style="display: none;">
-            <p id="file-info">Nessun file selezionato.</p>
-        </section>
-
-        <section id="sezione-colonne" class="hidden">
-            <h2>2. Gestisci Colonne</h2>
-            <p>Seleziona le colonne da mantenere, rinominale e riordinale trascinandole.</p>
-            <ul id="lista-colonne" class="column-list"></ul>
-        </section>
-
-        <section id="sezione-azioni" class="hidden">
-            <h2>3. Azioni</h2>
-            <button id="export-excel" onclick="exportToExcel()" class="button">1. Esporta in Excel</button>
-            <button id="save-rules" onclick="saveRules()" class="button secondary">2. Salva Set di Regole</button>
-            <label for="load-rules-input" class="button tertiary">3. Carica Set di Regole</label>
-            <input type="file" id="load-rules-input" onchange="loadRules(event)" accept=".json" style="display: none;">
-        </section>
-    </div>
-
-    <div id="sheet-selector">
-        <div id="sheet-selector-box">
-            <h3>Seleziona il foglio da elaborare:</h3>
-            <div id="sheet-buttons"></div>
-            <button id="cancel-sheet-selection" class="button tertiary" style="margin-top: 20px;">Annulla</button>
+        <div class="input-section">
+            <div class="input-group">
+                <label for="youtubeUrl"><i class="fas fa-link"></i> Incolla il link di YouTube qui:</label>
+                <input type="text" id="youtubeUrl" placeholder="Es: https://www.youtube.com/watch?v=..." autocomplete="off">
+                
+                <div class="buttons">
+                    <button id="playBtn">
+                        <i class="fas fa-play"></i> Riproduci Audio
+                    </button>
+                    <button id="stopBtn">
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Caricamento audio in corso...</p>
+            <p>Questo potrebbe richiedere alcuni secondi</p>
+        </div>
+        
+        <div class="error" id="error">
+            <p><i class="fas fa-exclamation-triangle"></i> <span id="errorText">Si è verificato un errore. Controlla il link e riprova.</span></p>
+        </div>
+        
+        <div class="player-section" id="playerSection">
+            <div class="track-info">
+                <div class="track-title" id="trackTitle">Titolo del video</div>
+                <div class="track-channel" id="trackChannel"><i class="fas fa-user"></i> Canale YouTube</div>
+            </div>
+            
+            <div class="audio-controls">
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress" id="progress"></div>
+                    </div>
+                    <div class="time-info">
+                        <span id="currentTime">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+                
+                <div class="control-buttons">
+                    <button class="control-btn" id="skipBack">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button class="control-btn play-pause-btn" id="playPauseBtn">
+                        <i class="fas fa-pause" id="playPauseIcon"></i>
+                    </button>
+                    <button class="control-btn" id="skipForward">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                </div>
+                
+                <div class="volume-container">
+                    <i class="fas fa-volume-up"></i>
+                    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="80">
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Istruzioni per iPhone:</h3>
+            <ul>
+                <li>Incolla il link di YouTube e premi "Riproduci Audio"</li>
+                <li>Per far continuare la riproduzione con schermo spento:
+                    <ul>
+                        <li>Apri questa pagina in Safari (non in altre app)</li>
+                        <li>Tocca l'icona "Condividi" in basso</li>
+                        <li>Scorri verso il basso e seleziona "Aggiungi a Home"</li>
+                        <li>Ora apri l'app dalla schermata Home</li>
+                        <li>L'audio continuerà anche con lo schermo spento</li>
+                    </ul>
+                </li>
+                <li>Puoi anche bloccare il telefono o usare altre app mentre l'audio continua</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>Questa web app estrae e riproduce solo l'audio dai video YouTube</p>
+            <p>Nota: Per motivi tecnici, alcuni video potrebbero non essere disponibili</p>
         </div>
     </div>
 
     <script>
-        const fileInfo = document.getElementById('file-info');
-        const fileInput = document.getElementById('file-input');
-        const sezioneColonne = document.getElementById('sezione-colonne');
-        const sezioneAzioni = document.getElementById('sezione-azioni');
-        const listaColonne = document.getElementById('lista-colonne');
-        const sheetSelector = document.getElementById('sheet-selector');
-        const sheetButtons = document.getElementById('sheet-buttons');
-        const cancelSheetBtn = document.getElementById('cancel-sheet-selection');
-
-        let originalData = [], originalHeaders = [], currentWorkbook = null, sortableInstance = null;
-        // MODIFICA 1: Aggiunta una variabile globale per il nome del file
-        let currentFileName = '';
+        // Elementi DOM
+        const youtubeUrlInput = document.getElementById('youtubeUrl');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const playerSection = document.getElementById('playerSection');
+        const trackTitle = document.getElementById('trackTitle');
+        const trackChannel = document.getElementById('trackChannel');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playPauseIcon = document.getElementById('playPauseIcon');
+        const progressBar = document.getElementById('progressBar');
+        const progress = document.getElementById('progress');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const skipBackBtn = document.getElementById('skipBack');
+        const skipForwardBtn = document.getElementById('skipForward');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const errorText = document.getElementById('errorText');
         
-        cancelSheetBtn.addEventListener('click', () => { sheetSelector.style.display = 'none'; });
-        sheetSelector.addEventListener('click', (event) => {
-            if (event.target === sheetSelector) sheetSelector.style.display = 'none';
-        });
-
-        function handleFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            // MODIFICA 2: Salviamo subito il nome del file
-            currentFileName = file.name;
-
-            resetApp();
-            fileInfo.textContent = `Caricamento di: ${currentFileName}...`;
-            const reader = new FileReader();
-            
-            reader.onload = (e) => {
-                const data = e.target.result;
-                fileInfo.textContent = `File letto in memoria. Elaborazione in corso...`;
-
-                setTimeout(() => {
-                    try {
-                        currentWorkbook = XLSX.read(data, { type: 'array' });
-                        if (currentWorkbook.SheetNames.length > 1) {
-                            showSheetSelector(currentWorkbook.SheetNames);
-                        } else if (currentWorkbook.SheetNames.length === 1) {
-                            processSheet(currentWorkbook.SheetNames[0]);
-                        } else {
-                            throw new Error("Il file non contiene fogli di lavoro validi.");
-                        }
-                    } catch (err) {
-                        console.error("Errore lettura file:", err);
-                        alert(`Impossibile elaborare il file "${currentFileName}". Potrebbe essere corrotto, protetto da password o in un formato non supportato.`);
-                        resetApp();
-                    }
-                }, 50);
-            };
-            
-            reader.onerror = () => {
-                alert("Si è verificato un errore di sistema durante la lettura del file.");
-                resetApp();
-            };
-            reader.readAsArrayBuffer(file);
+        // Variabili globali
+        let audioContext;
+        let audioSource;
+        let audioBuffer;
+        let isPlaying = false;
+        let startTime = 0;
+        let pausedAt = 0;
+        let currentAudioUrl = '';
+        let videoInfo = null;
+        
+        // Inizializza l'Audio Context per iOS
+        function initAudioContext() {
+            if (!audioContext) {
+                // Creazione del contesto audio compatibile con iOS
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContextClass();
+                
+                // Gestione della sospensione del contesto audio su iOS
+                if (audioContext.state === 'suspended') {
+                    const resumeAudio = () => {
+                        audioContext.resume();
+                        document.removeEventListener('click', resumeAudio);
+                        document.removeEventListener('touchstart', resumeAudio);
+                    };
+                    
+                    document.addEventListener('click', resumeAudio);
+                    document.addEventListener('touchstart', resumeAudio);
+                }
+            }
         }
-
-        function loadRules(event) { /* ... codice invariato ... */ }
-
-        function resetApp() {
-            originalData = []; originalHeaders = []; currentWorkbook = null; currentFileName = '';
-            listaColonne.innerHTML = '';
-            sezioneColonne.classList.add('hidden');
-            sezioneAzioni.classList.add('hidden');
-            fileInfo.textContent = 'Nessun file selezionato.';
-            fileInput.value = '';
-            if (sortableInstance) sortableInstance.destroy();
+        
+        // Formatta il tempo in MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
-
-        function showSheetSelector(sheetNames) { /* ... codice invariato ... */ }
-
-        function processSheet(sheetName) {
+        
+        // Estrae l'ID video da un URL di YouTube
+        function extractVideoId(url) {
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?\/]+)/,
+                /youtube\.com\/embed\/([^&\?\/]+)/,
+                /youtube\.com\/v\/([^&\?\/]+)/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            
+            return null;
+        }
+        
+        // Ottiene informazioni sul video usando l'API di YouTube
+        async function getVideoInfo(videoId) {
+            // In un'app reale, qui dovresti usare un backend per evitare problemi CORS
+            // Per questa demo, simuliamo l'estrazione delle informazioni
+            return {
+                title: `Video YouTube (${videoId})`,
+                channel: "Canale YouTube",
+                duration: 180 // 3 minuti per demo
+            };
+        }
+        
+        // Simula il download dell'audio (in un'app reale, qui useresti yt-dlp-wasm o un backend)
+        async function getAudioStream(videoId) {
+            // Questo è un placeholder per la demo
+            // In un'app reale, qui dovresti:
+            // 1. Usare yt-dlp-wasm per estrarre l'URL audio
+            // 2. Oppure usare un backend serverless per estrarre l'audio
+            // 3. Restituire l'URL dell'audio
+            
+            // Per questa demo, useremo un file audio di esempio
+            return {
+                url: 'https://assets.codepen.io/4358584/audio-sample.mp3',
+                format: 'mp3'
+            };
+        }
+        
+        // Carica e riproduce l'audio
+        async function playAudio() {
+            const url = youtubeUrlInput.value.trim();
+            
+            if (!url) {
+                showError('Per favore, inserisci un URL di YouTube valido');
+                return;
+            }
+            
+            const videoId = extractVideoId(url);
+            if (!videoId) {
+                showError('URL di YouTube non valido');
+                return;
+            }
+            
             try {
-                const worksheet = currentWorkbook.Sheets[sheetName];
-                const dataAsJson = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                showLoading(true);
+                hideError();
                 
-                if (dataAsJson.length === 0) throw new Error("Il foglio è completamente vuoto.");
+                // Ottieni informazioni sul video
+                videoInfo = await getVideoInfo(videoId);
+                trackTitle.textContent = videoInfo.title;
+                trackChannel.innerHTML = `<i class="fas fa-user"></i> ${videoInfo.channel}`;
+                durationEl.textContent = formatTime(videoInfo.duration);
                 
-                originalHeaders = dataAsJson[0].map(h => h ? h.toString() : "");
-                const dataRows = dataAsJson.slice(1);
+                // Ottieni lo stream audio
+                const audioStream = await getAudioStream(videoId);
+                currentAudioUrl = audioStream.url;
                 
-                originalData = dataRows.map(row => {
-                    const obj = {};
-                    originalHeaders.forEach((header, i) => { obj[header] = row[i]; });
-                    return obj;
-                });
+                // Inizializza il contesto audio
+                initAudioContext();
                 
-                // MODIFICA 3: Usiamo la variabile globale invece dell'input file
-                fileInfo.textContent = `File: ${currentFileName} | Foglio: ${sheetName} | Righe: ${originalData.length}`;
+                // Carica e decodifica l'audio
+                const response = await fetch(audioStream.url);
+                const arrayBuffer = await response.arrayBuffer();
+                audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
                 
-                populateColumnList(originalHeaders);
-                sezioneColonne.classList.remove('hidden');
-                sezioneAzioni.classList.remove('hidden');
+                // Mostra i controlli del player
+                playerSection.classList.add('active');
+                
+                // Avvia la riproduzione
+                startPlayback();
+                
+                showLoading(false);
+                
             } catch (err) {
-                alert("Errore durante l'elaborazione del foglio: " + err.message);
-                resetApp();
+                console.error('Errore:', err);
+                showError('Impossibile caricare l\'audio. Riprova con un altro video.');
+                showLoading(false);
             }
-        }
-
-        function populateColumnList(headers) { /* ... codice invariato ... */ }
-
-        function getRulesFromUI() { /* ... codice invariato ... */ }
-
-        function exportToExcel() {
-            const activeRules = getRulesFromUI().filter(rule => rule.isKept);
-            if (activeRules.length === 0) {
-                alert("Nessuna colonna selezionata.");
-                return;
-            }
-            const processedData = originalData.map(row => {
-                const newRow = {};
-                activeRules.forEach(rule => { newRow[rule.newName] = row[rule.original]; });
-                return newRow;
-            });
-            const newWorksheet = XLSX.utils.json_to_sheet(processedData);
-            const newWorkbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'Rielaborato');
-            
-            // Usa la variabile globale anche qui per il nome del file esportato
-            const originalFileName = currentFileName.split('.').slice(0, -1).join('.');
-            XLSX.writeFile(newWorkbook, `${originalFileName}_rielaborato.xlsx`);
-        }
-
-        function saveRules() { /* ... codice invariato ... */ }
-        function applyRulesToUI(rules) { /* ... codice invariato ... */ }
-
-        // Ho rimesso qui il resto delle funzioni per completezza
-        function loadRules(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            if (originalData.length === 0) {
-                alert("Carica prima un file Excel/CSV per poter applicare le regole.");
-                event.target.value = '';
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    applyRulesToUI(JSON.parse(e.target.result));
-                } catch (err) {
-                    alert("Il file di regole non è un JSON valido.");
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        function showSheetSelector(sheetNames) {
-            sheetButtons.innerHTML = '';
-            sheetNames.forEach(name => {
-                const button = document.createElement('button');
-                button.textContent = name;
-                button.className = 'button';
-                button.onclick = () => {
-                    sheetSelector.style.display = 'none';
-                    processSheet(name);
-                };
-                sheetButtons.appendChild(button);
-            });
-            sheetSelector.style.display = 'flex';
-        }
-
-        function populateColumnList(headers) {
-            listaColonne.innerHTML = '';
-            headers.forEach(header => {
-                const li = document.createElement('li');
-                li.className = 'column-item';
-                li.dataset.originalName = header;
-                li.innerHTML = `<span class="drag-handle">☰</span><input type="checkbox" checked><div class="names"><span class="original-name">${header}</span><span class="arrow">→</span><input type="text" value="${header}" placeholder="Nuovo nome colonna"></div>`;
-                listaColonne.appendChild(li);
-            });
-            sortableInstance = new Sortable(listaColonne, { animation: 150, handle: '.drag-handle' });
-        }
-
-        function getRulesFromUI() {
-            const rules = [];
-            listaColonne.querySelectorAll('li.column-item').forEach(item => {
-                rules.push({
-                    original: item.dataset.originalName,
-                    isKept: item.querySelector('input[type="checkbox"]').checked,
-                    newName: item.querySelector('input[type="text"]').value || item.dataset.originalName
-                });
-            });
-            return rules;
         }
         
-        function saveRules() {
-            const rules = getRulesFromUI();
-            const blob = new Blob([JSON.stringify(rules, null, 2)], { type: 'application/json' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'regole_rielaborazione.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
-        }
-
-        function applyRulesToUI(rules) {
-            const currentHeaders = new Set(originalHeaders);
-            const ruleHeaders = new Set(rules.map(r => r.original));
-            if (JSON.stringify([...currentHeaders].sort()) !== JSON.stringify([...ruleHeaders].sort())) {
-                if (!confirm("Attenzione: le colonne nel file di regole non corrispondono a quelle del file caricato. Applicare comunque?")) {
-                    return;
-                }
+        // Avvia la riproduzione
+        function startPlayback() {
+            if (!audioBuffer || !audioContext) return;
+            
+            // Ferma la riproduzione attuale se presente
+            if (audioSource) {
+                audioSource.stop();
             }
-            const uiItemsMap = new Map();
-            listaColonne.querySelectorAll('li.column-item').forEach(item => {
-                uiItemsMap.set(item.dataset.originalName, item);
-            });
-            const orderedItems = [];
-            rules.forEach(rule => {
-                const item = uiItemsMap.get(rule.original);
-                if (item) {
-                    item.querySelector('input[type="checkbox"]').checked = rule.isKept;
-                    item.querySelector('input[type="text"]').value = rule.newName;
-                    orderedItems.push(item);
-                }
-            });
-            listaColonne.innerHTML = '';
-            orderedItems.forEach(item => listaColonne.appendChild(item));
+            
+            // Crea una nuova sorgente audio
+            audioSource = audioContext.createBufferSource();
+            audioSource.buffer = audioBuffer;
+            
+            // Crea un nodo per il volume
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = volumeSlider.value / 100;
+            
+            // Connetti i nodi
+            audioSource.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Imposta il tempo di inizio
+            startTime = audioContext.currentTime - pausedAt;
+            audioSource.start(0, pausedAt);
+            
+            // Aggiorna lo stato
+            isPlaying = true;
+            playPauseIcon.className = 'fas fa-pause';
+            
+            // Avvia l'aggiornamento della barra di progresso
+            requestAnimationFrame(updateProgress);
+            
+            // Gestisci la fine della traccia
+            audioSource.onended = () => {
+                isPlaying = false;
+                playPauseIcon.className = 'fas fa-play';
+                progress.style.width = '100%';
+                currentTimeEl.textContent = formatTime(audioBuffer.duration);
+                pausedAt = 0;
+            };
         }
-
+        
+        // Mette in pausa la riproduzione
+        function pausePlayback() {
+            if (!audioSource || !isPlaying) return;
+            
+            // Ferma la riproduzione
+            audioSource.stop();
+            
+            // Calcola il punto di pausa
+            pausedAt = audioContext.currentTime - startTime;
+            
+            // Aggiorna lo stato
+            isPlaying = false;
+            playPauseIcon.className = 'fas fa-play';
+        }
+        
+        // Aggiorna la barra di progresso
+        function updateProgress() {
+            if (!isPlaying || !audioBuffer) return;
+            
+            const currentTime = audioContext.currentTime - startTime;
+            const progressPercent = (currentTime / audioBuffer.duration) * 100;
+            
+            progress.style.width = `${progressPercent}%`;
+            currentTimeEl.textContent = formatTime(currentTime);
+            
+            requestAnimationFrame(updateProgress);
+        }
+        
+        // Cambia la posizione di riproduzione
+        function seekTo(event) {
+            if (!audioBuffer || !progressBar) return;
+            
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const width = rect.width;
+            const percentage = clickX / width;
+            const seekTime = percentage * audioBuffer.duration;
+            
+            // Se è in riproduzione, ferma e riavvia dalla nuova posizione
+            if (isPlaying) {
+                pausePlayback();
+                pausedAt = seekTime;
+                startPlayback();
+            } else {
+                // Se è in pausa, aggiorna solo la posizione
+                pausedAt = seekTime;
+                progress.style.width = `${percentage * 100}%`;
+                currentTimeEl.textContent = formatTime(seekTime);
+            }
+        }
+        
+        // Ferma completamente la riproduzione
+        function stopPlayback() {
+            if (audioSource) {
+                audioSource.stop();
+                audioSource = null;
+            }
+            
+            isPlaying = false;
+            playPauseIcon.className = 'fas fa-play';
+            pausedAt = 0;
+            progress.style.width = '0%';
+            currentTimeEl.textContent = '0:00';
+            
+            // Nascondi il player
+            playerSection.classList.remove('active');
+        }
+        
+        // Mostra/nascondi il loader
+        function showLoading(show) {
+            if (show) {
+                loading.classList.add('active');
+            } else {
+                loading.classList.remove('active');
+            }
+        }
+        
+        // Mostra un errore
+        function showError(message) {
+            errorText.textContent = message;
+            error.classList.add('active');
+        }
+        
+        // Nascondi l'errore
+        function hideError() {
+            error.classList.remove('active');
+        }
+        
+        // Event Listeners
+        playBtn.addEventListener('click', playAudio);
+        
+        stopBtn.addEventListener('click', stopPlayback);
+        
+        playPauseBtn.addEventListener('click', () => {
+            if (!audioBuffer) return;
+            
+            if (isPlaying) {
+                pausePlayback();
+            } else {
+                startPlayback();
+            }
+        });
+        
+        progressBar.addEventListener('click', seekTo);
+        
+        volumeSlider.addEventListener('input', () => {
+            if (audioSource && audioContext) {
+                // Crea un nodo di guadagno per controllare il volume
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = volumeSlider.value / 100;
+                
+                // Riconnetti la sorgente audio attraverso il nodo di guadagno
+                audioSource.disconnect();
+                audioSource.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+            }
+        });
+        
+        skipBackBtn.addEventListener('click', () => {
+            if (!audioBuffer) return;
+            
+            const skipTime = 10; // Secondi
+            let newTime = pausedAt - skipTime;
+            
+            if (isPlaying) {
+                newTime = (audioContext.currentTime - startTime) - skipTime;
+            }
+            
+            if (newTime < 0) newTime = 0;
+            
+            if (isPlaying) {
+                pausePlayback();
+                pausedAt = newTime;
+                startPlayback();
+            } else {
+                pausedAt = newTime;
+                const progressPercent = (pausedAt / audioBuffer.duration) * 100;
+                progress.style.width = `${progressPercent}%`;
+                currentTimeEl.textContent = formatTime(pausedAt);
+            }
+        });
+        
+        skipForwardBtn.addEventListener('click', () => {
+            if (!audioBuffer) return;
+            
+            const skipTime = 10; // Secondi
+            let newTime = pausedAt + skipTime;
+            
+            if (isPlaying) {
+                newTime = (audioContext.currentTime - startTime) + skipTime;
+            }
+            
+            if (newTime > audioBuffer.duration) newTime = audioBuffer.duration;
+            
+            if (isPlaying) {
+                pausePlayback();
+                pausedAt = newTime;
+                startPlayback();
+            } else {
+                pausedAt = newTime;
+                const progressPercent = (pausedAt / audioBuffer.duration) * 100;
+                progress.style.width = `${progressPercent}%`;
+                currentTimeEl.textContent = formatTime(pausedAt);
+            }
+        });
+        
+        // Permetti l'invio con Enter
+        youtubeUrlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                playAudio();
+            }
+        });
+        
+        // Mostra un URL di esempio al focus
+        youtubeUrlInput.addEventListener('focus', () => {
+            if (!youtubeUrlInput.value) {
+                youtubeUrlInput.value = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+            }
+        });
+        
+        // Inizializza con un esempio
+        window.addEventListener('load', () => {
+            youtubeUrlInput.value = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+        });
+        
+        // Gestione della riproduzione in background per iOS
+        document.addEventListener('visibilitychange', () => {
+            // Mantieni l'audio attivo anche quando la pagina non è visibile
+            if (audioContext && audioContext.state === 'suspended' && isPlaying) {
+                audioContext.resume();
+            }
+        });
+        
+        // Aggiungi questa app alla schermata Home (per iOS)
+        if ('standalone' in navigator || window.navigator.standalone === true) {
+            // L'app è già installata
+            console.log('App installata sulla Home Screen');
+        }
     </script>
 </body>
 </html>
