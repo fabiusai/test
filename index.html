@@ -173,35 +173,6 @@
             gap: 20px;
         }
         
-        .progress-container {
-            width: 100%;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background-color: #3a3a5d;
-            border-radius: 4px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-        
-        .progress {
-            height: 100%;
-            background: linear-gradient(to right, #ff416c, #ff4b2b);
-            width: 0%;
-            border-radius: 4px;
-            transition: width 0.1s;
-        }
-        
-        .time-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #aaa;
-            margin-top: 5px;
-        }
-        
         .control-buttons {
             display: flex;
             justify-content: center;
@@ -269,6 +240,53 @@
             cursor: pointer;
         }
         
+        .youtube-player-container {
+            width: 100%;
+            height: 0;
+            padding-bottom: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .youtube-player-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .hidden-player {
+            opacity: 0.01;
+            height: 1px;
+            pointer-events: none;
+        }
+        
+        .visible-player {
+            opacity: 1;
+            height: 200px;
+            pointer-events: auto;
+        }
+        
+        .player-toggle {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        
+        .toggle-btn {
+            background-color: #3a3a5d;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
         .instructions {
             margin-top: 40px;
             background-color: rgba(40, 40, 62, 0.6);
@@ -333,23 +351,17 @@
             display: block;
         }
         
-        .quality-selector {
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .success {
+            color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
         }
         
-        .quality-selector label {
-            font-size: 14px;
-        }
-        
-        .quality-selector select {
-            padding: 8px 12px;
-            border-radius: 8px;
-            background-color: rgba(40, 40, 62, 0.8);
-            color: white;
-            border: 1px solid #3a3a5d;
+        .success.active {
+            display: block;
         }
         
         .footer {
@@ -371,6 +383,10 @@
             .buttons {
                 flex-direction: column;
             }
+            
+            .visible-player {
+                height: 150px;
+            }
         }
     </style>
 </head>
@@ -382,15 +398,6 @@
             <div class="input-group">
                 <label for="youtubeUrl"><i class="fas fa-link"></i> Incolla il link di YouTube qui:</label>
                 <input type="text" id="youtubeUrl" placeholder="Es: https://www.youtube.com/watch?v=..." autocomplete="off">
-                
-                <div class="quality-selector">
-                    <label for="qualitySelect">Qualità audio:</label>
-                    <select id="qualitySelect">
-                        <option value="low">Bassa (64kbps)</option>
-                        <option value="medium" selected>Media (128kbps)</option>
-                        <option value="high">Alta (192kbps)</option>
-                    </select>
-                </div>
                 
                 <div class="buttons">
                     <button id="playBtn">
@@ -405,12 +412,15 @@
         
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>Caricamento audio in corso...</p>
-            <p>Questo potrebbe richiedere alcuni secondi</p>
+            <p>Caricamento in corso...</p>
         </div>
         
         <div class="error" id="error">
             <p><i class="fas fa-exclamation-triangle"></i> <span id="errorText">Si è verificato un errore. Controlla il link e riprova.</span></p>
+        </div>
+        
+        <div class="success" id="success">
+            <p><i class="fas fa-check-circle"></i> <span id="successText">Audio in riproduzione! Puoi bloccare lo schermo.</span></p>
         </div>
         
         <div class="player-section" id="playerSection">
@@ -419,17 +429,17 @@
                 <div class="track-channel" id="trackChannel"><i class="fas fa-user"></i> Canale YouTube</div>
             </div>
             
+            <div class="youtube-player-container hidden-player" id="youtubePlayerContainer">
+                <!-- L'iframe di YouTube verrà inserito qui -->
+            </div>
+            
+            <div class="player-toggle">
+                <button class="toggle-btn" id="togglePlayerBtn">
+                    <i class="fas fa-eye"></i> Mostra/Nascondi Player
+                </button>
+            </div>
+            
             <div class="audio-controls">
-                <div class="progress-container">
-                    <div class="progress-bar" id="progressBar">
-                        <div class="progress" id="progress"></div>
-                    </div>
-                    <div class="time-info">
-                        <span id="currentTime">0:00</span>
-                        <span id="duration">0:00</span>
-                    </div>
-                </div>
-                
                 <div class="control-buttons">
                     <button class="control-btn" id="skipBack">
                         <i class="fas fa-step-backward"></i>
@@ -450,25 +460,26 @@
         </div>
         
         <div class="instructions">
-            <h3><i class="fas fa-info-circle"></i> Istruzioni per iPhone:</h3>
+            <h3><i class="fas fa-info-circle"></i> Istruzioni IMPORTANTI per iPhone:</h3>
             <ul>
-                <li>Incolla il link di YouTube e premi "Riproduci Audio"</li>
-                <li>Per far continuare la riproduzione con schermo spento:
-                    <ul>
-                        <li>Apri questa pagina in Safari (non in altre app)</li>
-                        <li>Tocca l'icona "Condividi" in basso</li>
-                        <li>Scorri verso il basso e seleziona "Aggiungi a Home"</li>
-                        <li>Ora apri l'app dalla schermata Home</li>
+                <li><strong>Passo 1:</strong> Incolla il link di YouTube e premi "Riproduci Audio"</li>
+                <li><strong>Passo 2 (CRUCIALE):</strong> Per audio in background con schermo spento:
+                    <ol>
+                        <li>Apri questa pagina in <strong>Safari</strong> (non in altre app)</li>
+                        <li>Tocca l'icona <strong>"Condividi"</strong> (rettangolo con freccia in alto)</li>
+                        <li>Scorri verso il basso e seleziona <strong>"Aggiungi a Home"</strong></li>
+                        <li>Ora apri l'<strong>app dalla schermata Home</strong> (non da Safari!)</li>
                         <li>L'audio continuerà anche con lo schermo spento</li>
-                    </ul>
+                    </ol>
                 </li>
-                <li>Puoi anche bloccare il telefono o usare altre app mentre l'audio continua</li>
+                <li><strong>Nota:</strong> Devi sempre avviare la riproduzione DOPO aver aperto l'app dalla Home Screen</li>
+                <li><strong>Suggerimento:</strong> Usa "Mostra/Nascondi Player" per nascondere il video e sentire solo l'audio</li>
             </ul>
         </div>
         
         <div class="footer">
-            <p>Questa web app estrae e riproduce solo l'audio dai video YouTube</p>
-            <p>Nota: Funziona con la maggior parte dei video YouTube</p>
+            <p>Questa web app riproduce l'audio dai video YouTube usando il player ufficiale</p>
+            <p>Funziona solo se aggiunta alla Home Screen di iOS</p>
         </div>
     </div>
 
@@ -482,31 +493,23 @@
         const trackChannel = document.getElementById('trackChannel');
         const playPauseBtn = document.getElementById('playPauseBtn');
         const playPauseIcon = document.getElementById('playPauseIcon');
-        const progressBar = document.getElementById('progressBar');
-        const progress = document.getElementById('progress');
-        const currentTimeEl = document.getElementById('currentTime');
-        const durationEl = document.getElementById('duration');
         const volumeSlider = document.getElementById('volumeSlider');
         const skipBackBtn = document.getElementById('skipBack');
         const skipForwardBtn = document.getElementById('skipForward');
         const loading = document.getElementById('loading');
         const error = document.getElementById('error');
+        const success = document.getElementById('success');
         const errorText = document.getElementById('errorText');
-        const qualitySelect = document.getElementById('qualitySelect');
+        const successText = document.getElementById('successText');
+        const youtubePlayerContainer = document.getElementById('youtubePlayerContainer');
+        const togglePlayerBtn = document.getElementById('togglePlayerBtn');
         
         // Variabili globali
-        let audioContext;
-        let audioElement;
+        let youtubePlayer = null;
+        let currentVideoId = null;
+        let isPlayerVisible = false;
+        let videoDuration = 0;
         let isPlaying = false;
-        let videoInfo = null;
-        let currentAudioUrl = '';
-        
-        // Formatta il tempo in MM:SS
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        }
         
         // Estrae l'ID video da un URL di YouTube
         function extractVideoId(url) {
@@ -524,107 +527,123 @@
             return null;
         }
         
-        // Usa un servizio proxy per ottenere l'audio da YouTube
-        async function getAudioFromYouTube(videoId) {
+        // Ottiene informazioni sul video usando l'API di oEmbed
+        async function getVideoInfo(videoId) {
             try {
-                // Usiamo un servizio pubblico per estrarre l'audio
-                // Nota: Questi servizi possono avere limitazioni
-                const qualityMap = {
-                    'low': '64',
-                    'medium': '128', 
-                    'high': '192'
-                };
+                const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+                const response = await fetch(oembedUrl);
                 
-                const bitrate = qualityMap[qualitySelect.value] || '128';
-                
-                // Opzione 1: Servizio Piped (open source)
-                const pipedUrl = `https://pipedapi.kavin.rocks/streams/${videoId}`;
-                
-                // Opzione 2: Servizio yt-dlp basato su proxy (fallback)
-                const fallbackUrl = `https://corsproxy.io/?https://yt-api.p.rapidapi.com/dl?id=${videoId}`;
-                
-                try {
-                    // Prova con Piped API prima
-                    const response = await fetch(pipedUrl);
-                    
-                    if (!response.ok) throw new Error('Piped API non disponibile');
-                    
-                    const data = await response.json();
-                    
-                    // Cerca la migliore traccia audio disponibile
-                    const audioFormats = data.audioStreams || [];
-                    
-                    if (audioFormats.length === 0) {
-                        throw new Error('Nessuna traccia audio trovata');
-                    }
-                    
-                    // Seleziona la traccia audio in base alla qualità richiesta
-                    let selectedFormat = audioFormats[0];
-                    
-                    // Ordina per bitrate (più alto prima)
-                    audioFormats.sort((a, b) => {
-                        const bitrateA = parseInt(a.bitrate) || 0;
-                        const bitrateB = parseInt(b.bitrate) || 0;
-                        return bitrateB - bitrateA;
-                    });
-                    
-                    // Seleziona in base alla qualità scelta
-                    if (qualitySelect.value === 'low') {
-                        // Prendi la qualità più bassa
-                        selectedFormat = audioFormats[audioFormats.length - 1];
-                    } else if (qualitySelect.value === 'high') {
-                        // Prendi la qualità più alta
-                        selectedFormat = audioFormats[0];
-                    } else {
-                        // Media - prendi una qualità media
-                        const midIndex = Math.floor(audioFormats.length / 2);
-                        selectedFormat = audioFormats[midIndex];
-                    }
-                    
-                    return {
-                        url: selectedFormat.url,
-                        title: data.title || 'Video YouTube',
-                        channel: data.uploader || 'Canale sconosciuto',
-                        duration: data.duration || 0,
-                        mimeType: selectedFormat.mimeType || 'audio/mp4'
-                    };
-                    
-                } catch (pipedError) {
-                    console.log('Piped API fallita, provo metodo alternativo...');
-                    
-                    // Metodo alternativo: usa un proxy yt-dlp
-                    // NOTA: In una app reale, dovresti usare il tuo backend per evitare limitazioni
-                    const proxyUrl = `https://ytdl.cors.workers.dev/?url=https://www.youtube.com/watch?v=${videoId}&format=bestaudio`;
-                    
-                    const proxyResponse = await fetch(proxyUrl);
-                    
-                    if (!proxyResponse.ok) {
-                        throw new Error('Impossibile estrarre audio dal video');
-                    }
-                    
-                    const proxyData = await proxyResponse.json();
-                    
-                    if (!proxyData.url) {
-                        throw new Error('URL audio non disponibile');
-                    }
-                    
-                    // Usa i dati di fallback se non abbiamo info dal video
-                    return {
-                        url: proxyData.url,
-                        title: proxyData.title || 'Video YouTube',
-                        channel: proxyData.channel || 'Canale sconosciuto',
-                        duration: proxyData.duration || 0,
-                        mimeType: proxyData.mimeType || 'audio/webm'
-                    };
+                if (!response.ok) {
+                    throw new Error('Video non trovato');
                 }
                 
+                const data = await response.json();
+                return {
+                    title: data.title,
+                    author: data.author_name,
+                    thumbnail: data.thumbnail_url
+                };
             } catch (err) {
-                console.error('Errore nell\'estrazione audio:', err);
-                throw new Error('Impossibile ottenere l\'audio. Riprova con un altro video o controlla la connessione.');
+                console.error('Errore nel recupero info video:', err);
+                // Fallback a informazioni di base
+                return {
+                    title: `Video YouTube (${videoId})`,
+                    author: "Canale YouTube",
+                    thumbnail: ''
+                };
             }
         }
         
-        // Carica e riproduce l'audio
+        // Carica l'API YouTube
+        function loadYouTubeAPI() {
+            return new Promise((resolve) => {
+                if (window.YT && window.YT.Player) {
+                    resolve();
+                    return;
+                }
+                
+                const tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                const firstScriptTag = document.getElementsByTagName('script')[0];
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                
+                window.onYouTubeIframeAPIReady = () => {
+                    resolve();
+                };
+                
+                // Timeout di sicurezza
+                setTimeout(() => {
+                    if (window.YT && window.YT.Player) {
+                        resolve();
+                    }
+                }, 2000);
+            });
+        }
+        
+        // Crea il player YouTube
+        function createYouTubePlayer(videoId) {
+            return new Promise((resolve, reject) => {
+                // Pulisci il container
+                youtubePlayerContainer.innerHTML = '';
+                
+                // Crea l'iframe del player
+                youtubePlayer = new YT.Player('youtubePlayerContainer', {
+                    height: '100%',
+                    width: '100%',
+                    videoId: videoId,
+                    playerVars: {
+                        'autoplay': 1,
+                        'controls': 0,
+                        'disablekb': 1,
+                        'fs': 0,
+                        'loop': 0,
+                        'modestbranding': 1,
+                        'playsinline': 1,
+                        'rel': 0,
+                        'showinfo': 0,
+                        'iv_load_policy': 3,
+                        'enablejsapi': 1
+                    },
+                    events: {
+                        'onReady': (event) => {
+                            console.log('Player YouTube pronto');
+                            event.target.setVolume(parseInt(volumeSlider.value));
+                            videoDuration = event.target.getDuration();
+                            resolve(event.target);
+                        },
+                        'onStateChange': (event) => {
+                            // Aggiorna lo stato di riproduzione
+                            if (event.data === YT.PlayerState.PLAYING) {
+                                isPlaying = true;
+                                playPauseIcon.className = 'fas fa-pause';
+                                showSuccess('Audio in riproduzione! Puoi bloccare lo schermo.');
+                            } else if (event.data === YT.PlayerState.PAUSED) {
+                                isPlaying = false;
+                                playPauseIcon.className = 'fas fa-play';
+                            } else if (event.data === YT.PlayerState.ENDED) {
+                                isPlaying = false;
+                                playPauseIcon.className = 'fas fa-play';
+                            }
+                        },
+                        'onError': (error) => {
+                            console.error('Errore player YouTube:', error);
+                            reject(new Error('Errore nel caricamento del video'));
+                        }
+                    }
+                });
+                
+                // Timeout di sicurezza
+                setTimeout(() => {
+                    if (youtubePlayer && youtubePlayer.getDuration) {
+                        resolve(youtubePlayer);
+                    } else {
+                        reject(new Error('Timeout caricamento player'));
+                    }
+                }, 5000);
+            });
+        }
+        
+        // Carica e riproduce il video (solo audio)
         async function playAudio() {
             const url = youtubeUrlInput.value.trim();
             
@@ -635,180 +654,115 @@
             
             const videoId = extractVideoId(url);
             if (!videoId) {
-                showError('URL di YouTube non valido');
+                showError('URL di YouTube non valido. Formati supportati:<br>• youtube.com/watch?v=ID<br>• youtu.be/ID<br>• youtube.com/embed/ID');
                 return;
             }
             
             try {
                 showLoading(true);
                 hideError();
-                stopPlayback(); // Ferma qualsiasi riproduzione in corso
+                hideSuccess();
                 
-                // Ottieni l'audio da YouTube
-                const audioData = await getAudioFromYouTube(videoId);
+                // Salva l'ID video corrente
+                currentVideoId = videoId;
                 
-                // Aggiorna le informazioni del video
-                trackTitle.textContent = audioData.title;
-                trackChannel.innerHTML = `<i class="fas fa-user"></i> ${audioData.channel}`;
-                durationEl.textContent = formatTime(audioData.duration);
-                currentAudioUrl = audioData.url;
+                // Ottieni informazioni sul video
+                const videoInfo = await getVideoInfo(videoId);
+                trackTitle.textContent = videoInfo.title;
+                trackChannel.innerHTML = `<i class="fas fa-user"></i> ${videoInfo.author}`;
                 
-                // Inizializza l'elemento audio
-                audioElement = new Audio();
-                audioElement.crossOrigin = "anonymous"; // Importante per CORS
-                audioElement.src = audioData.url;
-                audioElement.preload = "metadata";
+                // Carica l'API YouTube
+                await loadYouTubeAPI();
                 
-                // Imposta il volume iniziale
-                audioElement.volume = volumeSlider.value / 100;
+                // Crea il player
+                await createYouTubePlayer(videoId);
                 
                 // Mostra i controlli del player
                 playerSection.classList.add('active');
                 
-                // Imposta l'evento per quando i metadati sono caricati
-                audioElement.addEventListener('loadedmetadata', () => {
-                    durationEl.textContent = formatTime(audioElement.duration);
-                    showLoading(false);
-                });
+                // Nascondi il player visivamente (solo audio)
+                hideVideoPlayer();
                 
-                // Imposta l'evento per aggiornare la barra di progresso
-                audioElement.addEventListener('timeupdate', updateProgress);
-                
-                // Imposta l'evento per quando l'audio finisce
-                audioElement.addEventListener('ended', () => {
-                    isPlaying = false;
-                    playPauseIcon.className = 'fas fa-play';
-                    progress.style.width = '100%';
-                });
-                
-                // Imposta l'evento per errori di caricamento
-                audioElement.addEventListener('error', (e) => {
-                    console.error('Errore audio:', e);
-                    showError('Errore nel caricamento dell\'audio. Riprova.');
-                    showLoading(false);
-                });
-                
-                // Avvia la riproduzione
-                await audioElement.play();
-                isPlaying = true;
-                playPauseIcon.className = 'fas fa-pause';
-                
-                // Inizializza l'Audio Context per iOS (per background play)
-                initAudioContextForiOS();
+                showLoading(false);
                 
             } catch (err) {
                 console.error('Errore:', err);
-                showError(err.message || 'Impossibile caricare l\'audio. Riprova con un altro video.');
+                showError(err.message || 'Impossibile caricare il video. Riprova.');
                 showLoading(false);
             }
         }
         
-        // Inizializza l'Audio Context per iOS (per background play)
-        function initAudioContextForiOS() {
-            if (!audioContext && window.AudioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Crea un MediaElementSourceNode per collegare l'elemento audio al contesto
-                const source = audioContext.createMediaElementSource(audioElement);
-                const gainNode = audioContext.createGain();
-                
-                source.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                // Imposta il volume iniziale
-                gainNode.gain.value = volumeSlider.value / 100;
-                
-                // Aggiorna il volume quando cambia lo slider
-                volumeSlider.addEventListener('input', () => {
-                    gainNode.gain.value = volumeSlider.value / 100;
-                });
-                
-                // Gestisci la sospensione del contesto audio
-                if (audioContext.state === 'suspended') {
-                    const resumeAudio = () => {
-                        audioContext.resume();
-                        document.removeEventListener('click', resumeAudio);
-                        document.removeEventListener('touchstart', resumeAudio);
-                    };
-                    
-                    document.addEventListener('click', resumeAudio);
-                    document.addEventListener('touchstart', resumeAudio);
-                }
+        // Nasconde il player video (per solo audio)
+        function hideVideoPlayer() {
+            youtubePlayerContainer.classList.remove('visible-player');
+            youtubePlayerContainer.classList.add('hidden-player');
+            isPlayerVisible = false;
+            togglePlayerBtn.innerHTML = '<i class="fas fa-eye"></i> Mostra Player';
+        }
+        
+        // Mostra il player video
+        function showVideoPlayer() {
+            youtubePlayerContainer.classList.remove('hidden-player');
+            youtubePlayerContainer.classList.add('visible-player');
+            isPlayerVisible = true;
+            togglePlayerBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Nascondi Player';
+        }
+        
+        // Alterna visibilità del player
+        function togglePlayerVisibility() {
+            if (isPlayerVisible) {
+                hideVideoPlayer();
+            } else {
+                showVideoPlayer();
             }
         }
         
         // Mette in pausa/riprende la riproduzione
         function togglePlayPause() {
-            if (!audioElement) return;
+            if (!youtubePlayer) return;
             
             if (isPlaying) {
-                audioElement.pause();
+                youtubePlayer.pauseVideo();
                 isPlaying = false;
                 playPauseIcon.className = 'fas fa-play';
             } else {
-                audioElement.play();
+                youtubePlayer.playVideo();
                 isPlaying = true;
                 playPauseIcon.className = 'fas fa-pause';
             }
         }
         
-        // Aggiorna la barra di progresso
-        function updateProgress() {
-            if (!audioElement || !audioElement.duration) return;
-            
-            const currentTime = audioElement.currentTime;
-            const duration = audioElement.duration;
-            const progressPercent = (currentTime / duration) * 100;
-            
-            progress.style.width = `${progressPercent}%`;
-            currentTimeEl.textContent = formatTime(currentTime);
-        }
-        
-        // Cambia la posizione di riproduzione
-        function seekTo(event) {
-            if (!audioElement || !audioElement.duration) return;
-            
-            const rect = progressBar.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-            const width = rect.width;
-            const percentage = clickX / width;
-            const seekTime = percentage * audioElement.duration;
-            
-            audioElement.currentTime = seekTime;
-        }
-        
-        // Ferma completamente la riproduzione
-        function stopPlayback() {
-            if (audioElement) {
-                audioElement.pause();
-                audioElement.currentTime = 0;
-                audioElement = null;
-            }
-            
-            isPlaying = false;
-            playPauseIcon.className = 'fas fa-play';
-            progress.style.width = '0%';
-            currentTimeEl.textContent = '0:00';
-            
-            // Nascondi il player
-            playerSection.classList.remove('active');
-        }
-        
         // Salta indietro di 10 secondi
         function skipBack() {
-            if (!audioElement) return;
+            if (!youtubePlayer) return;
             
-            audioElement.currentTime = Math.max(0, audioElement.currentTime - 10);
+            const currentTime = youtubePlayer.getCurrentTime();
+            youtubePlayer.seekTo(Math.max(0, currentTime - 10), true);
         }
         
         // Salta avanti di 10 secondi
         function skipForward() {
-            if (!audioElement) return;
+            if (!youtubePlayer) return;
             
-            audioElement.currentTime = Math.min(
-                audioElement.duration, 
-                audioElement.currentTime + 10
-            );
+            const currentTime = youtubePlayer.getCurrentTime();
+            youtubePlayer.seekTo(Math.min(videoDuration, currentTime + 10), true);
+        }
+        
+        // Ferma completamente la riproduzione
+        function stopPlayback() {
+            if (youtubePlayer) {
+                youtubePlayer.stopVideo();
+                youtubePlayer.destroy();
+                youtubePlayer = null;
+            }
+            
+            isPlaying = false;
+            playPauseIcon.className = 'fas fa-play';
+            currentVideoId = null;
+            
+            // Nascondi il player
+            playerSection.classList.remove('active');
+            hideSuccess();
         }
         
         // Mostra/nascondi il loader
@@ -822,7 +776,7 @@
         
         // Mostra un errore
         function showError(message) {
-            errorText.textContent = message;
+            errorText.innerHTML = message;
             error.classList.add('active');
         }
         
@@ -831,17 +785,33 @@
             error.classList.remove('active');
         }
         
+        // Mostra un messaggio di successo
+        function showSuccess(message) {
+            successText.textContent = message;
+            success.classList.add('active');
+            
+            // Nascondi dopo 5 secondi
+            setTimeout(() => {
+                success.classList.remove('active');
+            }, 5000);
+        }
+        
+        // Nascondi il messaggio di successo
+        function hideSuccess() {
+            success.classList.remove('active');
+        }
+        
         // Event Listeners
         playBtn.addEventListener('click', playAudio);
         stopBtn.addEventListener('click', stopPlayback);
         playPauseBtn.addEventListener('click', togglePlayPause);
-        progressBar.addEventListener('click', seekTo);
         skipBackBtn.addEventListener('click', skipBack);
         skipForwardBtn.addEventListener('click', skipForward);
+        togglePlayerBtn.addEventListener('click', togglePlayerVisibility);
         
         volumeSlider.addEventListener('input', () => {
-            if (audioElement) {
-                audioElement.volume = volumeSlider.value / 100;
+            if (youtubePlayer) {
+                youtubePlayer.setVolume(parseInt(volumeSlider.value));
             }
         });
         
@@ -855,14 +825,23 @@
         // Mostra un URL di esempio al focus
         youtubeUrlInput.addEventListener('focus', () => {
             if (!youtubeUrlInput.value) {
-                youtubeUrlInput.value = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+                // Esempi di video che dovrebbero funzionare
+                const sampleVideos = [
+                    'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Rick Astley
+                    'https://www.youtube.com/watch?v=JGwWNGJdvx8', // Ed Sheeran
+                    'https://www.youtube.com/watch?v=kJQP7kiw5Fk', // Despacito
+                    'https://www.youtube.com/watch?v=9bZkp7q19f0', // Gangnam Style
+                    'https://www.youtube.com/watch?v=CduA0TULnow'  // Lo-Fi hip hop
+                ];
+                
+                // Seleziona un video casuale per l'esempio
+                const randomVideo = sampleVideos[Math.floor(Math.random() * sampleVideos.length)];
+                youtubeUrlInput.value = randomVideo;
             }
         });
         
         // Inizializza con un esempio
         window.addEventListener('load', () => {
-            youtubeUrlInput.value = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
-            
             // Test di alcuni video popolari per dimostrazione
             const sampleVideos = [
                 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
@@ -873,34 +852,57 @@
             // Seleziona un video casuale per l'esempio
             const randomVideo = sampleVideos[Math.floor(Math.random() * sampleVideos.length)];
             youtubeUrlInput.value = randomVideo;
+            
+            // Verifica se siamo in modalità standalone (app da Home Screen)
+            if (window.navigator.standalone === true) {
+                console.log('App eseguita da Home Screen - background audio abilitato');
+                showSuccess('App da Home Screen rilevata! Audio in background abilitato.');
+            } else {
+                console.log('Eseguito in browser - background audio limitato');
+            }
         });
         
         // Gestione della riproduzione in background per iOS
         document.addEventListener('visibilitychange', () => {
             // Mantieni l'audio attivo anche quando la pagina non è visibile
-            if (audioContext && audioContext.state === 'suspended' && isPlaying) {
-                audioContext.resume();
+            if (document.hidden && youtubePlayer && isPlaying) {
+                // Su iOS, quando la pagina è nascosta, potremmo dover gestire l'audio
+                console.log('Pagina nascosta, audio dovrebbe continuare in background');
             }
         });
         
-        // Gestisci la sospensione della pagina
-        document.addEventListener('pause', () => {
-            // iOS mette in pausa la pagina quando si blocca lo schermo
-            // Questo evento ci aiuta a mantenere l'audio in esecuzione
-            if (isPlaying && audioElement) {
-                // Forza la riproduzione continua
-                audioElement.play().catch(e => console.log('Auto-play interrotto:', e));
-            }
-        }, false);
+        // Informazioni per l'utente
+        console.log('YouTube Audio Player (Metodo Iframe) caricato');
+        console.log('Per iOS: DEVI aggiungere questa pagina alla Home Screen per audio in background');
         
-        // Aggiungi questa app alla schermata Home (per iOS)
-        if ('standalone' in navigator || window.navigator.standalone === true) {
-            console.log('App installata sulla Home Screen - background audio abilitato');
+        // Funzione per aggiungere alla Home Screen (facilitazione)
+        function showAddToHomeScreenPrompt() {
+            if (window.navigator.standalone !== true && 
+                /iPad|iPhone|iPod/.test(navigator.userAgent) && 
+                !window.MSStream) {
+                
+                // Mostra un prompt dopo 3 secondi
+                setTimeout(() => {
+                    const addPrompt = confirm(
+                        'PER AUDIO IN BACKGROUND SU IPHONE:\n\n' +
+                        '1. Tocca "Condividi" in Safari\n' +
+                        '2. Scorri giù e tocca "Aggiungi a Home"\n' +
+                        '3. Usa l\'app dalla Home Screen\n\n' +
+                        'Vuoi provare ora? (Scegli "Annulla" se già fatto)'
+                    );
+                    
+                    if (addPrompt) {
+                        // Scrolla alle istruzioni
+                        document.querySelector('.instructions').scrollIntoView({ 
+                            behavior: 'smooth' 
+                        });
+                    }
+                }, 3000);
+            }
         }
         
-        // Informazioni per l'utente
-        console.log('YouTube Audio Player caricato');
-        console.log('Per iOS: Aggiungi questa pagina alla Home Screen per audio in background');
+        // Mostra il prompt dopo il caricamento
+        window.addEventListener('load', showAddToHomeScreenPrompt);
     </script>
 </body>
 </html>
