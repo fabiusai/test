@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor Report Social</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* --- CSS DESIGN SYSTEM (Copiato e adattato da Analisi_social) --- */
+    @font-face {
+        font-family: 'Avenir Next LT Pro';
+        src: url('https://cdn.jsdelivr.net/gh/hung1001/font-awesome-pro@4cac1a6/fonts/AvenirNextLTPro-Regular.woff2') format('woff2');
+        font-weight: normal;
+    }
+
+    :root {
+      --primary: #00529F;
+      --primary-hover: #003e7e;
+      --bg: #f4f6f8;
+      --text: #2c3e50;
+      --text-light: #607d8b;
+      --card-bg: #fff;
+      --border-radius: 12px;
+      --shadow: 0 4px 12px rgba(0,0,0,0.05);
+      
+      --inst-yellow: #ffcc00;
+      --inst-blue: #1b47b4;
+      --error-color: #e74c3c;
+      --border-color: #e2e8f0;
+    }
+    
+    body { margin: 0; font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.5; }
+    
+    /* Header & Layout */
+    header { background: var(--primary); color: #fff; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+    header h1 { margin: 0; font-size: 1.4rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .header-desc { font-size: 0.9rem; opacity: 0.8; font-weight: 300; margin-left: 10px; }
+    .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+    
+    /* Cards */
+    .card { background: var(--card-bg); padding: 1.5rem; margin-bottom: 1.5rem; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid #e1e4e8; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.8rem; margin-bottom: 1.5rem; }
+    .card h2 { margin: 0; color: var(--primary); font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+    
+    /* Upload Area */
+    .upload-area { background: var(--card-bg); border: 3px dashed #cbd5e0; border-radius: var(--border-radius); padding: 2rem; text-align: center; margin-bottom: 1.5rem; cursor: pointer; transition: all 0.2s; position: relative; }
+    .upload-area:hover { border-color: var(--primary); background: #f0f7ff; }
+    .upload-area input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+    .upload-text { font-size: 1.1rem; color: var(--text-light); font-weight: 500; }
+    .upload-icon { font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem; display: block; }
+
+    /* Inputs & Selects Controls */
+    .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; align-items: end; }
+    .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .input-group label { font-weight: 600; color: var(--text); font-size: 0.9rem; }
+    select, input[type="text"] { padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-family: inherit; width: 100%; background: #fff; transition: border 0.2s; }
+    select:focus, input:focus { border-color: var(--primary); outline: none; }
+
+    /* Buttons */
+    .action-btn { background-color: #fff; border: 1px solid #d1d5db; color: #4b5563; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .action-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); background: #f8fafc; }
+    .action-btn.excel { color: #166534; border-color: #86efac; background: #f0fdf4; }
+    .action-btn.excel:hover:not(:disabled) { background: #dcfce7; }
+    .action-btn.blue-fill { background-color: var(--primary); color: white; border: none; }
+    .action-btn.blue-fill:hover:not(:disabled) { background-color: var(--primary-hover); }
+    .action-btn:disabled { background-color: #e5e7eb; color: #9ca3af; border-color: #e5e7eb; cursor: not-allowed; }
+
+    /* Conflict Section */
+    #conflict-container { border-left: 5px solid var(--error-color); background: #fff5f5; }
+    .conflict-item { background-color: #fff; padding: 15px; margin-bottom: 10px; border: 1px solid #fed7d7; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .conflict-item p { margin-bottom: 10px; font-weight: 500; }
+    .resolve-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* Editor Section */
+    .editor-wrapper { display: flex; flex-direction: column; gap: 20px; }
+    .label-group { background: #fff; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+    .label-header { background-color: #f1f5f9; color: var(--primary); padding: 12px 20px; font-weight: 700; font-size: 1.05rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+    .argument-list { padding: 10px; list-style-type: none; margin: 0; background: #fafafa; }
+    
+    /* Argument Item Styled like PED Rows */
+    .argument-item { display: flex; align-items: center; padding: 10px 15px; background-color: #fff; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; gap: 15px; transition: all 0.2s; }
+    .argument-item:hover { border-color: var(--primary); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .drag-handle { cursor: grab; color: #94a3b8; padding: 4px; }
+    .drag-handle:active { cursor: grabbing; color: var(--primary); }
+    .argument-text { flex-grow: 1; border: 1px solid transparent; border-bottom-color: #e2e8f0; padding: 6px; font-size: 0.95rem; color: #334155; font-weight: 500; }
+    .argument-text:focus { border-color: var(--primary); border-radius: 4px; }
+    
+    .institutional-check { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b; background: #f8fafc; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0; }
+    .institutional-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+    .argument-link a { color: var(--text-light); transition: color 0.2s; font-size: 1rem; }
+    .argument-link a:hover { color: var(--primary); }
+    
+    .sortable-ghost { opacity: 0.4; background-color: #e2e8f0; border: 2px dashed #94a3b8; }
+    
+    .hidden { display: none !important; }
+    
+    /* Utilities */
+    .text-center { text-align: center; }
+    .mt-4 { margin-top: 1.5rem; }
+    
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>
+        <a href="index.html" style="color:white; margin-right:15px; text-decoration:none;" title="Torna alla Home"><i class="fas fa-home"></i></a>
+        <i class="fas fa-edit"></i> Editor Report Social <span class="header-desc">Strumento di elaborazione Excel</span>
+    </h1>
+  </header>
+
+  <div class="container">
+    
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-cloud-upload-alt"></i> 1. Caricamento e Configurazione</h2>
+        </div>
+        
+        <div class="upload-area">
+            <input type="file" id="file-input-emplifi" accept=".xlsx,.xls" />
+            <span class="upload-icon"><i class="fas fa-file-excel"></i></span>
+            <div class="upload-text">Trascina qui il file Excel di Emplifi o clicca per caricare</div>
+        </div>
+
+        <div class="controls-grid">
+            <div class="input-group">
+                <label for="month-select">Mese di Riferimento</label>
+                <select id="month-select">
+                    <option value="01">Gennaio</option>
+                    <option value="02">Febbraio</option>
+                    <option value="03">Marzo</option>
+                    <option value="04">Aprile</option>
+                    <option value="05">Maggio</option>
+                    <option value="06">Giugno</option>
+                    <option value="07">Luglio</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Settembre</option>
+                    <option value="10">Ottobre</option>
+                    <option value="11">Novembre</option>
+                    <option value="12">Dicembre</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="year-select">Anno</label>
+                <select id="year-select"></select>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button id="paste-data-btn" class="action-btn yellow" style="flex:1; height: 42px;" title="Incolla i dati copiati dalla Dashboard">
+                    <i class="fas fa-paste"></i> Incolla
+                </button>
+                <button id="analyze-data" class="action-btn blue-fill" style="flex:1; height: 42px;">
+                    <i class="fas fa-bolt"></i> Analizza
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="conflict-container" class="card hidden">
+        <div class="card-header" style="border-bottom-color: #fed7d7;">
+            <h2 style="color: var(--error-color);"><i class="fas fa-exclamation-triangle"></i> 2. Conflitti Rilevati</h2>
+        </div>
+        <p style="margin-bottom: 1rem; color: #c0392b;">Sono stati trovati argomenti identici associati a Label diverse. Risolvi i conflitti per procedere.</p>
+        <div id="conflict-list"></div>
+    </div>
+
+    <div id="editor-section" class="card hidden">
+        <div class="card-header">
+            <h2><i class="fas fa-layer-group"></i> 3. Organizza e Modifica</h2>
+            <button id="export-button" class="action-btn excel" disabled>
+                <i class="fas fa-file-export"></i> Esporta Excel Aggiornato
+            </button>
+        </div>
+        
+        <div class="bg-blue-50 p-3 rounded mb-4 text-sm text-gray-600 flex items-center gap-2 border border-blue-100">
+            <i class="fas fa-info-circle text-blue-600"></i>
+            <span>Trascina gli argomenti tra le label per riorganizzarli. Modifica il testo o spunta "Istituzionale" se necessario.</span>
+        </div>
+
+        <div id="editor-container" class="editor-wrapper"></div>
+        
+        <div class="mt-4 text-center" style="display: flex; justify-content: center; gap: 20px;">
+             <button onclick="document.getElementById('export-button').click()" class="action-btn excel" style="padding: 12px 24px; font-size: 1rem;">
+                <i class="fas fa-file-export"></i> Scarica Excel
+            </button>
+            <button id="send-to-dashboard-btn" class="action-btn blue-fill" style="padding: 12px 24px; font-size: 1rem;">
+                <i class="fas fa-paper-plane"></i> Analizza in Dashboard
+            </button>
+        </div>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // --- Variabili globali da entrambe le app ---
+        let workbookEmplifi = null;
+        let processedData = []; // Dati elaborati da App1
+        let originalData = [];  // Dati passati ad App2
+        let groupedData = {};   // Dati raggruppati per App2
+
+        // --- Elementi DOM da App 1 ---
+        const analyzeBtn = document.getElementById('analyze-data');
+        const fileInputEmplifi = document.getElementById('file-input-emplifi');
+        const monthSelect = document.getElementById('month-select');
+        const yearSelect = document.getElementById('year-select');
+
+        // --- Elementi DOM da App 2 ---
+        const conflictContainer = document.getElementById('conflict-container');
+        const conflictList = document.getElementById('conflict-list');
+        const editorSection = document.getElementById('editor-section');
+        const editorContainer = document.getElementById('editor-container');
+        const exportButton = document.getElementById('export-button');
+
+        // UI Helpers
+        const uploadText = document.querySelector('.upload-text');
+
+        // --- LOGICA IMPORTAZIONE DA DASHBOARD (FIXED) ---
+        const dashSource = localStorage.getItem('social_dashboard_source');
+        const dashData = localStorage.getItem('social_dashboard_data');
+        
+        if (dashData && dashSource === 'bridge') {
+            try {
+                localStorage.removeItem('social_dashboard_source'); 
+                const parsedData = JSON.parse(dashData);
+                
+                if (Array.isArray(parsedData) && parsedData.length > 0) {
+                    if(uploadText) uploadText.innerHTML = `<strong>Dati ricevuti dalla Dashboard (${parsedData.length} righe)</strong>. Elaborazione...`;
+                    
+                    processedData = parsedData.map(r => {
+                        // Calcola Mese se mancante (per export)
+                        let meseCalc = r['Mese'] || '';
+                        if (!meseCalc && r['Data']) {
+                            try {
+                                const parts = String(r['Data']).split('/'); // Formato DD/MM/YYYY
+                                if (parts.length === 3) meseCalc = `01/${parts[1]}/${parts[2]}`;
+                            } catch(e) {}
+                        }
+
+                        return {
+                            Link: r['Link'] || '', 
+                            'Dettagli Emplifi': r['Dettagli Emplifi'] || '',
+                            Mese: meseCalc, 
+                            Data: r['Data'] || '',
+                            Canale: r['Canale'] || '',
+                            Interazioni: r['Interazioni'] || '', 
+                            Visualizzazioni: r['Visualizzazioni'] || '',
+                            'Persone raggiunte': r['Persone raggiunte'] || '', 
+                            Click: r['Click'] || '',
+                            'Like e reazioni': r['Like e reazioni'] || '', 
+                            Condivisioni: r['Condivisioni'] || '',
+                            Commenti: r['Commenti'] || '', 
+                            Campagna: r['Campagna'] || '',
+                            Label: r['Label'] || 'DA CLASSIFICARE', 
+                            Argomento: r['Argomento'] || 'Senza Titolo', 
+                            Copy: r['Copy'] || '',
+                            Istituzionale: r['Istituzionale'] || '',
+                            OriginalLabels: r['OriginalLabels'] || ''
+                        };
+                    });
+
+                    originalData = processedData;
+                    
+                    // Esegui immediatamente senza timeout per evitare race conditions
+                    resetUI();
+                    processData();
+                    
+                    // Forza visualizzazione se processData non ha generato conflitti
+                    const conflSec = document.getElementById('conflict-container');
+                    const edSec = document.getElementById('editor-section');
+                    if (conflSec.classList.contains('hidden') && edSec.classList.contains('hidden')) {
+                        renderEditor();
+                    }
+                } else {
+                    alert("I dati ricevuti dalla Dashboard sembrano vuoti.");
+                }
+            } catch(e) { 
+                console.error("Errore import Dashboard", e); 
+                alert("Errore durante l'importazione dei dati: " + e.message); 
+            }
+        }
+
+        // --- Funzioni da App 1 (Fase 1) ---
+        function populateYearSelector() {
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear + 1; i >= currentYear - 5; i--) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                yearSelect.appendChild(option);
+            }
+            yearSelect.value = currentYear;
+        }
+        
+        populateYearSelector();
+        const currentMonth = new Date().getMonth() + 1;
+        monthSelect.value = String(currentMonth).padStart(2, '0');
+
+        fileInputEmplifi.addEventListener('change', e => {
+          const f = e.target.files[0];
+          if (!f) { workbookEmplifi = null; return; }
+          
+          uploadText.innerHTML = `<strong>${f.name}</strong> pronto per l'analisi.`;
+          
+          const reader = new FileReader();
+          reader.onload = ev => { workbookEmplifi = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' }); };
+          reader.readAsArrayBuffer(f);
+          
+          // Resetta UI di App2
+          resetUI();
+          processedData = [];
+          originalData = [];
+        });
+
+        // --- LOGICA INCOLLA DATI (DIRETTA) ---
+        const pasteBtn = document.getElementById('paste-data-btn');
+        if (pasteBtn) {
+            pasteBtn.addEventListener('click', async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (!text.trim()) return alert("Gli appunti sembrano vuoti.");
+
+                    const parsedData = JSON.parse(text);
+                    if (Array.isArray(parsedData) && parsedData.length > 0) {
+                        
+                        if(uploadText) uploadText.innerHTML = `<strong>Dati incollati (${parsedData.length} righe)</strong>. Elaborazione...`;
+                        
+                        processedData = parsedData.map(r => {
+                            let meseCalc = r['Mese'] || '';
+                            if (!meseCalc && r['Data']) {
+                                try {
+                                    const parts = String(r['Data']).split('/'); 
+                                    if (parts.length === 3) meseCalc = `01/${parts[1]}/${parts[2]}`;
+                                } catch(e) {}
+                            }
+                            return {
+                                Link: r['Link'] || '', 'Dettagli Emplifi': r['Dettagli Emplifi'] || '',
+                                Mese: meseCalc, Data: r['Data'] || '', Canale: r['Canale'] || '',
+                                Interazioni: r['Interazioni'] || '', Visualizzazioni: r['Visualizzazioni'] || '',
+                                'Persone raggiunte': r['Persone raggiunte'] || '', Click: r['Click'] || '',
+                                'Like e reazioni': r['Like e reazioni'] || '', Condivisioni: r['Condivisioni'] || '',
+                                Commenti: r['Commenti'] || '', Campagna: r['Campagna'] || '',
+                                Label: r['Label'] || 'DA CLASSIFICARE', Argomento: r['Argomento'] || 'Senza Titolo', 
+                                Copy: r['Copy'] || '', Istituzionale: r['Istituzionale'] || '', OriginalLabels: r['OriginalLabels'] || ''
+                            };
+                        });
+
+                        originalData = processedData;
+                        resetUI();
+                        processData();
+                        
+                        const conflSec = document.getElementById('conflict-container');
+                        const edSec = document.getElementById('editor-section');
+                        if (conflSec.classList.contains('hidden') && edSec.classList.contains('hidden')) { renderEditor(); }
+                        
+                        // Piccolo feedback visivo opzionale (non bloccante come un alert se preferisci, ma qui uso alert per conferma)
+                        // alert("✅ Dati caricati!"); 
+
+                    } else { alert("Il testo incollato non contiene dati validi."); }
+                } catch(e) {
+                    console.error("Paste Error", e);
+                    alert("Impossibile leggere dagli appunti. Assicurati di aver concesso i permessi al browser.\n\nErrore: " + e.message);
+                }
+            });
+        }
+
+        // Listener "Analizza Dati"
+        analyzeBtn.addEventListener('click', () => {
+          if (!workbookEmplifi) return alert('Seleziona prima un file Excel.');
+          
+          resetUI();
+          
+          const ws = workbookEmplifi.Sheets[workbookEmplifi.SheetNames[0]];
+          let data = XLSX.utils.sheet_to_json(ws, { raw: true, defval: '' });
+
+          if (!data.length) return alert('File vuoto o illeggibile.');
+
+          // Rileva se il file è un RAW Emplifi o un file GIÀ ELABORATO
+          const isProcessedFile = data[0] && ('Argomento' in data[0] || 'Canale' in data[0]);
+
+          if (isProcessedFile) {
+            // --- LOGICA IMPORTAZIONE FILE GIÀ ELABORATO ---
+            processedData = data.map(r => {
+                let formattedDate = r['Data'] || '';
+                if (typeof r['Data'] === 'number') {
+                    const parsedDate = XLSX.SSF.parse_date_code(r['Data']);
+                    const jsDate = new Date(parsedDate.y, parsedDate.m - 1, parsedDate.d);
+                    formattedDate = [String(jsDate.getDate()).padStart(2, '0'), String(jsDate.getMonth() + 1).padStart(2, '0'), jsDate.getFullYear().toString()].join('/');
+                }
+
+                return {
+                    Link: r['Link'] || '', 'Dettagli Emplifi': r['Dettagli Emplifi'] || '',
+                    Mese: r['Mese'] || '', Data: formattedDate,
+                    Canale: r['Canale'] || '',
+                    Interazioni: r['Interazioni'] || '', Visualizzazioni: r['Visualizzazioni'] || '',
+                    'Persone raggiunte': r['Persone raggiunte'] || '', Click: r['Click'] || '',
+                    'Like e reazioni': r['Like e reazioni'] || '', Condivisioni: r['Condivisioni'] || '',
+                    Commenti: r['Commenti'] || '', Campagna: r['Campagna'] || '',
+                    Label: r['Label'] || '', Argomento: r['Argomento'] || '', Copy: r['Copy'] || '',
+                    Istituzionale: r['Istituzionale'] || '',
+                    OriginalLabels: ''
+                };
+            });
+
+          } else {
+            // --- LOGICA ORIGINALE (FILE RAW EMPLIFI) ---
+            data = data.filter(r => !(r['Video view count'] === '' && r['Total impressions'] === ''));
+            if (!data.length) return alert('Nessun dato valido trovato dopo il filtraggio.');
+
+            const selectedMonth = monthSelect.value;
+            const selectedYear = yearSelect.value;
+            const meseDelReport = `01/${selectedMonth}/${selectedYear}`;
+
+            processedData = data.map(r => {
+                const dateCell = r['Date'];
+                let formattedDate = '';
+                if (dateCell instanceof Date) {
+                formattedDate = [String(dateCell.getDate()).padStart(2, '0'), String(dateCell.getMonth() + 1).padStart(2, '0'), dateCell.getFullYear().toString()].join('/');
+                } else if (typeof dateCell === 'number' && dateCell > 1) {
+                const parsedDate = XLSX.SSF.parse_date_code(dateCell);
+                const jsDate = new Date(parsedDate.y, parsedDate.m - 1, parsedDate.d, parsedDate.H || 0, parsedDate.M || 0, parsedDate.S || 0);
+                formattedDate = [String(jsDate.getDate()).padStart(2, '0'), String(jsDate.getMonth() + 1).padStart(2, '0'), jsDate.getFullYear().toString()].join('/');
+                } else if (typeof dateCell === 'string' && dateCell.length > 0) {
+                formattedDate = dateCell;
+                }
+                
+                const allLabels = (r['Labels'] || '').split(';').map(s => s.trim());
+                const labelsForProcessing = allLabels.filter(l => l !== '#IST');
+                const labelValue = labelsForProcessing.filter(l => l.startsWith('#')).map(l => ({'#PES':'Prodotti e servizi', '#TER':'Territorio', '#ISR':'Investor e stakeholder relations', '#FIL':'Filatelia', '#EB':'Employer branding', '#P160':'Poste 160', '#NED':'News editoriali', '#CET':'CSR e trasparenza', '#DEI':'Digital e Innovazione', '#ST':'Storici', '#RIC':'Ricorrenze'}[l] || l))[0] || '';
+                const argomentoValue = labelsForProcessing.filter(l => !l.startsWith('#'))[0] || '';
+                const hasKeywords = /lasco|del fante|rovere/i.test((r['Content'] || '').toLowerCase());
+                const isIstituzionalePreliminary = (hasKeywords || allLabels.includes('#IST')) ? 1 : '';
+
+                const platformRaw = r['Platform'] || '';
+                const platform = platformRaw ? platformRaw.charAt(0).toUpperCase() + platformRaw.slice(1).toLowerCase() : '';
+                const authorName = (r['Author name'] || '').trim();
+                const canaleValue = (authorName && authorName !== 'Poste Italiane') ? `${platform} ${authorName}` : platform;
+                
+                return {
+                Link: r['View on platform'] || r['Content type'] || '', 'Dettagli Emplifi': r['Post detail URL'] || '',
+                Mese: meseDelReport, Data: formattedDate,
+                Canale: canaleValue,
+                Interazioni: r['Total interactions'] || r['Taps forward'] || '', Visualizzazioni: r['Total impressions'] || r['Video view count'] || '',
+                'Persone raggiunte': Number(r['Total reach']) > 0 ? r['Total reach'] : '', Click: Number(r['Post clicks']) > 0 ? r['Post clicks'] : '',
+                'Like e reazioni': Number(r['Total reactions']) > 0 ? r['Total reactions'] : '', Condivisioni: Number(r['Total shares']) > 0 ? r['Total shares'] : '',
+                Commenti: Number(r['Total comments']) > 0 ? r['Total comments'] : '', Campagna: Number(r['Paid impression']) > 0 ? 'Campagna' : 'Editoriale',
+                Label: labelValue, Argomento: argomentoValue, Copy: r['Content'] || '', Istituzionale: isIstituzionalePreliminary,
+                OriginalLabels: r['Labels'] || ''
+                };
+            });
+          }
+
+          originalData = processedData;
+          processData(); 
+        });
+
+        // --- Funzioni da App 2 (Fase 2 & 3) ---
+
+        function getTrimmedString(value) {
+            if (value === null || typeof value === 'undefined') return '';
+            return String(value).trim();
+        }
+
+        function processData() {
+            groupedData = {};
+            const argumentToLabelMap = new Map();
+            const conflicts = new Map();
+            
+            if (!originalData || originalData.length === 0) {
+                 return alert("Nessun dato elaborato da visualizzare.");
+            }
+
+            originalData.forEach((row) => {
+                // Usa valori di default se vuoti, per non perdere la riga
+                let argument = getTrimmedString(row['Argomento']);
+                if (!argument) { argument = "Senza Titolo"; row['Argomento'] = argument; }
+                
+                let label = getTrimmedString(row['Label']);
+                if (!label) { label = "DA CLASSIFICARE"; row['Label'] = label; }
+
+                if (argumentToLabelMap.has(argument) && argumentToLabelMap.get(argument) !== label) {
+                    if (!conflicts.has(argument)) {
+                        conflicts.set(argument, new Set([argumentToLabelMap.get(argument)]));
+                    }
+                    conflicts.get(argument).add(label);
+                } else {
+                    argumentToLabelMap.set(argument, label);
+                }
+            });
+            if (conflicts.size > 0) {
+                displayConflicts(conflicts);
+                return;
+            }
+            originalData.forEach(row => {
+                const label = getTrimmedString(row['Label']);
+                const argument = getTrimmedString(row['Argomento']);
+                if (!label || !argument) return;
+                const isInstitutional = row['Istituzionale'] == 1;
+                const link = row['Link'];
+                if (!groupedData[label]) groupedData[label] = {};
+                if (!groupedData[label][argument]) {
+                    groupedData[label][argument] = { isInstitutional: false, link: null };
+                }
+                if (isInstitutional) groupedData[label][argument].isInstitutional = true;
+                if (!groupedData[label][argument].link && link) groupedData[label][argument].link = link;
+            });
+            renderEditor();
+        }
+
+        function resetUI() {
+            conflictContainer.classList.add('hidden');
+            conflictList.innerHTML = '';
+            editorSection.classList.add('hidden');
+            editorContainer.innerHTML = '';
+            exportButton.disabled = true;
+        }
+
+        function displayConflicts(conflicts) {
+            conflictContainer.classList.remove('hidden');
+            conflictList.innerHTML = '';
+            conflicts.forEach((labels, argument) => {
+                const conflictItem = document.createElement('div');
+                conflictItem.className = 'conflict-item';
+                let labelsText = Array.from(labels).map(l => `"${l}"`).join(' e ');
+                conflictItem.innerHTML = `<p><i class="fas fa-exclamation-circle text-red-500"></i> L'argomento <strong>"${escapeHtml(argument)}"</strong> è presente in: ${labelsText}.</p><div class="resolve-buttons"></div>`;
+                const buttonsContainer = conflictItem.querySelector('.resolve-buttons');
+                labels.forEach(label => {
+                    const button = document.createElement('button');
+                    button.className = 'action-btn'; // New style
+                    button.innerHTML = `<i class="fas fa-check"></i> Assegna a "${label}"`;
+                    button.onclick = () => resolveConflict(argument, label);
+                    buttonsContainer.appendChild(button);
+                });
+                conflictList.appendChild(conflictItem);
+            });
+        }
+        
+        function resolveConflict(argumentToFix, correctLabel) {
+            originalData.forEach(row => {
+                if (getTrimmedString(row['Argomento']) === argumentToFix) row['Label'] = correctLabel;
+            });
+            resetUI();
+            processData();
+        }
+        
+        function escapeHtml(str) {
+            return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function renderEditor() {
+            editorSection.classList.remove('hidden');
+            editorContainer.innerHTML = '';
+            const labels = Object.keys(groupedData).sort();
+            labels.forEach(label => {
+                const labelGroup = document.createElement('div');
+                labelGroup.className = 'label-group';
+                labelGroup.innerHTML = `<div class="label-header"><span><i class="fas fa-tag"></i> ${escapeHtml(label)}</span></div>`;
+                const argumentList = document.createElement('ul');
+                argumentList.className = 'argument-list';
+                argumentList.id = `list-${label.replace(/\s+/g, '-')}`;
+                const argumentsInLabel = Object.keys(groupedData[label]).sort();
+                argumentsInLabel.forEach(argument => {
+                    const argData = groupedData[label][argument];
+                    const argumentItem = document.createElement('li');
+                    argumentItem.className = 'argument-item';
+                    argumentItem.dataset.originalArgument = argument;
+                    const checkboxId = `check-${label.replace(/[^a-zA-Z0-9]/g, '-')}-${argument.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                    argumentItem.innerHTML = `
+                        <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
+                        <input type="text" class="argument-text" value="${escapeHtml(argument)}">
+                        <div class="institutional-check">
+                            <input type="checkbox" id="${checkboxId}" ${argData.isInstitutional ? 'checked' : ''}>
+                            <label for="${checkboxId}">Istituzionale</label>
+                        </div>
+                        <div class="argument-link">
+                            ${argData.link ? `<a href="${escapeHtml(String(argData.link))}" target="_blank" title="Apri link"><i class="fas fa-external-link-alt"></i></a>` : ''}
+                        </div>`;
+                    argumentList.appendChild(argumentItem);
+                });
+                labelGroup.appendChild(argumentList);
+                editorContainer.appendChild(labelGroup);
+            });
+            document.querySelectorAll('.argument-list').forEach(list => {
+                new Sortable(list, { group: 'shared', animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost' });
+            });
+            exportButton.disabled = false;
+        }
+
+        function handleExport() {
+            const btnOriginalText = exportButton.innerHTML;
+            exportButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Elaborazione...';
+            exportButton.disabled = true;
+            setTimeout(() => {
+                try {
+                    let updatedData = JSON.parse(JSON.stringify(originalData));
+                    const uiStateMap = new Map();
+                    document.querySelectorAll('.label-group').forEach(labelGroup => {
+                        const newLabel = labelGroup.querySelector('.label-header span').textContent.trim(); // Adjusted selector
+                        labelGroup.querySelectorAll('.argument-item').forEach(item => {
+                            const originalArgument = item.dataset.originalArgument;
+                            const newArgumentText = item.querySelector('.argument-text').value;
+                            const newIsInstitutional = item.querySelector('.institutional-check input').checked;
+                            uiStateMap.set(originalArgument, { newLabel, newArgumentText, newIsInstitutional });
+                        });
+                    });
+                    
+                    updatedData.forEach(row => {
+                        const originalArgument = getTrimmedString(row['Argomento']);
+                        if (uiStateMap.has(originalArgument)) {
+                            const updates = uiStateMap.get(originalArgument);
+                            row['Label'] = updates.newLabel;
+                            row['Argomento'] = updates.newArgumentText;
+                            row['Istituzionale'] = updates.newIsInstitutional ? 1 : '';
+                        }
+                    });
+                    
+                    updatedData.sort((a, b) => {
+                        const dateA = convertToDate(a.Data);
+                        const dateB = convertToDate(b.Data);
+                        if (!dateA && !dateB) return 0;
+                        if (!dateA) return 1;
+                        if (!dateB) return -1;
+                        return dateA - dateB;
+                    });
+                    
+                    // --- LOGICA DI EXPORT INIETTATA DA APP 1 ---
+                    
+                    const finalOutput = [];
+                    if (updatedData.length > 0) {
+                        const allHeaders = Object.keys(updatedData[0]);
+
+                        updatedData.forEach(row => {
+                            finalOutput.push(row);
+
+                            const isYouTube = (row.Canale || '').trim() === 'Youtube';
+                            const hasWhaTag = (row.OriginalLabels || '').includes('#WHA');
+                            
+                            if (isYouTube && hasWhaTag) {
+                                const newWhatsappRow = {};
+                                allHeaders.forEach(header => { newWhatsappRow[header] = ''; });
+                                newWhatsappRow.Canale = 'Whatsapp';
+                                newWhatsappRow.Link = 'Post Whatsapp';
+                                newWhatsappRow.Mese = row.Mese;
+                                newWhatsappRow.Data = row.Data;
+                                newWhatsappRow.Campagna = row.Campagna;
+                                newWhatsappRow.Label = row.Label;
+                                newWhatsappRow.Argomento = row.Argomento;
+                                newWhatsappRow.Copy = row.Copy;
+                                newWhatsappRow.Istituzionale = row.Istituzionale;
+                                finalOutput.push(newWhatsappRow);
+                            }
+                        });
+                    }
+                    
+                    if (finalOutput.length === 0) {
+                        return alert('Nessun dato finale da esportare.');
+                    }
+
+                    finalOutput.forEach(row => delete row.OriginalLabels);
+
+                    const newWs = XLSX.utils.json_to_sheet(finalOutput);
+                    
+                    const header = Object.keys(finalOutput[0]);
+                    const meseColIndex = header.indexOf('Mese');
+                    const dataColIndex = header.indexOf('Data');
+
+                    for (let R = 1; R <= finalOutput.length; R++) {
+                        if (meseColIndex !== -1) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: meseColIndex });
+                        const cell = newWs[cellAddress];
+                        if (cell && cell.v) {
+                            const [day, month, year] = cell.v.split('/');
+                            cell.t = 'd';
+                            cell.v = new Date(year, month - 1, day);
+                            cell.z = 'dd/mm/yyyy';
+                        }
+                        }
+                        
+                        if (dataColIndex !== -1) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: dataColIndex });
+                        const cell = newWs[cellAddress];
+                        if (cell) {
+                            cell.t = 's';
+                        }
+                        }
+                    }
+                    
+                    const newWb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(newWb, newWs, "Report Elaborato");
+                    
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const timestamp = `${year}_${month}_${day}_${hours}_${minutes}`;
+                    const fileName = `report_elaborato_${timestamp}.xlsx`;
+                    
+                    XLSX.writeFile(newWb, fileName);
+                    
+                    exportButton.innerHTML = '<i class="fas fa-check"></i> Fatto!';
+                    setTimeout(() => { exportButton.innerHTML = btnOriginalText; exportButton.disabled = false; }, 2000);
+                } catch (err) {
+                    console.error("Errore export:", err);
+                    alert("Si è verificato un errore durante la creazione del file.");
+                    exportButton.innerHTML = btnOriginalText;
+                    exportButton.disabled = false;
+                }
+            }, 50);
+        }
+        
+        function convertToDate(excelDate) {
+            if (typeof excelDate === 'number') {
+                return new Date(Math.round((excelDate - 25569) * 86400 * 1000));
+            }
+            if (typeof excelDate === 'string') {
+                const parts = excelDate.match(/(\d+)/g);
+                if (!parts || parts.length < 3) return new Date(excelDate);
+                let year, month, day;
+                if (parts[2] && parts[2].length === 4) {
+                    day = parseInt(parts[0], 10);
+                    month = parseInt(parts[1], 10) - 1;
+                    year = parseInt(parts[2], 10);
+                } else if (parts[0] && parts[0].length === 4) {
+                    year = parseInt(parts[0], 10);
+                    month = parseInt(parts[1], 10) - 1;
+                    day = parseInt(parts[2], 10);
+                } else {
+                    return new Date(excelDate);
+                }
+                return new Date(year, month, day);
+            }
+            return null;
+        }
+
+        exportButton.addEventListener('click', handleExport);
+
+        // --- NUOVO: BRIDGE VERSO DASHBOARD ---
+        document.getElementById('send-to-dashboard-btn').addEventListener('click', function() {
+            const btn = this;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparazione...';
+            
+            setTimeout(() => {
+                try {
+                    // 1. Rigenera i dati come farebbe l'export
+                    let updatedData = JSON.parse(JSON.stringify(originalData));
+                    const uiStateMap = new Map();
+                    document.querySelectorAll('.label-group').forEach(labelGroup => {
+                        const newLabel = labelGroup.querySelector('.label-header span').textContent.trim();
+                        labelGroup.querySelectorAll('.argument-item').forEach(item => {
+                            const originalArgument = item.dataset.originalArgument;
+                            const newArgumentText = item.querySelector('.argument-text').value;
+                            const newIsInstitutional = item.querySelector('.institutional-check input').checked;
+                            uiStateMap.set(originalArgument, { newLabel, newArgumentText, newIsInstitutional });
+                        });
+                    });
+
+                    updatedData.forEach(row => {
+                        const originalArgument = getTrimmedString(row['Argomento']);
+                        if (uiStateMap.has(originalArgument)) {
+                            const updates = uiStateMap.get(originalArgument);
+                            row['Label'] = updates.newLabel;
+                            row['Argomento'] = updates.newArgumentText;
+                            row['Istituzionale'] = updates.newIsInstitutional ? 1 : '';
+                        }
+                    });
+
+                    // 2. Logica Whatsapp specifica
+                    const finalOutput = [];
+                    const allHeaders = updatedData.length > 0 ? Object.keys(updatedData[0]) : [];
+                    updatedData.forEach(row => {
+                        finalOutput.push(row);
+                        const isYouTube = (row.Canale || '').trim() === 'Youtube';
+                        const hasWhaTag = (row.OriginalLabels || '').includes('#WHA');
+                        if (isYouTube && hasWhaTag) {
+                            const newWhatsappRow = {};
+                            allHeaders.forEach(header => { newWhatsappRow[header] = ''; });
+                            newWhatsappRow.Canale = 'Whatsapp'; newWhatsappRow.Link = 'Post Whatsapp';
+                            newWhatsappRow.Mese = row.Mese; newWhatsappRow.Data = row.Data;
+                            newWhatsappRow.Campagna = row.Campagna; newWhatsappRow.Label = row.Label;
+                            newWhatsappRow.Argomento = row.Argomento; newWhatsappRow.Copy = row.Copy;
+                            newWhatsappRow.Istituzionale = row.Istituzionale;
+                            finalOutput.push(newWhatsappRow);
+                        }
+                    });
+
+                    // 3. Salvataggio in Local Storage e Redirect
+                    finalOutput.forEach(row => delete row.OriginalLabels);
+                    
+                    const jsonStr = JSON.stringify(finalOutput);
+                    
+                    localStorage.setItem('social_dashboard_data', jsonStr);
+                    localStorage.setItem('social_dashboard_source', 'bridge');
+                    window.location.href = 'dashboard.html';
+
+                } catch (e) {
+                    console.error(e);
+                    alert("Errore nel trasferimento dati: " + e.message);
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Analizza in Dashboard';
+                }
+            }, 200);
+        });
+
+    });
+  </script>
+</body>
+</html>
