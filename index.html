@@ -503,22 +503,37 @@
           Inserisci i dettagli. Clicca "Genera", copia il testo e usalo su Gemini.
         </p>
         
-        <div class="modal-news-grid">
+                <div class="modal-news-grid">
             <div class="news-input-block">
                 <h3><i class="far fa-newspaper"></i> News 1</h3>
-                <textarea id="modal-news-1" rows="4" placeholder="Testo notizia 1..."></textarea>
+                <div style="position:relative;">
+                  <textarea id="modal-news-1" rows="4" placeholder="Testo notizia 1..." style="padding-right:40px;"></textarea>
+                  <button class="tool-btn" data-action="paste" data-target="modal-news-1" title="Incolla Testo" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:#5E6C84;">
+                    <i class="fas fa-paste"></i>
+                  </button>
+                </div>
                 <input type="text" id="modal-video-1" placeholder="File video..." style="margin-top:8px;">
                 <input type="text" id="modal-specs-1" placeholder="Note extra..." style="margin-top:8px;">
             </div>
             <div class="news-input-block">
                 <h3><i class="far fa-newspaper"></i> News 2</h3>
-                <textarea id="modal-news-2" rows="4" placeholder="Testo notizia 2..."></textarea>
+                <div style="position:relative;">
+                  <textarea id="modal-news-2" rows="4" placeholder="Testo notizia 2..." style="padding-right:40px;"></textarea>
+                  <button class="tool-btn" data-action="paste" data-target="modal-news-2" title="Incolla Testo" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:#5E6C84;">
+                    <i class="fas fa-paste"></i>
+                  </button>
+                </div>
                 <input type="text" id="modal-video-2" placeholder="File video..." style="margin-top:8px;">
                 <input type="text" id="modal-specs-2" placeholder="Note extra..." style="margin-top:8px;">
             </div>
             <div class="news-input-block">
                 <h3><i class="far fa-newspaper"></i> News 3</h3>
-                <textarea id="modal-news-3" rows="4" placeholder="Testo notizia 3..."></textarea>
+                <div style="position:relative;">
+                  <textarea id="modal-news-3" rows="4" placeholder="Testo notizia 3..." style="padding-right:40px;"></textarea>
+                  <button class="tool-btn" data-action="paste" data-target="modal-news-3" title="Incolla Testo" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:#5E6C84;">
+                    <i class="fas fa-paste"></i>
+                  </button>
+                </div>
                 <input type="text" id="modal-video-3" placeholder="File video..." style="margin-top:8px;">
                 <input type="text" id="modal-specs-3" placeholder="Note extra..." style="margin-top:8px;">
             </div>
@@ -578,7 +593,12 @@
                     <i class="fas fa-pen-nib"></i> Crea Prompt
                 </button>
               </div>
-              <textarea id="ai-input-${index}" placeholder="Incolla testo grezzo..." style="min-height:80px;"></textarea>
+                            <div style="position:relative;">
+                <textarea id="ai-input-${index}" placeholder="Incolla testo grezzo..." style="min-height:80px; padding-right:40px;"></textarea>
+                <button class="tool-btn" data-action="paste" data-target="ai-input-${index}" title="Incolla Testo" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:#5E6C84;">
+                  <i class="fas fa-paste"></i>
+                </button>
+              </div>
               <button class="btn-generate" data-idx="${index}">
                  <i class="fas fa-bolt"></i> Genera Bozze
               </button>
@@ -618,8 +638,15 @@
               <textarea id="ytDesc-${index}" data-type="ytDesc" rows="5"></textarea>
             </div>
 
-            <div class="field-group">
-              <div class="label-row"><span class="label-text">Link YouTube</span></div>
+                        <div class="field-group">
+              <div class="label-row">
+                <span class="label-text">Link YouTube</span>
+                <div class="right-controls">
+                  <button class="tool-btn" data-action="paste" data-target="ytLink-${index}" title="Incolla Link">
+                    <i class="fas fa-paste"></i>
+                  </button>
+                </div>
+              </div>
               <textarea id="ytLink-${index}" data-type="ytLink" rows="1" placeholder="https://youtu.be/..."></textarea>
             </div>
 
