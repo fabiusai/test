@@ -3,177 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wiki Image Searcher</title>
+    <title>Image Search App</title>
     <style>
         :root {
-            --primary: #3366cc;
-            --bg: #f8f9fa;
-            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --bg: #f1f5f9;
         }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #1e293b; }
+        .wrapper { max-width: 1200px; margin: 0 auto; text-align: center; }
+        
+        .search-box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .input-row { display: flex; gap: 10px; max-width: 600px; margin: 0 auto 15px; }
+        input[type="text"] { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; outline: none; }
+        input[type="text"]:focus { border-color: var(--primary); }
+        button { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        
+        .domain-row { font-size: 14px; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        #domainInput { border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 8px; width: 200px; }
 
-        body {
-            font-family: sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .container { max-width: 1000px; width: 100%; }
-
-        .search-container {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
-
-        input[type="text"] {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        button {
-            padding: 10px 20px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .options { font-size: 0.9em; display: flex; align-items: center; gap: 10px; }
-
-        #results {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .img-card {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            border: 1px solid #ddd;
-            transition: transform 0.2s;
-        }
-
-        .img-card:hover { transform: scale(1.03); }
-
-        .img-card img { width: 100%; height: 150px; object-fit: cover; }
-
-        .img-info { padding: 8px; font-size: 0.8em; color: #666; text-align: center; }
-
-        #toast {
-            visibility: hidden;
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 50px;
-            z-index: 1000;
-        }
-
-        #toast.show { visibility: visible; animation: fadeInOut 2.5s; }
-
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0; }
-            20%, 80% { opacity: 1; }
-        }
+        #results { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; position: relative; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .card img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
+        .res-tag { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        
+        #toast { visibility: hidden; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 25px; border-radius: 50px; font-size: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 99; }
+        #toast.show { visibility: visible; animation: pop 0.3s ease-out, fadeout 0.5s 2.5s forwards; }
+        @keyframes pop { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+        @keyframes fadeout { from { opacity: 1; } to { opacity: 0; } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="search-container">
-        <div class="input-group">
-            <input type="text" id="query" placeholder="Esempio: Roma, Gatto, Spazio...">
-            <button onclick="search()">Cerca</button>
+<div class="wrapper">
+    <div class="search-box">
+        <div class="input-row">
+            <input type="text" id="query" placeholder="Cerca immagini (es: Gatto, Milano, Spazio)...">
+            <button onclick="search()">CERCA</button>
         </div>
-        <div class="options">
+        <div class="domain-row">
             <input type="checkbox" id="useDomain" checked>
-            <label for="useDomain">Restringi a:</label>
-            <input type="text" id="domain" value="commons.wikimedia.org" style="width: 180px;">
+            <label for="useDomain">Cerca in:</label>
+            <input type="text" id="domainInput" value="commons.wikimedia.org">
         </div>
     </div>
 
     <div id="results"></div>
 </div>
 
-<div id="toast">Link copiato! 📋</div>
+<div id="toast">✅ Link HD copiato negli appunti!</div>
 
 <script>
     async function search() {
-        const query = document.getElementById('query').value;
+        const q = document.getElementById('query').value.trim();
         const resultsDiv = document.getElementById('results');
-        if (!query) return;
+        if (!q) return;
 
-        resultsDiv.innerHTML = "Ricerca in corso...";
+        resultsDiv.innerHTML = "<h4>Ricerca in corso...</h4>";
 
-        // API di Wikimedia Commons
-        // Cerchiamo file che siano immagini e abbiano una dimensione minima
-        const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=filetype:bitmap|drawing ${query}&gsrlimit=30&prop=imageinfo&iiprop=url|size|dimensions&format=json&origin=*`;
+        // Query ottimizzata per Wikimedia Commons
+        // gsrnamespace=6 cerca solo tra i File
+        // origin=* risolve i problemi di connessione CORS
+        const endpoint = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=40&gsrnamespace=6&prop=imageinfo&iiprop=url|size|dimensions&format=json&origin=*`;
 
         try {
-            const response = await fetch(url);
+            const response = await fetch(endpoint);
             const data = await response.json();
 
             resultsDiv.innerHTML = "";
 
-            if (!data.query) {
-                resultsDiv.innerHTML = "Nessun risultato trovato.";
+            if (!data.query || !data.query.pages) {
+                resultsDiv.innerHTML = "<h4>Nessun risultato trovato. Prova con un'altra parola chiave.</h4>";
                 return;
             }
 
-            const pages = Object.values(data.query.pages);
+            const items = Object.values(data.query.pages);
+            let count = 0;
 
-            pages.forEach(page => {
-                if (page.imageinfo && page.imageinfo[0]) {
-                    const info = page.imageinfo[0];
-
-                    // Filtro: lato corto > 250px
+            items.forEach(item => {
+                if (item.imageinfo && item.imageinfo[0]) {
+                    const info = item.imageinfo[0];
+                    
+                    // FILTRO: lato più corto > 250px
                     const minSide = Math.min(info.width, info.height);
                     if (minSide < 250) return;
 
+                    count++;
                     const card = document.createElement('div');
-                    card.className = 'img-card';
+                    card.className = 'card';
                     card.innerHTML = `
-                        <img src="${info.url}" alt="Image">
-                        <div class="img-info">${info.width} x ${info.height} px</div>
+                        <div class="res-tag">${info.width}x${info.height}</div>
+                        <img src="${info.url}" alt="image">
                     `;
 
                     card.onclick = () => {
                         navigator.clipboard.writeText(info.url);
-                        showToast();
+                        const t = document.getElementById('toast');
+                        t.className = "show";
+                        setTimeout(() => t.className = "", 3000);
                     };
 
                     resultsDiv.appendChild(card);
                 }
             });
+
+            if (count === 0) {
+                resultsDiv.innerHTML = "<h4>Immagini trovate ma tutte sotto i 250px.</h4>";
+            }
+
         } catch (err) {
-            resultsDiv.innerHTML = "Errore durante il caricamento. Controlla la connessione.";
+            resultsDiv.innerHTML = "<h4>Errore di rete. Controlla la connessione.</h4>";
             console.error(err);
         }
     }
 
-    function showToast() {
-        const t = document.getElementById('toast');
-        t.className = "show";
-        setTimeout(() => t.className = "", 2500);
-    }
-
-    document.getElementById('query').addEventListener('keypress', e => {
+    // Invio con tastiera
+    document.getElementById('query').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') search();
     });
 </script>
