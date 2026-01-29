@@ -1,1312 +1,213 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta name="robots" content="noindex">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Social Dashboard – Final v6.9</title>
-  <link rel="icon" href="faviconAI.ico" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Searcher Pro</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+        }
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"/>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            text-align: center;
+        }
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+        .search-box {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
 
-  <style>
-    :root {
-      --primary-blue: #0047bb;
-      --primary-hover: #00368f;
-      --primary-light: #e6f0ff;
-      --accent-yellow: #eedc00;
-      --bg-gray: #f4f5f7;
-      --surface-white: #ffffff;
-      --text-dark: #172B4D;
-      --text-medium: #5E6C84;
-      --border-color: #dfe1e6;
-      --radius: 8px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-      --font-family-base: 'Inter', sans-serif;
-    }
+        input {
+            padding: 12px 20px;
+            width: 60%;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
 
-    body {
-      font-family: var(--font-family-base);
-      background-color: var(--bg-gray);
-      color: var(--text-dark);
-      line-height: 1.5;
-      margin: 0;
-      padding: 0;
-    }
+        input:focus {
+            border-color: var(--primary-color);
+        }
 
-    /* --- LAYOUT --- */
-    .app-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 20px;
-    }
+        button {
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
 
-    /* Header */
-    .main-header {
-      background-color: var(--surface-white);
-      border-bottom: 4px solid var(--accent-yellow);
-      padding: 20px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .main-header h1 { margin: 0; color: var(--text-dark); font-size: 1.6rem; letter-spacing: -0.5px; }
+        button:hover {
+            opacity: 0.9;
+        }
 
-    /* Tabs */
-    .tabs-container {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .tab-btn {
-      padding: 10px 24px;
-      background: #e9ecef;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-weight: 600;
-      color: var(--text-medium);
-      transition: 0.2s;
-      border: 1px solid transparent;
-    }
-    .tab-btn:hover { background: #dde2e6; }
-    .tab-btn.active {
-      background: var(--surface-white);
-      color: var(--primary-blue);
-      border-color: var(--border-color);
-      border-top: 3px solid var(--primary-blue);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
+        #results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
 
-    /* --- GRIGLIA --- */
-    .layout-grid {
-      display: grid;
-      grid-template-columns: 1fr; 
-      gap: 30px;
-      align-items: start;
-    }
-    @media (min-width: 1024px) {
-      .layout-grid {
-        grid-template-columns: 55% 43%;
-      }
-    }
+        .img-card {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s;
+            background: #eee;
+        }
 
-    /* --- EDITOR & PREVIEW --- */
-    .editor-container {
-      background: var(--surface-white);
-      padding: 24px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-sm);
-      border: 1px solid var(--border-color);
-    }
+        .img-card:hover {
+            transform: scale(1.02);
+        }
 
-    .preview-container {
-      position: sticky;
-      top: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
+        .img-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
 
-    /* Card Anteprima */
-    .card-anteprima-finale {
-      background-color: #ffffff;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    .header-anteprima {
-      background-color: #f8f9fa;
-      padding: 12px 20px;
-      border-bottom: 1px solid #e0e0e0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .titolo-anteprima {
-      font-weight: 700;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-medium);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .titolo-anteprima i {
-        font-size: 1.1rem;
-        color: var(--primary-blue); 
-    }
+        .img-info {
+            padding: 10px;
+            font-size: 12px;
+            background: white;
+            text-align: center;
+        }
 
-    .corpo-anteprima {
-      padding: 24px;
-      background-color: #ffffff !important;
-      color: #333333 !important;
-      font-size: 1rem;
-      line-height: 1.6;
-      font-weight: 400;
-      white-space: pre-wrap;
-      text-align: left;
-      min-height: 100px;
-    }
-    
-    .btn-copia-header {
-      background-color: #fff;
-      border: 1px solid #ccc;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-medium);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-    .btn-copia-header:hover {
-      background-color: var(--primary-light);
-      color: var(--primary-blue);
-      border-color: var(--primary-blue);
-    }
+        /* Feedback Toast */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            bottom: 30px;
+            font-size: 14px;
+        }
 
-    /* --- INPUTS --- */
-    .field-group { margin-bottom: 24px; }
-    
-    .label-row { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      margin-bottom: 8px; 
-      min-height: 32px;
-    }
-    .label-text { font-weight: 600; font-size: 0.95rem; color: var(--text-dark); }
-    .right-controls { display: flex; align-items: center; gap: 12px; }
-    .toolbar { display: flex; gap: 4px; margin: 0; }
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
 
-    textarea, input[type="text"] {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-family: var(--font-family-base);
-      font-size: 1rem;
-      resize: vertical;
-      transition: border-color 0.2s;
-    }
-    textarea:focus, input[type="text"]:focus { 
-        outline: none; 
-        border-color: var(--primary-blue); 
-        box-shadow: 0 0 0 3px rgba(0,71,187,0.1);
-    }
-
-    /* --- TOOL BUTTONS --- */
-    .tool-btn {
-      background: #ffffff;
-      border: 1px solid #dcdcdc;
-      color: var(--text-medium);
-      padding: 4px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.1s;
-      min-width: 36px;
-      height: 32px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .tool-btn:hover { background: #f1f3f5; color: var(--text-dark); border-color: #ccc; }
-    
-    .tool-btn[data-action="auto"] {
-        color: var(--primary-blue);
-        background-color: #f4f8ff;
-        border-color: #cce0ff;
-    }
-    .tool-btn[data-action="auto"]:hover {
-        background-color: var(--primary-blue);
-        color: white;
-        border-color: var(--primary-blue);
-    }
-
-    /* --- FIX SPAZIATURA TASTI DATA (OGGI/IERI) --- */
-    .tool-btn.btn-date {
-        padding: 0 14px; /* Aumentato padding laterale */
-        gap: 8px;        /* Spazio netto tra icona e testo */
-        width: auto;     /* Permette al testo di stendersi */
-        font-weight: 500;
-    }
-
-    /* --- AI BOX --- */
-    .ai-box {
-      background: #f8faff;
-      border: 1px solid #d0d7de;
-      border-left: 4px solid var(--accent-yellow);
-      padding: 15px;
-      margin-bottom: 25px;
-      border-radius: 6px;
-    }
-    .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .ai-header h3 { font-size: 1rem; color: var(--text-dark); display: flex; gap: 8px; align-items: center; }
-    .ai-header h3 i { color: var(--primary-blue); }
-
-    .btn-generate {
-      width: 100%;
-      background: var(--primary-blue);
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 2px 4px rgba(0,71,187,0.2);
-    }
-    .btn-generate:hover { background: var(--primary-hover); }
-
-    .btn-prompt-modal {
-      background-color: #fff;
-      border: 1px solid #ccc;
-      color: var(--text-medium);
-      padding: 5px 12px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .btn-prompt-modal:hover { background-color: var(--primary-light); color: var(--primary-blue); border-color: var(--primary-blue); }
-
-    /* --- ACTIONS --- */
-    .actions-row {
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .action-btn {
-      padding: 10px 18px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      color: white;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
-    }
-    .btn-save { background: var(--primary-blue); }
-    .btn-save:hover { background: var(--primary-hover); }
-
-    .btn-clear { background: #ffffff; border: 1px solid #dc3545; color: #dc3545; }
-    .btn-clear:hover { background: #dc3545; color: #fff; }
-    
-    .btn-utility { background: #6c757d; }
-    
-    /* IMPORT BAR */
-    .import-bar {
-      background: #fff;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      box-shadow: var(--shadow-sm);
-    }
-    .import-btn {
-        background: #f8f9fa;
-        color: var(--text-dark);
-        border: 1px solid #dcdcdc;
-    }
-    .import-btn i { color: var(--primary-blue); } 
-    .import-btn:hover { background: #e2e6ea; border-color: #bbb; }
-
-
-    /* --- MODAL --- */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(2px);
-    }
-    .modal-overlay.open { display: flex; animation: fadeIn 0.2s; }
-    
-    .modal-content {
-      background: #fff;
-      width: 90%;
-      max-width: 900px;
-      max-height: 90vh;
-      border-radius: 12px;
-      padding: 0;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .modal-header {
-      padding: 20px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f9fafb;
-    }
-    .modal-header h2 { margin: 0; color: var(--text-dark); font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
-    .modal-header h2 i { color: var(--primary-blue); }
-
-    .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999; }
-    .close-modal:hover { color: #333; }
-    
-    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
-
-    .modal-news-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-    .news-input-block {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #eee;
-    }
-    .news-input-block h3 { margin-top: 0; color: var(--text-dark); font-size: 0.95rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-    
-    .prompt-output-area {
-        background: #2d3748;
-        color: #edf2f7;
-        padding: 20px;
-        border-radius: 8px;
-        font-family: monospace;
-        white-space: pre-wrap;
-        margin-top: 20px;
-        display: none;
-        position: relative;
-        font-size: 0.85rem;
-    }
-
-    /* --- FEEDBACK ANIMATION --- */
-    button:active, .tab-btn:active, .tool-btn:active, .action-btn:active { transform: scale(0.96); }
-
-    .btn-success-state {
-        background-color: #d1e7dd !important;
-        color: #0f5132 !important;
-        border-color: #badbcc !important;
-        cursor: default;
-        transition: all 0.2s;
-    }
-    .btn-success-state i { color: #0f5132 !important; }
-
-    /* TOAST */
-    #toast-container {
-        position: fixed;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        pointer-events: none;
-    }
-    .toast {
-        background: #172B4D;
-        color: #fff;
-        padding: 12px 24px;
-        border-radius: 50px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        font-size: 0.9rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.success i { color: #36b37e; }
-    .toast.error i { color: #ff5630; }
-
-    .hidden { display: none; }
-    .counter { font-size: 0.8rem; color: #777; font-family: monospace; }
-    .loader { display: none; text-align: center; margin-top: 10px; color: var(--text-medium); font-size: 0.9rem; }
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
-  </style>
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    </style>
 </head>
 <body>
 
-  <div id="toast-container"></div>
-
-  <div class="app-container">
-    <div class="main-header">
-      <div>
-        <h1>Social Dashboard</h1>
-        <p style="margin:0; color:#888; font-size:0.9rem;">v6.9</p>
-      </div>
-    </div>
-
-    <div class="import-bar">
-      <label for="fileInput" class="action-btn import-btn" style="margin:0; cursor:pointer;">
-        <i class="fas fa-file-arrow-up"></i> Importa Excel/CSV
-      </label>
-      <input type="file" id="fileInput" accept=".xlsx,.csv" style="display:none;" />
-      <button id="pasteCsvButton" class="action-btn import-btn" style="margin:0;">
-        <i class="fas fa-clipboard"></i> Incolla CSV
-      </button>
-    </div>
-
-    <div class="tabs-container">
-      <div class="tab-btn active" data-index="0">News 1</div>
-      <div class="tab-btn" data-index="1">News 2</div>
-      <div class="tab-btn" data-index="2">News 3</div>
-    </div>
-
-    <div id="dynamicContent"></div>
-  </div>
-
-  <div class="modal-overlay" id="promptModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2><i class="fas fa-wand-magic-sparkles"></i> Generatore Prompt</h2>
-        <button class="close-modal" id="closePromptModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p style="color:#666; margin-bottom:20px;">
-          Inserisci i dettagli. Clicca "Genera", copia il testo e usalo su Gemini.
-        </p>
-        
-                <div class="modal-news-grid">
-            <div class="news-input-block">
-                <h3><i class="far fa-newspaper"></i> News 1</h3>
-                <div style="position:relative;">
-                  <textarea id="modal-news-1" rows="4" placeholder="Testo notizia 1..." style="padding-right:40px;"></textarea>
-                  <button class="tool-btn" data-action="paste" data-target="modal-news-1" title="Incolla Testo" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:#5E6C84;">
-                    <i class="fas fa-paste"></i>
-                  </button>
-                </div>
-                <input type="text" id="modal-video-1" placeholder="File video..." style="margin-top:8px;">
-                <input type="text" id="modal-specs-1" placeholder="Note extra..." style="margin-top:8px;">
-            </div>
-            <div class="news-input-block">
-                <h3><i class="far fa-newspaper"></i> News 2</h3>
-                <div style="position:relative;">
-                  <textarea id="modal-news-2" rows="4" placeholder="Testo notizia 2..." style="padding-right:40px;"></textarea>
-                  <button class="tool-btn" data-action="paste" data-target="modal-news-2" title="Incolla Testo" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:#5E6C84;">
-                    <i class="fas fa-paste"></i>
-                  </button>
-                </div>
-                <input type="text" id="modal-video-2" placeholder="File video..." style="margin-top:8px;">
-                <input type="text" id="modal-specs-2" placeholder="Note extra..." style="margin-top:8px;">
-            </div>
-            <div class="news-input-block">
-                <h3><i class="far fa-newspaper"></i> News 3</h3>
-                <div style="position:relative;">
-                  <textarea id="modal-news-3" rows="4" placeholder="Testo notizia 3..." style="padding-right:40px;"></textarea>
-                  <button class="tool-btn" data-action="paste" data-target="modal-news-3" title="Incolla Testo" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:#5E6C84;">
-                    <i class="fas fa-paste"></i>
-                  </button>
-                </div>
-                <input type="text" id="modal-video-3" placeholder="File video..." style="margin-top:8px;">
-                <input type="text" id="modal-specs-3" placeholder="Note extra..." style="margin-top:8px;">
-            </div>
-        </div>
-
-        <button id="btnGeneratePrompt" class="action-btn" style="background:var(--primary-blue); width:100%; justify-content:center; padding:15px; font-size:1.1rem;">
-            Genera Prompt Strutturato
-        </button>
-
-        <div id="promptOutputArea" class="prompt-output-area">
-            <button id="btnCopyPrompt" class="btn-prompt-modal" style="position:absolute; top:10px; right:10px; border:none; background:#4a5568; color:white;">
-                <i class="far fa-copy"></i> Copia
-            </button>
-            <code id="promptCodeBlock"></code>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    /* --- CONFIGURAZIONE --- */
-    let masterList = [];
-    const API_URL = 'https://aipost.onrender.com/generate';
-    const googleSheetURL = 'https://fabiusai.github.io/WhatsappCopy/maiuscole.csv';
-
-    const tabsConfig = Array.from({ length: 3 }, () => ({
-      limits: { wa: 82, ytTitle: 49, ytDesc: 280 },
-      fields: ['wa', 'ytTitle', 'ytDesc', 'ytLink', 'tgLink']
-    }));
-
-    /* --- HTML GENERATOR --- */
-    function generateTabHTML(index) {
-      
-      const getToolbar = (targetId, extraBtn = '') => `
-        <div class="toolbar">
-          <button class="tool-btn" data-action="lower" title="tutto minuscolo"><i class="fas fa-arrow-down"></i> <small>abc</small></button>
-          <button class="tool-btn" data-action="title" title="Iniziali Maiuscole"><i class="fas fa-arrow-up"></i> <small>Abc</small></button>
-          <button class="tool-btn" data-action="upper" title="TUTTO MAIUSCOLO"><i class="fas fa-arrow-up"></i> <small>ABC</small></button>
-          <button class="tool-btn" data-action="auto" title="Formatta Auto"><i class="fas fa-wand-magic-sparkles"></i></button>
-          <button class="tool-btn" data-action="revert" title="Annulla"><i class="fas fa-rotate-left"></i></button>
-          ${extraBtn}
-        </div>`;
-
-      const copyTitleBtn = `<button class="tool-btn btn-copy-simple" data-target="ytTitle-${index}" title="Copia Titolo"><i class="far fa-copy"></i></button>`;
-
-      return `
-      <div class="tab-pane ${index === 0 ? '' : 'hidden'}" data-tab="${index}">
-        
-        <div class="layout-grid">
-          
-          <div class="editor-container">
-            
-            <div class="ai-box">
-              <div class="ai-header">
-                <h3><i class="fas fa-robot"></i> Assistant</h3>
-                <button class="btn-prompt-modal" id="openPromptBtn-${index}">
-                    <i class="fas fa-pen-nib"></i> Crea Prompt
-                </button>
-              </div>
-                            <div style="position:relative;">
-                <textarea id="ai-input-${index}" placeholder="Incolla testo grezzo..." style="min-height:80px; padding-right:40px;"></textarea>
-                <button class="tool-btn" data-action="paste" data-target="ai-input-${index}" title="Incolla Testo" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:#5E6C84;">
-                  <i class="fas fa-paste"></i>
-                </button>
-              </div>
-              <button class="btn-generate" data-idx="${index}">
-                 <i class="fas fa-bolt"></i> Genera Bozze
-              </button>
-              <div class="loader" id="ai-loader-${index}"><i class="fas fa-spinner fa-spin"></i> Elaborazione AI...</div>
-            </div>
-
-            <div class="field-group">
-              <div class="label-row">
-                <span class="label-text">Testo WhatsApp</span>
-                <div class="right-controls">
-                    ${getToolbar()}
-                    <span class="counter" id="count-wa-${index}">0/${tabsConfig[index].limits.wa}</span>
-                </div>
-              </div>
-              <textarea id="wa-${index}" data-type="wa" rows="3"></textarea>
-            </div>
-
-            <div class="field-group">
-              <div class="label-row">
-                <span class="label-text">Titolo YouTube</span>
-                <div class="right-controls">
-                    ${getToolbar(`ytTitle-${index}`, copyTitleBtn)}
-                    <span class="counter" id="count-ytTitle-${index}">0/${tabsConfig[index].limits.ytTitle}</span>
-                </div>
-              </div>
-              <textarea id="ytTitle-${index}" data-type="ytTitle" rows="2"></textarea>
-            </div>
-
-            <div class="field-group">
-              <div class="label-row">
-                <span class="label-text">Descrizione Social</span>
-                <div class="right-controls">
-                    ${getToolbar()}
-                    <span class="counter" id="count-ytDesc-${index}">0/${tabsConfig[index].limits.ytDesc}</span>
-                </div>
-              </div>
-              <textarea id="ytDesc-${index}" data-type="ytDesc" rows="5"></textarea>
-            </div>
-
-                        <div class="field-group">
-              <div class="label-row">
-                <span class="label-text">Link YouTube</span>
-                <div class="right-controls">
-                  <button class="tool-btn" data-action="paste" data-target="ytLink-${index}" title="Incolla Link">
-                    <i class="fas fa-paste"></i>
-                  </button>
-                </div>
-              </div>
-              <textarea id="ytLink-${index}" data-type="ytLink" rows="1" placeholder="https://youtu.be/..."></textarea>
-            </div>
-
-            <div class="field-group">
-              <div class="label-row">
-                <span class="label-text">Link TG Poste</span>
-                <div class="right-controls">
-                  <button class="tool-btn btn-date" data-idx="${index}" data-day="today" title="Oggi">
-                    <i class="far fa-calendar-check"></i> Oggi
-                  </button>
-                  <button class="tool-btn btn-date" data-idx="${index}" data-day="yesterday" title="Ieri">
-                    <i class="far fa-calendar-minus"></i> Ieri
-                  </button>
-                </div>
-              </div>
-              <textarea id="tgLink-${index}" data-type="tgLink" rows="1"></textarea>
-            </div>
-
-            <div class="actions-row">
-              <button class="action-btn btn-save" data-idx="${index}"><i class="fas fa-save"></i> Salva</button>
-              <button class="action-btn btn-clear" data-idx="${index}"><i class="fas fa-trash-alt"></i></button>
-              <button class="action-btn btn-utility btn-copy-all"><i class="fas fa-copy"></i> Copia Tutto</button>
-              
-              <button class="action-btn btn-utility" onclick="exportExcel()">
-                <i class="fas fa-file-excel"></i> Excel
-              </button>
-              <button class="action-btn btn-utility" onclick="exportCsv()">
-                <i class="fas fa-file-csv"></i> CSV
-              </button>
-            </div>
-
-          </div>
-
-          <div class="preview-container">
-            
-            <div class="card-anteprima-finale">
-              <div class="header-anteprima">
-                <div class="titolo-anteprima"><i class="fab fa-whatsapp"></i> Anteprima WhatsApp</div>
-                <button class="btn-copia-header" data-copy-target="preview-wa-${index}">
-                  <i class="far fa-copy"></i> Copia
-                </button>
-              </div>
-              <div class="corpo-anteprima" id="preview-wa-${index}"></div>
-            </div>
-
-            <div class="card-anteprima-finale">
-              <div class="header-anteprima">
-                <div class="titolo-anteprima"><i class="fas fa-share-nodes"></i> Anteprima Social</div>
-                <button class="btn-copia-header" data-copy-target="preview-social-${index}">
-                  <i class="far fa-copy"></i> Copia
-                </button>
-              </div>
-              <div class="corpo-anteprima" id="preview-social-${index}"></div>
-            </div>
-
-          </div>
-
-        </div>
-      </div>
-      `;
-    }
-
-    /* --- LOGICA JS --- */
-    function showToast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        
-        let icon = '<i class="fas fa-check-circle"></i>';
-        if(type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
-        
-        toast.innerHTML = `${icon} <span>${message}</span>`;
-        container.appendChild(toast);
-
-        requestAnimationFrame(() => toast.classList.add('show'));
-
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
-
-    function animateButtonFeedback(btn, msg = null) {
-        if (!btn) return;
-        const originalHtml = btn.innerHTML;
-        const originalWidth = btn.offsetWidth;
-        
-        if(btn.offsetWidth > 40) {
-            btn.style.width = `${originalWidth}px`;
-            btn.style.justifyContent = 'center';
-        }
-        
-        btn.classList.add('btn-success-state');
-        btn.innerHTML = msg ? `<i class="fas fa-check"></i> ${msg}` : `<i class="fas fa-check"></i>`;
-
-        setTimeout(() => {
-            btn.classList.remove('btn-success-state');
-            btn.innerHTML = originalHtml;
-            btn.style.width = '';
-        }, 1500);
-    }
-
-    async function init() {
-      masterList = await getMasterList();
-      const container = document.getElementById('dynamicContent');
-      container.innerHTML = [0, 1, 2].map(i => generateTabHTML(i)).join('');
-      
-      setupListeners();
-      loadSavedData();
-      updateAllPreviews();
-      setupModalLogic();
-    }
-
-    function setupListeners() {
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-          document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
-          e.target.classList.add('active');
-          document.querySelector(`.tab-pane[data-tab="${e.target.dataset.index}"]`).classList.remove('hidden');
-        });
-      });
-
-      document.querySelectorAll('textarea').forEach(el => {
-        el.addEventListener('input', (e) => {
-          updateCounts(e.target);
-          updatePreview(e.target.closest('.tab-pane').dataset.tab);
-        });
-        el.addEventListener('focus', function() {
-           if(!this.dataset.original) this.dataset.original = this.value;
-        });
-      });
-
-      document.body.addEventListener('click', (e) => {
-        const btn = e.target.closest('.tool-btn');
-        if (!btn) return;
-        
-        if (btn.dataset.action) {
-          const textarea = btn.closest('.field-group').querySelector('textarea');
-          handleTextAction(textarea, btn.dataset.action, btn);
-        }
-        
-        if (btn.classList.contains('btn-copy-simple')) {
-           const targetId = btn.dataset.target;
-           const textarea = document.getElementById(targetId);
-           copyToClipboard(textarea.value, btn);
-        }
-
-        if (btn.classList.contains('btn-date')) {
-           const idx = btn.dataset.idx;
-           const target = document.getElementById(`tgLink-${idx}`);
-           const date = new Date();
-           if(btn.dataset.day === 'yesterday') date.setDate(date.getDate() - 1);
-           target.value = generateTgLink(date);
-           target.dispatchEvent(new Event('input'));
-           animateButtonFeedback(btn);
-        }
-      });
-
-      document.querySelectorAll('.btn-generate').forEach(btn => {
-        btn.addEventListener('click', () => handleAI(btn.dataset.idx));
-      });
-
-      document.querySelectorAll('.btn-prompt-modal').forEach(btn => {
-          if(!btn.id.includes('btnCopyPrompt')) {
-             btn.addEventListener('click', openPromptModal);
-          }
-      });
-
-      document.querySelectorAll('.btn-copia-header').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const targetId = btn.dataset.copyTarget;
-          const idx = targetId.split('-')[2];
-          
-          if (targetId.includes('preview-wa')) {
-             if(!document.getElementById(`ytLink-${idx}`).value.trim()) {
-                 showToast("Inserisci prima il Link YouTube!", "error");
-                 return;
-             }
-          }
-          if (targetId.includes('preview-social')) {
-             if(!document.getElementById(`tgLink-${idx}`).value.trim()) {
-                 showToast("Inserisci prima il Link TG Poste!", "error");
-                 return;
-             }
-          }
-
-          const text = document.getElementById(targetId).innerText;
-          copyToClipboard(text, btn);
-        });
-      });
-
-      document.querySelectorAll('.btn-save').forEach(btn => btn.addEventListener('click', () => saveData(btn.dataset.idx, btn)));
-      document.querySelectorAll('.btn-clear').forEach(btn => btn.addEventListener('click', () => clearData(btn.dataset.idx)));
-      document.querySelector('.btn-copy-all').addEventListener('click', (e) => copyAllData(e.target.closest('button')));
-      
-      document.getElementById('fileInput').addEventListener('change', handleFileInput);
-      document.getElementById('pasteCsvButton').addEventListener('click', handlePasteCsv);
-    }
-
-    function setupModalLogic() {
-        const modal = document.getElementById('promptModal');
-        const closeBtn = document.getElementById('closePromptModal');
-        const generateBtn = document.getElementById('btnGeneratePrompt');
-        const copyBtn = document.getElementById('btnCopyPrompt');
-
-        closeBtn.addEventListener('click', () => {
-            modal.classList.remove('open');
-        });
-        
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) modal.classList.remove('open');
-        });
-
-        generateBtn.addEventListener('click', () => {
-            let newsCount = 0;
-            let newsContent = "";
-            let columnHeaders = [];
-
-            for (let i = 1; i <= 3; i++) {
-                const text = document.getElementById(`modal-news-${i}`).value.trim();
-                const video = document.getElementById(`modal-video-${i}`).value.trim();
-                const specs = document.getElementById(`modal-specs-${i}`).value.trim();
-
-                if (text) {
-                    newsCount++;
-                    columnHeaders.push(`"News ${newsCount}"`);
-                    newsContent += `\n---\n**NEWS ${newsCount}**\n**Testo:**\n${text}\n`;
-                    if (video) newsContent += `**Riferimento video:**\n${video}\n`;
-                    if (specs) newsContent += `**Specifiche aggiuntive:**\n${specs}\n`;
-                }
-            }
-
-            if (newsCount === 0) return showToast("Inserisci almeno una notizia!", "error");
-
-            const finalPrompt = `Sei un assistente social media. Genera testi per i canali social.
-
-**INFO NEWS:**
-${newsContent}
-
-**TONO E STILE:**
-* Istituzionale, chiaro, informativo. Brand: "Poste".
-
-**LUNGHEZZE:**
-1. **WhatsApp:** ~90 caratteri.
-2. **YouTube Titolo:** Max 49 caratteri.
-3. **Social:** Sintetico ma completo. Hashtag pertinenti.
-
-**OUTPUT CSV REQUISITO:**
-Output SOLO CSV puro.
-Delimitatore: Virgola (,)
-Qualificatore: Doppie virgolette (")
-Intestazione: ,${columnHeaders.join(',')}
-Righe:
-"Testo descrittivo news Canale WA",...
-"Titolo YouTube",...
-"Copy post e descrizione YT",...
-"Link YouTube",...
-"Link TG Poste",...
-
-Solo codice CSV.`;
-
-            document.getElementById('promptCodeBlock').textContent = finalPrompt;
-            document.getElementById('promptOutputArea').style.display = 'block';
-            animateButtonFeedback(generateBtn, "Generato!");
-        });
-
-        copyBtn.addEventListener('click', () => {
-            const txt = document.getElementById('promptCodeBlock').textContent;
-            navigator.clipboard.writeText(txt).then(() => {
-                animateButtonFeedback(copyBtn, "Copiato!");
-                showToast("Prompt copiato!");
-            });
-        });
-    }
-
-    function openPromptModal() {
-        for(let i=0; i<3; i++) {
-            const editorText = document.getElementById(`ai-input-${i}`).value;
-            if(editorText) {
-                document.getElementById(`modal-news-${i+1}`).value = editorText;
-            }
-        }
-        document.getElementById('promptModal').classList.add('open');
-    }
-
-    function updatePreview(idx) {
-      const getVal = (type) => document.getElementById(`${type}-${idx}`)?.value || '';
-      
-      const waText = getVal('wa');
-      const ytLink = getVal('ytLink');
-      
-      let waHtml = `${waText.replace(/\n/g, '<br>')}<br>${ytLink}<br>➡️ TG https://tgposte.poste.it/tgposte/`;
-      
-            // *** MODIFICA: Sostituita immagine con player video ***
-      const ytMatch = ytLink.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
-      if (ytMatch && ytMatch[1]) {
-          waHtml += `<br><div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; margin-top:10px; border:1px solid #ddd;"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe></div>`;
-      }
-      
-      document.getElementById(`preview-wa-${idx}`).innerHTML = waHtml;
-
-      let ytDesc = getVal('ytDesc').trim();
-      const tgLink = getVal('tgLink');
-      let hashtags = '';
-      const hashtagRegex = /(\s*#[^\s]*[^.\s])+$/;
-      const match = ytDesc.match(hashtagRegex);
-      if (match) {
-        hashtags = match[0].trim();
-        ytDesc = ytDesc.replace(hashtagRegex, '').trim();
-      }
-      const baseTags = "#TGPoste #PosteItaliane";
-      const finalTags = hashtags ? `${baseTags} ${hashtags}` : baseTags;
-      document.getElementById(`preview-social-${idx}`).innerText = `${ytDesc}\n\n➡️ ${tgLink}\n\n${finalTags}`;
-    }
-
-    function updateAllPreviews() {
-      [0,1,2].forEach(i => {
-         updateCounts(document.getElementById(`wa-${i}`));
-         updateCounts(document.getElementById(`ytTitle-${i}`));
-         updateCounts(document.getElementById(`ytDesc-${i}`));
-         updatePreview(i);
-      });
-    }
-
-    function updateCounts(el) {
-      if(!el) return;
-      const idParts = el.id.split('-'); 
-      const type = idParts[0];
-      const idx = idParts[1];
-      const counter = document.getElementById(`count-${type}-${idx}`);
-      if(counter && tabsConfig[0].limits[type]) {
-        const len = el.value.length;
-        const max = tabsConfig[0].limits[type];
-        counter.innerText = `${len}/${max}`;
-        counter.style.color = len > max ? '#dc3545' : '#777';
-      }
-    }
-
-    function handleTextAction(textarea, action, btnElement) {
-      if(!textarea) return;
-      if(action !== 'revert') textarea.dataset.original = textarea.value;
-      
-      let val = textarea.value;
-      if(action === 'lower') val = val.toLowerCase();
-      if(action === 'upper') val = val.toUpperCase();
-      if(action === 'title') val = val.toLowerCase().replace(/(^|\s)\S/g, l => l.toUpperCase());
-      if(action === 'revert') val = textarea.dataset.original || val;
-      if(action === 'auto') { applyAutoFormat(textarea); }
-      else {
-          textarea.value = val;
-          textarea.dispatchEvent(new Event('input'));
-      }
-
-      if(btnElement) animateButtonFeedback(btnElement);
-    }
-
-    function applyAutoFormat(textarea) {
-      let text = textarea.value;
-      const urls = [];
-      text = text.replace(/(https?:\/\/[^\s]+)/g, (m) => { urls.push(m); return '___URL___'; });
-      text = text.toLowerCase();
-      text = text.replace(/(^|[.?!]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
-      masterList.forEach(word => {
-        const re = new RegExp(`\\b${word}\\b`, 'gi');
-        text = text.replace(re, word);
-      });
-      urls.forEach(u => { text = text.replace('___URL___', u); });
-      textarea.value = text;
-      textarea.dispatchEvent(new Event('input'));
-    }
-
-    async function handleFileInput(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const fileName = file.name.toLowerCase();
-        
-        if (fileName.endsWith('.xlsx')) {
-            await importFromExcel(file);
-        } else if (fileName.endsWith('.csv')) {
-            const reader = new FileReader();
-            reader.onload = e => importFromCsvText(e.target.result);
-            reader.readAsText(file);
-        } else {
-            showToast('Formato non supportato. Usa .xlsx o .csv', 'error');
-        }
-        event.target.value = '';
-    }
-
-    async function handlePasteCsv() {
-        try {
-            const text = await navigator.clipboard.readText();
-            if (text) {
-                importFromCsvText(text);
-                showToast("CSV incollato e processato!");
-            } else {
-                showToast('Appunti vuoti o permessi negati.', 'error');
-            }
-        } catch (error) {
-            showToast("Errore lettura appunti.", 'error');
-        }
-    }
-
-    async function importFromExcel(file) {
-      try {
-        const data = await file.arrayBuffer();
-        const workbook = XLSX.read(data);
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-        processImportRows(rows);
-        // showToast("Excel importato con successo!"); // DISABILITATO SU RICHIESTA
-      } catch (e) {
-        showToast("Errore Import Excel", 'error');
-      }
-    }
-
-    function importFromCsvText(csvText) {
-        const rows = parseCsvText(csvText);
-        if (rows.length > 0) processImportRows(rows);
-        else showToast("CSV vuoto o non valido", 'error');
-    }
-
-    function parseCsvText(csvText) {
-        const rows = [];
-        let row = [];
-        let field = "";
-        let inQuote = false;
-        
-        for (let i = 0; i < csvText.length; i++) {
-            const c = csvText[i];
-            if (inQuote) {
-                if (c === '"') {
-                    if (i + 1 < csvText.length && csvText[i + 1] === '"') {
-                        field += '"'; i++;
-                    } else { inQuote = false; }
-                } else { field += c; }
-            } else {
-                if (c === '"') { inQuote = true; }
-                else if (c === ',') { row.push(field); field = ""; }
-                else if (c === '\n' || c === '\r') {
-                    row.push(field); 
-                    if (row.length > 0 && (row.length > 1 || row[0] !== "")) rows.push(row);
-                    row = []; field = "";
-                    if (c === '\r' && csvText[i + 1] === '\n') i++;
-                } else { field += c; }
-            }
-        }
-        if (field || row.length > 0) { row.push(field); rows.push(row); }
-        return rows;
-    }
-
-    function processImportRows(rows) {
-        if (!rows || rows.length < 2) return showToast("Dati CSV non validi.", 'error');
-
-        // Check for Standard Format (Header row contains known keys from Export)
-        const header = rows[0].map(c => String(c).trim());
-        if (header.includes('WA') && header.includes('YT Title')) {
-            const colMap = {'WA':'wa', 'YT Title':'ytTitle', 'YT Desc':'ytDesc', 'YT Link':'ytLink', 'TG Link':'tgLink'};
-            const indices = {};
-            for(let k in colMap) indices[colMap[k]] = header.indexOf(k);
-
-            rows.slice(1).forEach((row, i) => {
-                if(i > 2) return; 
-                for(let field in indices) {
-                    const idx = indices[field];
-                    if(idx > -1) {
-                         const val = row[idx];
-                         if (val !== undefined) {
-                             const el = document.getElementById(`${field}-${i}`);
-                             if (el) {
-                                 el.value = String(val).replace(/""/g, '"');
-                                 el.dispatchEvent(new Event('input'));
-                             }
-                         }
-                    }
-                }
-            });
-            showToast("CSV Standard importato!");
-            return;
-        }
-
-        // Fallback: Legacy Transposed Format
-        const fieldMap = {
-            'Testo descrittivo news Canale WA': 'wa',
-            'Titolo YouTube': 'ytTitle',
-            'Copy post e descrizione YT': 'ytDesc',
-            'Link YouTube': 'ytLink',
-            'Link TG Poste': 'tgLink'
-        };
-
-        rows.slice(1).forEach(row => {
-            const rowLabel = (row[0] || '').trim();
-            const fieldType = fieldMap[rowLabel];
-            
-            if (fieldType) {
-                for (let i = 0; i < 3; i++) {
-                    const val = row[i + 1];
-                    if (val !== undefined) {
-                        const el = document.getElementById(`${fieldType}-${i}`);
-                        if (el) {
-                            el.value = String(val).replace(/""/g, '"');
-                            el.dispatchEvent(new Event('input')); 
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    async function handleAI(idx) {
-      const input = document.getElementById(`ai-input-${idx}`).value;
-      if(!input) return showToast("Inserisci testo prima!", "error");
-      
-      const loader = document.getElementById(`ai-loader-${idx}`);
-      loader.style.display = 'block';
-      
-      try {
-        const res = await fetch(API_URL, {
-          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({inputText: input})
-        });
-        const data = await res.json();
-        const setVal = (id, val) => {
-           const el = document.getElementById(id);
-           el.value = val;
-           el.dataset.original = val;
-           el.dispatchEvent(new Event('input'));
-        };
-        setVal(`wa-${idx}`, data.whatsapp);
-        setVal(`ytTitle-${idx}`, data.youtube);
-        setVal(`ytDesc-${idx}`, data.facebook_linkedin);
-        showToast("Contenuti generati dall'AI!");
-      } catch(e) { 
-          showToast("Errore connessione AI", "error"); 
-      } finally { 
-          loader.style.display = 'none'; 
-      }
-    }
-
-    function copyToClipboard(text, btn) {
-      if(!text) return showToast("Nulla da copiare", "error");
-      navigator.clipboard.writeText(text).then(() => {
-        if(btn) animateButtonFeedback(btn, "Copiato!");
-        showToast("Copiato negli appunti");
-      });
-    }
-
-    function saveData(idx, btn) {
-      const data = {};
-      document.querySelectorAll(`.tab-pane[data-tab="${idx}"] textarea`).forEach(el => {
-        data[el.dataset.type] = el.value;
-      });
-      localStorage.setItem(`news_data_${idx}`, JSON.stringify(data));
-      animateButtonFeedback(btn, "Salvato!");
-      showToast("Bozza salvata");
-    }
-
-    function loadSavedData() {
-      [0,1,2].forEach(idx => {
-        const saved = localStorage.getItem(`news_data_${idx}`);
-        if(saved) {
-          const data = JSON.parse(saved);
-          Object.keys(data).forEach(key => {
-            const el = document.getElementById(`${key}-${idx}`);
-            if(el) {
-                el.value = data[key];
-                el.dispatchEvent(new Event('input'));
-            }
-          });
-        }
-      });
-    }
-
-    function clearData(idx) {
-      if(!confirm("Cancellare tutti i campi di questa scheda?")) return;
-      document.querySelectorAll(`.tab-pane[data-tab="${idx}"] textarea`).forEach(el => {
-        el.value = '';
-        el.dispatchEvent(new Event('input'));
-      });
-      showToast("Campi puliti", "info");
-    }
-
-    function generateTgLink(date) {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        const d_raw = String(date.getDate());
-        const months = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
-        return `https://tgposte.poste.it/tgposte/${y}/${m}/${d}/tg-poste-del-${d_raw}-${months[date.getMonth()]}-${y}/`;
-    }
-
-    async function getMasterList() {
-      try {
-        const r = await fetch(googleSheetURL);
-        const t = await r.text();
-        return t.split('\n').map(s => s.trim()).filter(Boolean);
-      } catch { return []; }
-    }
+<div class="container">
+    <h1>Motore Ricerca Immagini</h1>
+    <p>Le immagini mostrate hanno una risoluzione minima di 250px.</p>
     
-    function copyAllData(btn) {
-       let txt = '';
-       [0,1,2].forEach(i => {
-          txt += `NEWS ${i+1}\nWA: ${document.getElementById(`wa-${i}`).value}\nYT Title: ${document.getElementById(`ytTitle-${i}`).value}\nSocial: ${document.getElementById(`ytDesc-${i}`).value}\n\n`;
-       });
-       navigator.clipboard.writeText(txt).then(() => {
-           animateButtonFeedback(btn, "Fatto!");
-           showToast("Tutto copiato!");
-       });
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Cerca qualcosa (es: Architettura, Mare)...">
+        <button onclick="searchImages()">Cerca</button>
+    </div>
+
+    <div id="results"></div>
+</div>
+
+<div id="toast">Link copiato negli appunti! ✅</div>
+
+<script>
+    // Configurazione API Unsplash (Chiave pubblica Demo)
+    const accessKey = 'v7uP-m3hB8I5W8_p-SNoXhYv1Wk_mY-7G_yB_R3M2S8'; // Nota: Usa la tua per limiti più alti
+
+    async function searchImages() {
+        const query = document.getElementById('searchInput').value;
+        const resultsDiv = document.getElementById('results');
+        
+        if (!query) return;
+
+        resultsDiv.innerHTML = '<p>Ricerca in corso...</p>';
+
+        try {
+            // Cerchiamo immagini (orientamento landscape per garantire dimensioni)
+            const response = await fetch(`https://api.unsplash.com/search/photos?query=${query}&per_page=20&client_id=${accessKey}`);
+            const data = await response.json();
+
+            resultsDiv.innerHTML = '';
+
+            // Filtro lato corto > 250px (Unsplash fornisce immagini HD, ma verifichiamo per sicurezza)
+            const filteredResults = data.results.filter(img => img.width >= 250 && img.height >= 250);
+
+            if (filteredResults.length === 0) {
+                resultsDiv.innerHTML = '<p>Nessun risultato trovato.</p>';
+                return;
+            }
+
+            filteredResults.forEach(img => {
+                const card = document.createElement('div');
+                card.className = 'img-card';
+                // Usiamo l'URL "raw" o "full" per il link assoluto
+                const fullImageUrl = img.urls.full;
+                
+                card.innerHTML = `
+                    <img src="${img.urls.small}" alt="${img.alt_description}">
+                    <div class="img-info">Clicca per copiare link HD</div>
+                `;
+
+                card.onclick = () => copyToClipboard(fullImageUrl);
+                resultsDiv.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error('Errore:', error);
+            resultsDiv.innerHTML = '<p>Errore durante la ricerca. Riprova più tardi.</p>';
+        }
     }
 
-    function getExportName(ext) {
-        const now = new Date();
-        const pad = n => String(n).padStart(2, '0');
-        const name = `CopyWhatsapp_${now.getFullYear()}_${pad(now.getMonth()+1)}_${pad(now.getDate())}_${pad(now.getHours())}_${pad(now.getMinutes())}`;
-        return `${name}.${ext}`;
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast();
+        }).catch(err => {
+            console.error('Errore nel copia:', err);
+        });
     }
 
-    function exportExcel() {
-       const rows = [["News", "WA", "YT Title", "YT Desc", "YT Link", "TG Link"]];
-       [0,1,2].forEach(i => {
-         rows.push([
-           `News ${i+1}`,
-           document.getElementById(`wa-${i}`).value,
-           document.getElementById(`ytTitle-${i}`).value,
-           document.getElementById(`ytDesc-${i}`).value,
-           document.getElementById(`ytLink-${i}`).value,
-           document.getElementById(`tgLink-${i}`).value
-         ]);
-       });
-       const wb = XLSX.utils.book_new();
-       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Export");
-       XLSX.writeFile(wb, getExportName('xlsx'));
-       showToast("Excel scaricato!");
+    function showToast() {
+        const toast = document.getElementById("toast");
+        toast.className = "show";
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
     }
 
-    function exportCsv() {
-        const rows = [["News", "WA", "YT Title", "YT Desc", "YT Link", "TG Link"]];
-       [0,1,2].forEach(i => {
-         rows.push([
-           `News ${i+1}`,
-           `"${document.getElementById(`wa-${i}`).value.replace(/"/g, '""')}"`,
-           `"${document.getElementById(`ytTitle-${i}`).value.replace(/"/g, '""')}"`,
-           `"${document.getElementById(`ytDesc-${i}`).value.replace(/"/g, '""')}"`,
-           `"${document.getElementById(`ytLink-${i}`).value.replace(/"/g, '""')}"`,
-           `"${document.getElementById(`tgLink-${i}`).value.replace(/"/g, '""')}"`
-         ]);
-       });
-       const csvContent = rows.map(e => e.join(",")).join("\n");
-       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-       const link = document.createElement("a");
-       const url = URL.createObjectURL(blob);
-       link.setAttribute("href", url);
-       link.setAttribute("download", getExportName('csv'));
-       document.body.appendChild(link);
-       link.click();
-       document.body.removeChild(link);
-       showToast("CSV scaricato!");
-    }
+    // Permette di premere "Invio" per cercare
+    document.getElementById('searchInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            searchImages();
+        }
+    });
+</script>
 
-    document.addEventListener('DOMContentLoaded', init);
-
-  </script>
 </body>
 </html>
