@@ -182,6 +182,7 @@
         <div class="tabs">
             <div id="btn-editoriale" class="tab-btn active" onclick="switchTab('editoriale')">Editoriale</div>
             <div id="btn-influencer" class="tab-btn" onclick="switchTab('influencer')">Influencer</div>
+            <div id="btn-people" class="tab-btn" onclick="switchTab('people')">People</div>
         </div>
 
         <div id="tab-editoriale" class="tab-content active">
@@ -263,8 +264,27 @@
             </div>
         </div>
 
+        <div id="tab-people" class="tab-content">
+            <div class="form-group">
+                <label for="people-channel">1. Canale Social</label>
+                <select id="people-channel">
+                    <option value="X">X</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Linkedin">Linkedin</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="YouTube">YouTube</option>
+                    <option value="TikTok">TikTok</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="people-date">2. Data</label>
+                <input type="date" id="people-date">
+            </div>
+        </div>
+
         <div class="form-group" style="margin-top: 10px;">
-            <label>5. Immagine</label>
+            <label>Immagine</label>
             <div class="paste-instruction">
                 <strong>CTRL+V (o CMD+V)</strong><br>
                 Fai click qui e incolla un'immagine copiata. Verrà adattata senza tagli.
@@ -287,11 +307,11 @@
         <div class="svg-container">
             <svg id="canvas" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1185">
                 
-                <rect x="0" y="0" width="63" height="150" fill="#ecdd49" />
+                <rect id="svg-rect-yellow" x="0" y="0" width="63" height="150" fill="#ecdd49" />
                 
-                <rect x="0" y="150" width="1200" height="2" fill="#0033A0" />
+                <rect id="svg-rect-blue" x="0" y="150" width="1200" height="2" fill="#0033A0" />
 
-                <rect x="1000" y="0" width="200" height="40" fill="#f0f4f8" rx="0"/>
+                <rect id="svg-rect-date" x="1000" y="0" width="200" height="40" fill="#f0f4f8" rx="0"/>
                 <text id="svg-date" x="1180" y="28" font-family="Avenir Next LT Pro, Arial, sans-serif" font-size="28" font-weight="900" fill="#0033A0" text-anchor="end" letter-spacing="1">DD/MM/YYYY</text>
 
                 <text id="svg-brand" x="82" y="45" font-family="Avenir Next LT Pro, Arial, sans-serif" font-size="38" font-weight="900" fill="#0033A0" letter-spacing="-0.5">Poste Italiane</text>
@@ -310,12 +330,53 @@
     <script>
         let currentTab = 'editoriale';
 
+        function applyLayout(tab) {
+            const rectYellow = document.getElementById('svg-rect-yellow');
+            const rectBlue = document.getElementById('svg-rect-blue');
+            const rectDate = document.getElementById('svg-rect-date');
+            const textDate = document.getElementById('svg-date');
+            const textBrand = document.getElementById('svg-brand');
+            const textTopic = document.getElementById('svg-topic');
+            const textChannels = document.getElementById('svg-channels');
+            const placeholder = document.getElementById('placeholder-bg');
+            const image = document.getElementById('svg-image');
+
+            if (tab === 'people') {
+                rectYellow.setAttribute('height', '75');
+                rectBlue.setAttribute('y', '75');
+                rectDate.setAttribute('y', '0');
+                textDate.setAttribute('y', '28');
+                textBrand.setAttribute('y', '50');
+                textBrand.setAttribute('font-size', '36');
+                textTopic.style.display = 'none';
+                textChannels.style.display = 'none';
+                placeholder.setAttribute('y', '77');
+                placeholder.setAttribute('height', '1108');
+                image.setAttribute('y', '77');
+                image.setAttribute('height', '1108');
+            } else {
+                rectYellow.setAttribute('height', '150');
+                rectBlue.setAttribute('y', '150');
+                rectDate.setAttribute('y', '0');
+                textDate.setAttribute('y', '28');
+                textBrand.setAttribute('y', '45');
+                textBrand.setAttribute('font-size', '38');
+                textTopic.style.display = 'block';
+                textChannels.style.display = 'block';
+                placeholder.setAttribute('y', '154');
+                placeholder.setAttribute('height', '1031');
+                image.setAttribute('y', '154');
+                image.setAttribute('height', '1031');
+            }
+        }
+
         function switchTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById('btn-' + tab).classList.add('active');
             document.getElementById('tab-' + tab).classList.add('active');
+            applyLayout(tab);
             updateSVGText();
         }
 
@@ -331,7 +392,7 @@
                 document.getElementById('svg-brand').textContent = document.getElementById('brand').value || '';
                 document.getElementById('svg-topic').textContent = document.getElementById('topic').value || '';
                 updateChannelString(); 
-            } else {
+            } else if (currentTab === 'influencer') {
                 document.getElementById('svg-brand').textContent = document.getElementById('inf-brand').value || '';
                 
                 const channel = document.getElementById('inf-channel').value;
@@ -343,6 +404,10 @@
                 const sourceSelect = document.getElementById('inf-source').value;
                 const sourceOther = document.getElementById('inf-source-other').value;
                 document.getElementById('svg-channels').textContent = sourceSelect === 'Altro' ? sourceOther : sourceSelect;
+            } else if (currentTab === 'people') {
+                document.getElementById('svg-brand').textContent = document.getElementById('people-channel').value || '';
+                document.getElementById('svg-topic').textContent = '';
+                document.getElementById('svg-channels').textContent = '';
             }
         }
 
@@ -487,6 +552,9 @@
         document.getElementById('inf-source').addEventListener('change', updateSVGText);
         document.getElementById('inf-source-other').addEventListener('input', updateSVGText);
 
+        // People
+        document.getElementById('people-channel').addEventListener('change', updateSVGText);
+
         // Date Handling
         function handleDateChange(val) {
             if(!val) return;
@@ -497,10 +565,17 @@
 
         document.getElementById('date').addEventListener('change', function(e) {
             document.getElementById('inf-date').value = e.target.value;
+            document.getElementById('people-date').value = e.target.value;
             handleDateChange(e.target.value);
         });
         document.getElementById('inf-date').addEventListener('change', function(e) {
             document.getElementById('date').value = e.target.value;
+            document.getElementById('people-date').value = e.target.value;
+            handleDateChange(e.target.value);
+        });
+        document.getElementById('people-date').addEventListener('change', function(e) {
+            document.getElementById('date').value = e.target.value;
+            document.getElementById('inf-date').value = e.target.value;
             handleDateChange(e.target.value);
         });
 
@@ -512,6 +587,7 @@
         
         document.getElementById('date').value = todayStr;
         document.getElementById('inf-date').value = todayStr;
+        document.getElementById('people-date').value = todayStr;
         document.getElementById('svg-date').textContent = `${dd}/${mm}/${yyyy}`;
 
 
@@ -581,6 +657,10 @@
                     source: document.getElementById('inf-source').value,
                     sourceOther: document.getElementById('inf-source-other').value
                 },
+                people: {
+                    channel: document.getElementById('people-channel').value,
+                    date: document.getElementById('people-date').value
+                },
                 image: document.getElementById('svg-image').getAttribute('href') || ''
             };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData));
@@ -600,14 +680,13 @@
                 try {
                     const pd = JSON.parse(e.target.result);
                     
-                    if (pd.tab) switchTab(pd.tab);
-                    
-                    if (pd.editoriale || pd.brand) { // Supporto retroattivo per vecchi salvataggi
+                    if (pd.editoriale || pd.brand) { 
                         const ed = pd.editoriale || pd;
                         if (ed.brand) document.getElementById('brand').value = ed.brand;
                         if (ed.date) {
                             document.getElementById('date').value = ed.date;
                             document.getElementById('inf-date').value = ed.date;
+                            document.getElementById('people-date').value = ed.date;
                             handleDateChange(ed.date);
                         }
                         if (ed.topic) document.getElementById('topic').value = ed.topic;
@@ -623,6 +702,7 @@
                         if (inf.date) {
                             document.getElementById('date').value = inf.date;
                             document.getElementById('inf-date').value = inf.date;
+                            document.getElementById('people-date').value = inf.date;
                             handleDateChange(inf.date);
                         }
                         if (inf.channel) document.getElementById('inf-channel').value = inf.channel;
@@ -631,13 +711,25 @@
                         if (inf.sourceOther) document.getElementById('inf-source-other').value = inf.sourceOther;
                         toggleInfSourceOther();
                     }
+
+                    if (pd.people) {
+                        const ppl = pd.people;
+                        if (ppl.channel) document.getElementById('people-channel').value = ppl.channel;
+                        if (ppl.date) {
+                            document.getElementById('date').value = ppl.date;
+                            document.getElementById('inf-date').value = ppl.date;
+                            document.getElementById('people-date').value = ppl.date;
+                            handleDateChange(ppl.date);
+                        }
+                    }
                     
                     if (pd.image) {
                         document.getElementById('svg-image').setAttribute('href', pd.image);
                         document.getElementById('placeholder-bg').style.display = 'none';
                     }
                     
-                    updateSVGText();
+                    if (pd.tab) switchTab(pd.tab);
+                    else updateSVGText();
                     
                 } catch (err) {
                     alert("Errore nel caricamento del file JSON.");
@@ -648,6 +740,7 @@
         };
         
         // Init visualizzazione Testi
+        applyLayout(currentTab);
         updateSVGText();
     </script>
 </body>
