@@ -2,137 +2,347 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Social Report Auto-Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore Grafiche Social</title>
     <style>
-        @media print { .no-print { display: none !important; } .slide-page { page-break-after: always; height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px; } }
-        .slide-preview { aspect-ratio: 16 / 9; background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        :root {
+            --primary: #0033A0; /* Blu Poste */
+            --yellow: #ecdd49;  /* Giallo Poste */
+            --bg-gray: #f4f4f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            background-color: var(--bg-gray);
+            overflow: hidden;
+        }
+
+        /* Sidebar Controlli */
+        .sidebar {
+            width: 400px;
+            background: white;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        input[type="text"], input[type="date"], select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        /* Gestione Canali */
+        .channel-adder {
+            display: flex;
+            gap: 10px;
+        }
+        .channel-adder select { flex: 2; }
+        .channel-adder input { flex: 1; }
+        
+        button {
+            padding: 10px 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #002277; }
+        
+        button.btn-add { background-color: #28a745; }
+        button.btn-add:hover { background-color: #218838; }
+
+        .channels-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .channels-list li {
+            display: flex;
+            justify-content: space-between;
+            background: #eee;
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .channels-list li span.remove {
+            color: red;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Area Istruzioni Immagine */
+        .paste-instruction {
+            background: #e9f5ff;
+            border: 2px dashed var(--primary);
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        /* Area Preview */
+        .preview-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        /* Il contenitore SVG scala per adattarsi allo schermo, ma mantiene proporzioni 1200x1185 */
+        .svg-container {
+            width: 100%;
+            max-width: 800px; /* Limite visivo per il browser */
+            aspect-ratio: 1200 / 1185;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            /* Sfondo bianco solo per la preview web. Non verrà esportato nell'SVG */
+            background-color: #ffffff; 
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
     </style>
 </head>
-<body class="bg-gray-100 p-6">
+<body>
 
-    <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-8 no-print">
-            <h1 class="text-3xl font-bold text-gray-800">Report Automizzato</h1>
-            <button onclick="window.print()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700">Scarica Report PDF</button>
+    <div class="sidebar">
+        <h2>Editor Grafiche</h2>
+
+        <div class="form-group">
+            <label for="brand">1. Nome Pagina</label>
+            <select id="brand">
+                <option value="Poste Italiane">Poste Italiane</option>
+                <option value="Postepay">Postepay</option>
+                <option value="PosteMobile">PosteMobile</option>
+            </select>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <div class="no-print space-y-6">
-                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-blue-500">
-                    <h2 class="font-bold text-lg mb-4 text-blue-700">1. Automazione Link</h2>
-                    <p class="text-xs text-gray-500 mb-4">Incolla l'URL del post (es. Instagram, LinkedIn, X)</p>
-                    
-                    <input type="text" id="postUrl" class="w-full border p-2 rounded mb-4 text-sm" placeholder="https://www.instagram.com/p/...">
-                    
-                    <button id="captureBtn" onclick="autoCapture()" class="w-full bg-blue-600 text-white py-3 rounded font-bold hover:bg-blue-700 transition">
-                        Cattura Post e Dati
-                    </button>
-                    
-                    <div id="status" class="hidden mt-4 text-sm text-gray-600">
-                        <div class="loader"></div> Elaborazione in corso...
-                    </div>
-                </div>
+        <div class="form-group">
+            <label for="date">2. Data</label>
+            <input type="date" id="date">
+        </div>
 
-                <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h2 class="font-bold text-lg mb-4">2. Dati Integrativi</h2>
-                    <div class="space-y-3">
-                        <input type="text" id="followers" placeholder="N. Followers (es. 50k)" class="w-full border p-2 rounded text-sm">
-                        <select id="sourceType" class="w-full border p-2 rounded text-sm">
-                            <option>Influencer</option>
-                            <option>Testata</option>
-                            <option>Competitor</option>
-                        </select>
-                        <button onclick="confirmAndAdd()" class="w-full bg-gray-800 text-white py-2 rounded mt-2">Aggiungi Slide</button>
-                    </div>
-                </div>
-            </div>
+        <div class="form-group">
+            <label for="topic">3. Argomento</label>
+            <input type="text" id="topic" value="Notizie dal territorio" placeholder="Inserisci l'argomento">
+        </div>
 
-            <div id="reportArea" class="lg:col-span-2 space-y-8">
-                <div id="placeholder" class="bg-white p-20 text-center rounded-xl border-2 border-dashed border-gray-300 text-gray-400 no-print">
-                    Le slide appariranno qui dopo la cattura.
-                </div>
+        <div class="form-group">
+            <label>4. Elenco Canali</label>
+            <div class="channel-adder">
+                <select id="channel-name">
+                    <option value="Facebook">Facebook</option>
+                    <option value="Linkedin">Linkedin</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="X">X</option>
+                    <option value="YouTube">YouTube</option>
+                    <option value="WhatsApp">WhatsApp</option>
+                </select>
+                <input type="number" id="channel-count" min="1" value="1">
+                <button type="button" class="btn-add" onclick="addChannel()">Aggiungi</button>
             </div>
+            <ul class="channels-list" id="active-channels"></ul>
+        </div>
+
+        <div class="form-group">
+            <label>5. Immagine</label>
+            <div class="paste-instruction">
+                <strong>CTRL+V (o CMD+V)</strong><br>
+                Fai click qui e incolla un'immagine copiata. Verrà adattata senza tagli.
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button onclick="saveJSON()" style="flex: 1; background-color: #ffc107; color: #333;">💾 Salva JSON</button>
+            <button onclick="document.getElementById('file-input').click()" style="flex: 1; background-color: #17a2b8;">📂 Carica JSON</button>
+            <input type="file" id="file-input" style="display: none;" accept=".json" onchange="loadJSON(event)">
+        </div>
+
+        <button onclick="downloadSVG()" style="margin-top: auto; font-size: 1.1rem; padding: 15px;">📥 Scarica SVG</button>
+    </div>
+
+    <div class="preview-area">
+        <style>
+            #placeholder-bg { fill: #d3d3d3 !important; }
+        </style>
+        <div class="svg-container">
+            <svg id="canvas" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1185">
+                
+                <rect x="0" y="0" width="63" height="150" fill="#ecdd49" />
+                
+                <rect x="0" y="150" width="1200" height="2" fill="#0033A0" />
+
+                <rect x="1000" y="0" width="200" height="40" fill="#f0f4f8" rx="0"/>
+                <text id="svg-date" x="1180" y="28" font-family="Avenir Next LT Pro, Arial, sans-serif" font-size="28" font-weight="900" fill="#0033A0" text-anchor="end" letter-spacing="1">DD/MM/YYYY</text>
+
+                <text id="svg-brand" x="82" y="45" font-family="Avenir Next LT Pro, Arial, sans-serif" font-size="38" font-weight="900" fill="#0033A0" letter-spacing="-0.5">Poste Italiane</text>
+                
+                <text id="svg-topic" x="82" y="90" font-family="Avenir Next LT Pro, Arial, sans-serif" font-size="36" font-weight="normal" fill="#0033A0">Notizie dal territorio</text>
+                
+                <text id="svg-channels" x="82" y="132" font-family="Avenir Next LT Pro, Arial, sans-serif" font-size="30" font-weight="normal" fill="#757575">Aggiungi canali dal menu a sinistra...</text>
+
+                <rect id="placeholder-bg" x="0" y="154" width="1200" height="1031" fill="#00FF00" />
+                
+                <image id="svg-image" x="0" y="154" width="1200" height="1031" preserveAspectRatio="xMidYMid meet" href="" />
+            </svg>
         </div>
     </div>
 
     <script>
-        let tempData = null;
+        // --- GESTIONE STATO CANALI ---
+        let channelsData = [];
 
-        async function autoCapture() {
-            const url = document.getElementById('postUrl').value;
-            const btn = document.getElementById('captureBtn');
-            const status = document.getElementById('status');
-
-            if (!url) return alert("Inserisci un URL valido");
-
-            btn.disabled = true;
-            status.classList.remove('hidden');
-
-            try {
-                // Utilizzo dell'API Microlink (Gratuita con limiti)
-                const apiUrl = `https://api.microlink.io?url=${encodeURIComponent(url)}&screenshot=true&meta=true`;
-                const response = await fetch(apiUrl);
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    tempData = {
-                        image: result.data.screenshot.url,
-                        title: result.data.title || "Post Social",
-                        author: result.data.author || "Account non rilevato",
-                        date: new Date().toLocaleDateString(),
-                        platform: result.data.publisher || "Social Network"
-                    };
-                    
-                    // Notifica successo
-                    alert("Cattura completata! Controlla i dati e clicca 'Aggiungi Slide'.");
-                } else {
-                    throw new Error("Impossibile catturare il post");
-                }
-            } catch (err) {
-                alert("Errore durante la cattura automatica. Alcuni social bloccano l'accesso diretto. Prova con un altro link o usa il metodo manuale.");
-            } finally {
-                btn.disabled = false;
-                status.classList.add('hidden');
+        function updateChannelString() {
+            const svgChannels = document.getElementById('svg-channels');
+            if (channelsData.length === 0) {
+                svgChannels.textContent = "";
+                return;
             }
+            const str = channelsData.map(c => `${c.name} ${c.count}`).join(', ');
+            svgChannels.textContent = str;
         }
 
-        function confirmAndAdd() {
-            if (!tempData) return alert("Cattura prima un post tramite link!");
+        function renderChannelList() {
+            const list = document.getElementById('active-channels');
+            list.innerHTML = '';
+            channelsData.forEach((ch, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${ch.name} <strong>${ch.count}</strong></span> <span class="remove" onclick="removeChannel(${index})">X</span>`;
+                list.appendChild(li);
+            });
+            updateChannelString();
+        }
 
-            const followers = document.getElementById('followers').value || "N/A";
-            const source = document.getElementById('sourceType').value;
-            const reportArea = document.getElementById('reportArea');
-            document.getElementById('placeholder').classList.add('hidden');
+        function addChannel() {
+            const name = document.getElementById('channel-name').value;
+            const count = document.getElementById('channel-count').value;
+            
+            const existing = channelsData.find(c => c.name === name);
+            if (existing) {
+                existing.count = count;
+            } else {
+                channelsData.push({ name, count });
+            }
+            renderChannelList();
+        }
 
-            const slideHtml = `
-                <div class="slide-page bg-white shadow-xl rounded-xl p-8 slide-preview flex gap-8">
-                    <div class="w-2/3 h-full bg-gray-100 rounded border flex items-center justify-center overflow-hidden">
-                        <img src="${tempData.image}" class="max-w-full max-h-full object-contain">
-                    </div>
-                    <div class="w-1/3 flex flex-col justify-between">
-                        <div>
-                            <span class="text-blue-600 font-bold text-xs uppercase tracking-widest">${tempData.platform}</span>
-                            <h2 class="text-2xl font-black text-gray-900 mt-1 leading-tight">${tempData.author}</h2>
-                            <hr class="my-4">
-                            <div class="space-y-4 text-sm">
-                                <div><p class="text-gray-400 uppercase text-[10px] font-bold">Followers</p><p class="font-semibold text-lg">${followers}</p></div>
-                                <div><p class="text-gray-400 uppercase text-[10px] font-bold">Tipo Fonte</p><p class="font-semibold text-lg">${source}</p></div>
-                                <div><p class="text-gray-400 uppercase text-[10px] font-bold">Data Report</p><p class="font-semibold text-lg">${tempData.date}</p></div>
-                            </div>
-                        </div>
-                        <div class="text-[10px] text-gray-300">Generato con Social Automator v1.0</div>
-                    </div>
-                </div>
-            `;
+        window.removeChannel = function(index) {
+            channelsData.splice(index, 1);
+            renderChannelList();
+        }
 
-            reportArea.insertAdjacentHTML('beforeend', slideHtml);
-            // Reset
-            tempData = null;
-            document.getElementById('postUrl').value = '';
+        // --- BINDING EVENTI INPUT ---
+        
+        document.getElementById('brand').addEventListener('change', function(e) {
+            document.getElementById('svg-brand').textContent = e.target.value;
+        });
+
+        document.getElementById('date').addEventListener('change', function(e) {
+            const dateVal = e.target.value;
+            if(!dateVal) return;
+            const parts = dateVal.split('-');
+            const formatted = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            document.getElementById('svg-date').textContent = formatted;
+        });
+
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const yyyy = today.getFullYear();
+        document.getElementById('date').value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('svg-date').textContent = `${dd}/${mm}/${yyyy}`;
+
+        document.getElementById('topic').addEventListener('input', function(e) {
+            document.getElementById('svg-topic').textContent = e.target.value;
+        });
+
+
+        // --- GESTIONE COPIA/INCOLLA IMMAGINE ---
+        document.addEventListener('paste', function(e) {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let index in items) {
+                const item = items[index];
+                if (item.kind === 'file' && item.type.includes('image/')) {
+                    const blob = item.getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const base64data = event.target.result;
+                        document.getElementById('svg-image').setAttribute('href', base64data);
+                        document.getElementById('placeholder-bg').style.display = 'none';
+                    };
+                    reader.readAsDataURL(blob);
+                }
+            }
+        });
+
+        // --- ESPORTAZIONE SVG ---
+        function downloadSVG() {
+            const svgElement = document.getElementById('canvas');
+            
+            const serializer = new XMLSerializer();
+            let source = serializer.serializeToString(svgElement);
+
+            if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+                source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            }
+            if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+                source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+            }
+
+            source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+            const blob = new Blob([source], {type: 'image/svg+xml;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.createElement("a");
+            
+            const dateStr = document.getElementById('svg-date').textContent.replace(/\//g, '-');
+            downloadLink.href = url;
+            downloadLink.download = `Grafica_${dateStr}.svg`;
+            
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
